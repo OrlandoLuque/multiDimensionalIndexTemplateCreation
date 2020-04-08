@@ -65,149 +65,149 @@ require('polygon-draw.php');    // to paint everything!
 //------------------------------------------------------------------------------
 // First example re-creates the example in Figure 5 of the paper
 //
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv( 16,131);
-        $polyA->addv( 71,166);
-        $polyA->addv(105,138);
-        $polyA->addv( 25, 63);
-        $polyA->addv(118, 75);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv( 16,131);
+$polyA->addv( 71,166);
+$polyA->addv(105,138);
+$polyA->addv( 25, 63);
+$polyA->addv(118, 75);
 
-        $polyB = new polygon;          // Create a second polygon with some more points
-        $polyB->addv(  9,155);
-        $polyB->addv( 88,134);
-        $polyB->addv( 80, 16);
-        $polyB->addv( 26, 92);
-        $polyB->addv( 42,129);
+$polyB = new polygon;          // Create a second polygon with some more points
+$polyB->addv(  9,155);
+$polyB->addv( 88,134);
+$polyB->addv( 80, 16);
+$polyB->addv( 26, 92);
+$polyB->addv( 42,129);
 //
 // THIS IS THE IMPORTANT BIT
 //
-        $poly3 =& $polyA->boolean($polyB, "A&B");// A&B .. A AND B .. (A intersection B)
-        $poly4 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
-        $poly5 =& $polyA->boolean($polyB, "A\B");// A\B  .. A - B
-        $poly6 =& $polyA->boolean($polyB, "B\A");// B\A  .. B - A
+$poly3 =& $polyA->boolean($polyB, "A&B");// A&B .. A AND B .. (A intersection B)
+$poly4 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
+$poly5 =& $polyA->boolean($polyB, "A\B");// A\B  .. A - B
+$poly6 =& $polyA->boolean($polyB, "B\A");// B\A  .. B - A
 //
 // Output the results
 //
-        newImage (600,200, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(0, 0, $im, $polyA, $colors, "red");
-        drawPolyAt(0, 0, $im, $polyB, $colors, "grn");
-        drawPolyAt(120, 0, $im, $poly3, $colors, "blu");
-        drawPolyAt(240, 0, $im, $poly4, $colors, "blu");
-        drawPolyAt(360, 0, $im, $poly5, $colors,"blu");
-        drawPolyAt(480, 0, $im, $poly6, $colors, "blu");
-        imagestring ($im, 1, 55, 190, "A", $colors["red"]);
-        imagestring ($im, 1, 65, 190, "B", $colors["grn"]);
-        imagestring ($im, 1, 185, 190, "A&B", $colors["blu"]);
-        imagestring ($im, 1, 305, 190, "A|B", $colors["blu"]);
-        imagestring ($im, 1, 425, 190, "A\B", $colors["blu"]);
-        imagestring ($im, 1, 545, 190, "B\A", $colors["blu"]);
-        imageGif($im,"poly_ex1.gif");   // Save the image to a file
+newImage (600,200, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 0, $im, $polyA, $colors, "red");
+drawPolyAt(0, 0, $im, $polyB, $colors, "grn");
+drawPolyAt(120, 0, $im, $poly3, $colors, "blu");
+drawPolyAt(240, 0, $im, $poly4, $colors, "blu");
+drawPolyAt(360, 0, $im, $poly5, $colors,"blu");
+drawPolyAt(480, 0, $im, $poly6, $colors, "blu");
+imagestring ($im, 1, 55, 190, "A", $colors["red"]);
+imagestring ($im, 1, 65, 190, "B", $colors["grn"]);
+imagestring ($im, 1, 185, 190, "A&B", $colors["blu"]);
+imagestring ($im, 1, 305, 190, "A|B", $colors["blu"]);
+imagestring ($im, 1, 425, 190, "A\B", $colors["blu"]);
+imagestring ($im, 1, 545, 190, "B\A", $colors["blu"]);
+imageGif($im,"poly_ex1.gif");   // Save the image to a file
 
 //------------------------------------------------------------------------------
 // Second example shows how to handle more than two polygons
 //
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv( 40, 40);
-        $polyA->addv( 80, 40);
-        $polyA->addv( 68,100);
-        $polyA->addv( 80,160);
-        $polyA->addv( 40,160);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv( 40, 40);
+$polyA->addv( 80, 40);
+$polyA->addv( 68,100);
+$polyA->addv( 80,160);
+$polyA->addv( 40,160);
 
-        $polyB = new polygon;          // Create a second polygon with some more points
-        $polyB->addv( 60, 60);
-        $polyB->addv(100, 60);
-        $polyB->addv(100,140);
-        $polyB->addv( 60,140);
-        $polyB->addv( 48,100);
+$polyB = new polygon;          // Create a second polygon with some more points
+$polyB->addv( 60, 60);
+$polyB->addv(100, 60);
+$polyB->addv(100,140);
+$polyB->addv( 60,140);
+$polyB->addv( 48,100);
 
-        $polyC = new polygon;          // Create a third polygon with some more points
-        $polyC->addv( 20,100);
-        $polyC->addv(120, 80);
-        $polyC->addv(110,100);
-        $polyC->addv(120,120);
+$polyC = new polygon;          // Create a third polygon with some more points
+$polyC->addv( 20,100);
+$polyC->addv(120, 80);
+$polyC->addv(110,100);
+$polyC->addv(120,120);
 //
 // THIS IS THE IMPORTANT BIT
 //
-        $poly3 =& $polyA->boolean($polyB, "A&B");               // All the magic happens here
-        $poly4 =& $poly3->boolean($polyC, "A|B");               // Now OR polyC with the result
+$poly3 =& $polyA->boolean($polyB, "A&B");               // All the magic happens here
+$poly4 =& $poly3->boolean($polyC, "A|B");               // Now OR polyC with the result
 //
 // Output the results
 //
-        newImage (400,200, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(0, 0, $im, $polyA, $colors, "red");
-        drawPolyAt(0, 0, $im, $polyB, $colors, "grn");
-        drawPolyAt(120, 0, $im, $poly3, $colors, "blu");
-        drawPolyAt(120, 0, $im, $polyC, $colors, "pur");
-        drawPolyAt(240, 0, $im, $poly4, $colors, "blu");
-        imagestring ($im, 1, 55, 190, "A", $colors["red"]);
-        imagestring ($im, 1, 65, 190, "B", $colors["grn"]);
-        imagestring ($im, 1, 185, 190, "(A&B)", $colors["blu"]);
-        imagestring ($im, 1, 215, 190, "C", $colors["pur"]);
-        imagestring ($im, 1, 305, 190, "(A&B)|C", $colors["blu"]);
-        imageGif($im,"poly_ex2.gif");
+newImage (400,200, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 0, $im, $polyA, $colors, "red");
+drawPolyAt(0, 0, $im, $polyB, $colors, "grn");
+drawPolyAt(120, 0, $im, $poly3, $colors, "blu");
+drawPolyAt(120, 0, $im, $polyC, $colors, "pur");
+drawPolyAt(240, 0, $im, $poly4, $colors, "blu");
+imagestring ($im, 1, 55, 190, "A", $colors["red"]);
+imagestring ($im, 1, 65, 190, "B", $colors["grn"]);
+imagestring ($im, 1, 185, 190, "(A&B)", $colors["blu"]);
+imagestring ($im, 1, 215, 190, "C", $colors["pur"]);
+imagestring ($im, 1, 305, 190, "(A&B)|C", $colors["blu"]);
+imageGif($im,"poly_ex2.gif");
 
 //------------------------------------------------------------------------------
 // Third example shows how arc segments work
 //
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(  60,110,60,60,-1);        // Arc with center 60,90 Clockwise
-        $polyA->addv(  60, 10,60,60,-1);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(  60,110,60,60,-1);        // Arc with center 60,90 Clockwise
+$polyA->addv(  60, 10,60,60,-1);
 
 $polyA = new polygon();        // Create a new polygon and add some vertices to it
 $polyA->addv(  60,110,60,60,-1);        // Arc with center 60,90 Clockwise
 $polyA->addv(  60, 10,60,60,-1);
 
 $polyB = new polygon();        // Create a new polygon and add some vertices to it
-        $polyB->addv(100, 60,110,60,-1);// Arc with center 100,140 Clockwise
-        $polyB->addv(120, 60,110,60,-1);
+$polyB->addv(100, 60,110,60,-1);// Arc with center 100,140 Clockwise
+$polyB->addv(120, 60,110,60,-1);
 //
 // THIS IS THE IMPORTANT BIT
 //
-        $poly3 =& $polyA->boolean($polyB, "A&B");
-        $poly4 =& $polyA->boolean($polyB, "A|B");
-        $poly5 =& $polyA->boolean($polyB, "A\B");
-        $poly6 =& $polyA->boolean($polyB, "B\A");
+$poly3 =& $polyA->boolean($polyB, "A&B");
+$poly4 =& $polyA->boolean($polyB, "A|B");
+$poly5 =& $polyA->boolean($polyB, "A\B");
+$poly6 =& $polyA->boolean($polyB, "B\A");
 //
 // Output the results
 //
-        newImage (600,140, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(0, 20, $im, $polyA, $colors, "red");
-        drawPolyAt(0, 20, $im, $polyB, $colors, "grn");
-        drawPolyAt(120, 20, $im, $poly3, $colors, "blu");
-        drawPolyAt(240, 20, $im, $poly4, $colors, "blu");
-        drawPolyAt(360, 20, $im, $poly5, $colors, "blu");
-        drawPolyAt(480, 20, $im, $poly6, $colors, "blu");
-        imagestring ($im, 1, 55, 130, "A", $colors["red"]);
-        imagestring ($im, 1, 65, 130, "B", $colors["grn"]);
-        imagestring ($im, 1, 185, 130, "A&B", $colors["blu"]);
-        imagestring ($im, 1, 305, 130, "A|B", $colors["blu"]);
-        imagestring ($im, 1, 425, 130, "A\B", $colors["blu"]);
-        imagestring ($im, 1, 545, 130, "B\A", $colors["blu"]);
-        imageGif($im,"poly_ex3.gif");
+newImage (600,140, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 20, $im, $polyA, $colors, "red");
+drawPolyAt(0, 20, $im, $polyB, $colors, "grn");
+drawPolyAt(120, 20, $im, $poly3, $colors, "blu");
+drawPolyAt(240, 20, $im, $poly4, $colors, "blu");
+drawPolyAt(360, 20, $im, $poly5, $colors, "blu");
+drawPolyAt(480, 20, $im, $poly6, $colors, "blu");
+imagestring ($im, 1, 55, 130, "A", $colors["red"]);
+imagestring ($im, 1, 65, 130, "B", $colors["grn"]);
+imagestring ($im, 1, 185, 130, "A&B", $colors["blu"]);
+imagestring ($im, 1, 305, 130, "A|B", $colors["blu"]);
+imagestring ($im, 1, 425, 130, "A\B", $colors["blu"]);
+imagestring ($im, 1, 545, 130, "B\A", $colors["blu"]);
+imageGif($im,"poly_ex3.gif");
 
 //------------------------------------------------------------------------------
 // This example shows how polygon the move, rotate and bRect methods work
 //
-        $poly1 = new polygon();
-        $poly1->addv(25,35);
-        $poly1->addv(12,47);
-        $poly1->addv(12,93,50,60,-1);
-        $poly1->addv(100,60);
-        $poly1->addv(75,35,50,35,-1);
+$poly1 = new polygon();
+$poly1->addv(25,35);
+$poly1->addv(12,47);
+$poly1->addv(12,93,50,60,-1);
+$poly1->addv(100,60);
+$poly1->addv(75,35,50,35,-1);
 
-        newImage (600,120, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(0, 0, $im, $poly1, $colors, "red");  // The starting polygon
-                                                                                                        // Polygon center is at 50,60
-        for ($i=0; $i<5; $i++)
-        {
-                $poly1->move(100,0);                                                    // Move it 100 right
-                $poly1->rotate(150+($i*100),60,deg2rad(-30));   // Rotate 30 degrees clockwise around its center
-                drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw it again
-                $br = NULL;                                                                             // Dont waste memory
-                $br =& $poly1->bRect();                                                 // Get the Bounding Rectangle
-                drawPolyAt(0, 0, $im, $br, $colors, "grn");             // And draw that as well
-        }
-        imageGif($im,"poly_ex4.gif");
+newImage (600,120, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 0, $im, $poly1, $colors, "red");  // The starting polygon
+// Polygon center is at 50,60
+for ($i=0; $i<5; $i++)
+{
+    $poly1->move(100,0);                                                    // Move it 100 right
+    $poly1->rotate(150+($i*100),60,deg2rad(-30));   // Rotate 30 degrees clockwise around its center
+    drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw it again
+    $br = NULL;                                                                             // Dont waste memory
+    $br =& $poly1->bRect();                                                 // Get the Bounding Rectangle
+    drawPolyAt(0, 0, $im, $br, $colors, "grn");             // And draw that as well
+}
+imageGif($im,"poly_ex4.gif");
 
 //------------------------------------------------------------------------------
 // This example shows how the isPolyInside method works
@@ -218,83 +218,83 @@ $polyB = new polygon();        // Create a new polygon and add some vertices to 
 // poly3 & poly4 show the simpler case where the function returns false because
 // a vertex of the polygon is outside.
 //
-        $poly1 = new polygon();
-        $poly1->addv(0,0);
-        $poly1->addv(0,25,0,50,1);
-        $poly1->addv(0,75);
-        $poly1->addv(0,100);
-        $poly1->addv(100,100);
-        $poly1->addv(100,0);
-        $poly1->move(10,10);
+$poly1 = new polygon();
+$poly1->addv(0,0);
+$poly1->addv(0,25,0,50,1);
+$poly1->addv(0,75);
+$poly1->addv(0,100);
+$poly1->addv(100,100);
+$poly1->addv(100,0);
+$poly1->move(10,10);
 
-        $poly2 = new polygon();        // poly2 does fit inside poly1
-        $poly2->addv(10,10);
-        $poly2->addv(10,20,0,50,1);
-        $poly2->addv(10,80);
-        $poly2->addv(10,90);
-        $poly2->addv(90,90);
-        $poly2->addv(90,10);
-        $poly2->move(10,10);
+$poly2 = new polygon();        // poly2 does fit inside poly1
+$poly2->addv(10,10);
+$poly2->addv(10,20,0,50,1);
+$poly2->addv(10,80);
+$poly2->addv(10,90);
+$poly2->addv(90,90);
+$poly2->addv(90,10);
+$poly2->move(10,10);
 
-        $poly3 = new polygon();
-        $poly3->addv(0,0);
-        $poly3->addv(0,100);
-        $poly3->addv(100,100);
-        $poly3->addv(100,0);
-        $poly3->move(300,10);
+$poly3 = new polygon();
+$poly3->addv(0,0);
+$poly3->addv(0,100);
+$poly3->addv(100,100);
+$poly3->addv(100,0);
+$poly3->move(300,10);
 
-        $poly4 = new polygon();
-        $poly4->addv(10,50);
-        $poly4->addv(10,90);
-        $poly4->addv(50,90);
-        $poly4->addv(50,50);
-        $poly4->move(300,10);
+$poly4 = new polygon();
+$poly4->addv(10,50);
+$poly4->addv(10,90);
+$poly4->addv(50,90);
+$poly4->addv(50,50);
+$poly4->move(300,10);
 
-        newImage (600,120, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
-        drawPolyAt(0, 0, $im, $poly3, $colors, "blu");
+newImage (600,120, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
+drawPolyAt(0, 0, $im, $poly3, $colors, "blu");
 //
 // Depending on result of isPolyInside(0 method draw the polygon in green (inside) or
 // in red (NOT inside)
 //
-        if ($poly1->isPolyInside($poly2))       // example 1
-                drawPolyAt(0, 0, $im, $poly2, $colors, "grn");
-        else
-                drawPolyAt(0, 0, $im, $poly2, $colors, "red");
+if ($poly1->completelyContains($poly2))       // example 1
+    drawPolyAt(0, 0, $im, $poly2, $colors, "grn");
+else
+    drawPolyAt(0, 0, $im, $poly2, $colors, "red");
 
-        if ($poly3->isPolyInside($poly4))       // example 2
-                drawPolyAt(0, 0, $im, $poly4, $colors, "grn");  // The starting polygon
-        else
-                drawPolyAt(0, 0, $im, $poly4, $colors, "red");  // The starting polygon
+if ($poly3->completelyContains($poly4))       // example 2
+    drawPolyAt(0, 0, $im, $poly4, $colors, "grn");  // The starting polygon
+else
+    drawPolyAt(0, 0, $im, $poly4, $colors, "red");  // The starting polygon
 //
 // Now move the 4 polygons and rotate the inner ones to cause them to fail
 // the isPolyInside test
 //
-        $poly1->move(150,0);
-        $poly2->move(150,0);
-        $poly2->rotate(210,60,deg2rad(90));
+$poly1->move(150,0);
+$poly2->move(150,0);
+$poly2->rotate(210,60,deg2rad(90));
 
-        $poly3->move(150,0);
-        $poly4->move(150,0);
-        $poly4->rotate(500,60,deg2rad(45));
+$poly3->move(150,0);
+$poly4->move(150,0);
+$poly4->rotate(500,60,deg2rad(45));
 //
 // Draw the polygons again. This time the inner polygons will be red because they fail
 // isPolyInside test.
 //
-        drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
-        drawPolyAt(0, 0, $im, $poly3, $colors, "blu");
+drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
+drawPolyAt(0, 0, $im, $poly3, $colors, "blu");
 
-        if ($poly1->isPolyInside($poly2))
-                drawPolyAt(0, 0, $im, $poly2, $colors, "grn");
-        else
-                drawPolyAt(0, 0, $im, $poly2, $colors, "red");
+if ($poly1->completelyContains($poly2))
+    drawPolyAt(0, 0, $im, $poly2, $colors, "grn");
+else
+    drawPolyAt(0, 0, $im, $poly2, $colors, "red");
 
-        if ($poly3->isPolyInside($poly4))
-                drawPolyAt(0, 0, $im, $poly4, $colors, "grn");
-        else
-                drawPolyAt(0, 0, $im, $poly4, $colors, "red");
+if ($poly3->completelyContains($poly4))
+    drawPolyAt(0, 0, $im, $poly4, $colors, "grn");
+else
+    drawPolyAt(0, 0, $im, $poly4, $colors, "red");
 
-        imageGif($im,"poly_ex5.gif");
+imageGif($im,"poly_ex5.gif");
 
 //------------------------------------------------------------------------------
 // This example shows how the isPolyOutside and isPolyIntersect methods work
@@ -305,107 +305,107 @@ $polyB = new polygon();        // Create a new polygon and add some vertices to 
 // poly3 & poly4 show the simpler case where the function returns false because
 // a vertex of the polygon is outside.
 //
-        $poly1 = new polygon();
-        $poly1->addv(0,0);
-        $poly1->addv(0,80);
-        $poly1->addv(80,80);
-        $poly1->addv(80,0);
-        $poly1->move(10,40);
+$poly1 = new polygon();
+$poly1->addv(0,0);
+$poly1->addv(0,80);
+$poly1->addv(80,80);
+$poly1->addv(80,0);
+$poly1->move(10,40);
 
-        $poly2 = new polygon();
-        $poly2->addv(0,0);
-        $poly2->addv(0,40);
-        $poly2->addv(40,40);
-        $poly2->addv(40,0);
-        $poly2->move(30,60);
+$poly2 = new polygon();
+$poly2->addv(0,0);
+$poly2->addv(0,40);
+$poly2->addv(40,40);
+$poly2->addv(40,0);
+$poly2->move(30,60);
 
-        newImage (600,160, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
-        drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
+newImage (600,160, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
+drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
 //
 // Display the results of isPolyInside, isPolyOutside & isPolyIntersect methods
 //
-        if ($poly1->isPolyInside($poly2))
-            imagestring ($im, 1, 10, 130, "isPolyInside   =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 10, 130, "isPolyInside   =F", $colors["red"]);
-        if ($poly1->isPolyOutside($poly2))
-            imagestring ($im, 1, 10, 140, "isPolyOutside  =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 10, 140, "isPolyOutside  =F", $colors["red"]);
-        if ($poly1->isPolyIntersect($poly2))
-            imagestring ($im, 1, 10, 150, "isPolyIntersect=T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 10, 150, "isPolyIntersect=F", $colors["red"]);
+if ($poly1->completelyContains($poly2))
+    imagestring ($im, 1, 10, 130, "isPolyInside   =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 10, 130, "isPolyInside   =F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 10, 140, "isPolyOutside  =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 10, 140, "isPolyOutside  =F", $colors["red"]);
+if ($poly1->isPolyIntersect($poly2))
+    imagestring ($im, 1, 10, 150, "isPolyIntersect=T", $colors["grn"]);
+else
+    imagestring ($im, 1, 10, 150, "isPolyIntersect=F", $colors["red"]);
 //
 // Now move the 2 polygons and repeat
 //
-        $poly1->move(150,0);
-        $poly2->move(190,0);
-        drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
-        drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
+$poly1->move(150,0);
+$poly2->move(190,0);
+drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
+drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
 //
 // Display the results of isPolyInside, isPolyOutside & isPolyIntersect methods
 //
-        if ($poly1->isPolyInside($poly2))
-            imagestring ($im, 1, 160, 130, "isPolyInside   =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 160, 130, "isPolyInside   =F", $colors["red"]);
-        if ($poly1->isPolyOutside($poly2))
-            imagestring ($im, 1, 160, 140, "isPolyOutside  =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 160, 140, "isPolyOutside  =F", $colors["red"]);
-        if ($poly1->isPolyIntersect($poly2))
-            imagestring ($im, 1, 160, 150, "isPolyIntersect=T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 160, 150, "isPolyIntersect=F", $colors["red"]);
+if ($poly1->completelyContains($poly2))
+    imagestring ($im, 1, 160, 130, "isPolyInside   =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 160, 130, "isPolyInside   =F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 160, 140, "isPolyOutside  =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 160, 140, "isPolyOutside  =F", $colors["red"]);
+if ($poly1->isPolyIntersect($poly2))
+    imagestring ($im, 1, 160, 150, "isPolyIntersect=T", $colors["grn"]);
+else
+    imagestring ($im, 1, 160, 150, "isPolyIntersect=F", $colors["red"]);
 //
 // Now move the 2 polygons and repeat
 //
-        $poly1->move(150,0);
-        $poly2->move(160,50);
-        $poly2->rotate(400,130,deg2rad(45));
-        drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
-        drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
+$poly1->move(150,0);
+$poly2->move(160,50);
+$poly2->rotate(400,130,deg2rad(45));
+drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
+drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
 //
 // Display the results of isPolyInside, isPolyOutside & isPolyIntersect methods
 //
-        if ($poly1->isPolyInside($poly2))
-            imagestring ($im, 1, 310, 130, "isPolyInside   =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 310, 130, "isPolyInside   =F", $colors["red"]);
-        if ($poly1->isPolyOutside($poly2))
-            imagestring ($im, 1, 310, 140, "isPolyOutside  =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 310, 140, "isPolyOutside  =F", $colors["red"]);
-        if ($poly1->isPolyIntersect($poly2))
-            imagestring ($im, 1, 310, 150, "isPolyIntersect=T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 310, 150, "isPolyIntersect=F", $colors["red"]);
+if ($poly1->completelyContains($poly2))
+    imagestring ($im, 1, 310, 130, "isPolyInside   =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 310, 130, "isPolyInside   =F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 310, 140, "isPolyOutside  =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 310, 140, "isPolyOutside  =F", $colors["red"]);
+if ($poly1->isPolyIntersect($poly2))
+    imagestring ($im, 1, 310, 150, "isPolyIntersect=T", $colors["grn"]);
+else
+    imagestring ($im, 1, 310, 150, "isPolyIntersect=F", $colors["red"]);
 //
 // Now move the 2 polygons and repeat
 //
-        $poly1->move(150,0);
-        $poly2->move(165,0);
-        drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
-        drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
+$poly1->move(150,0);
+$poly2->move(165,0);
+drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
+drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
 //
 // Display the results of isPolyInside, isPolyOutside & isPolyIntersect methods
 //
-        if ($poly1->isPolyInside($poly2))
-            imagestring ($im, 1, 460, 130, "isPolyInside   =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 460, 130, "isPolyInside   =F", $colors["red"]);
-        if ($poly1->isPolyOutside($poly2))
-            imagestring ($im, 1, 460, 140, "isPolyOutside  =T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 460, 140, "isPolyOutside  =F", $colors["red"]);
-        if ($poly1->isPolyIntersect($poly2))
-            imagestring ($im, 1, 460, 150, "isPolyIntersect=T", $colors["grn"]);
-        else
-            imagestring ($im, 1, 460, 150, "isPolyIntersect=F", $colors["red"]);
+if ($poly1->completelyContains($poly2))
+    imagestring ($im, 1, 460, 130, "isPolyInside   =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 460, 130, "isPolyInside   =F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 460, 140, "isPolyOutside  =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 460, 140, "isPolyOutside  =F", $colors["red"]);
+if ($poly1->isPolyIntersect($poly2))
+    imagestring ($im, 1, 460, 150, "isPolyIntersect=T", $colors["grn"]);
+else
+    imagestring ($im, 1, 460, 150, "isPolyIntersect=F", $colors["red"]);
 
-        imageGif($im,"poly_ex6.gif");
+imageGif($im,"poly_ex6.gif");
 
 //------------------------------------------------------------------------------
 // This example shows how the isPolySelfIntersect method works
@@ -415,276 +415,301 @@ $polyB = new polygon();        // Create a new polygon and add some vertices to 
 // segment intersects with the first segment - in this case the last segment has
 // to be an arc.
 //
-        newImage (600,110, $im, $colors);               // Create a new image to draw our polygons
+newImage (600,110, $im, $colors);               // Create a new image to draw our polygons
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,20,0,40,1);
-        $polyA->addv(0,60);
-        $polyA->addv(0,80);
-        $polyA->addv(45,80);
-        $polyA->addv(45,60,45,40,1);
-        $polyA->addv(45,20);
-        $polyA->addv(45,0);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,20,0,40,1);
+$polyA->addv(0,60);
+$polyA->addv(0,80);
+$polyA->addv(45,80);
+$polyA->addv(45,60,45,40,1);
+$polyA->addv(45,20);
+$polyA->addv(45,0);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(0, 20, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(0, 20, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(0, 20, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(0, 20, $im, $polyA, $colors, "red");
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,20,0,40,1);
-        $polyA->addv(0,60);
-        $polyA->addv(0,80);
-        $polyA->addv(35,80);
-        $polyA->addv(35,60,35,40,1);
-        $polyA->addv(35,20);
-        $polyA->addv(35,0);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,20,0,40,1);
+$polyA->addv(0,60);
+$polyA->addv(0,80);
+$polyA->addv(35,80);
+$polyA->addv(35,60,35,40,1);
+$polyA->addv(35,20);
+$polyA->addv(35,0);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(75, 20, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(75, 20, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(75, 20, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(75, 20, $im, $polyA, $colors, "red");
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,20,0,40,1);
-        $polyA->addv(0,60);
-        $polyA->addv(0,80);
-        $polyA->addv(25,80);
-        $polyA->addv(25,0);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,20,0,40,1);
+$polyA->addv(0,60);
+$polyA->addv(0,80);
+$polyA->addv(25,80);
+$polyA->addv(25,0);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(150, 20, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(150, 20, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(150, 20, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(150, 20, $im, $polyA, $colors, "red");
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,20,0,40,1);
-        $polyA->addv(0,60);
-        $polyA->addv(0,80);
-        $polyA->addv(10,80);
-        $polyA->addv(25,0);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,20,0,40,1);
+$polyA->addv(0,60);
+$polyA->addv(0,80);
+$polyA->addv(10,80);
+$polyA->addv(25,0);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(225, 20, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(225, 20, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(225, 20, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(225, 20, $im, $polyA, $colors, "red");
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,80);
-        $polyA->addv(40,0);
-        $polyA->addv(40,80);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,80);
+$polyA->addv(40,0);
+$polyA->addv(40,80);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(300, 20, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(300, 20, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(300, 20, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(300, 20, $im, $polyA, $colors, "red");
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0,0,20,1);
-        $polyA->addv(0,40,20,40,1);
-        $polyA->addv(40,40,40,20,1);
-        $polyA->addv(40,0,20,0,1);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0,0,20,1);
+$polyA->addv(0,40,20,40,1);
+$polyA->addv(40,40,40,20,1);
+$polyA->addv(40,0,20,0,1);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(375, 20, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(375, 20, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(375, 20, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(375, 20, $im, $polyA, $colors, "red");
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0,0,20,-1);
-        $polyA->addv(0,40,20,40,-1);
-        $polyA->addv(40,40,40,20,-1);
-        $polyA->addv(40,0,20,0,-1);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0,0,20,-1);
+$polyA->addv(0,40,20,40,-1);
+$polyA->addv(40,40,40,20,-1);
+$polyA->addv(40,0,20,0,-1);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(440, 40, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(440, 40, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(440, 40, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(440, 40, $im, $polyA, $colors, "red");
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,80);
-        $polyA->addv(40,80);
-        $polyA->addv(40,0);
-        $polyA->addv(10,0,0,20,1);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,80);
+$polyA->addv(40,80);
+$polyA->addv(40,0);
+$polyA->addv(10,0,0,20,1);
 
-        if ($polyA->isPolySelfIntersect())
-            drawPolyAt(525, 20, $im, $polyA, $colors, "grn");
-        else
-            drawPolyAt(525, 20, $im, $polyA, $colors, "red");
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(525, 20, $im, $polyA, $colors, "grn");
+else
+    drawPolyAt(525, 20, $im, $polyA, $colors, "red");
 
-        imagestring ($im, 1, 100, 95, "isPolySelfIntersect = F", $colors["red"]);
-        imagestring ($im, 1, 300, 95, "isPolySelfIntersect = T", $colors["grn"]);
-        imageGif($im,"poly_ex7.gif");
+imagestring ($im, 1, 100, 95, "isPolySelfIntersect = F", $colors["red"]);
+imagestring ($im, 1, 300, 95, "isPolySelfIntersect = T", $colors["grn"]);
+imageGif($im,"poly_ex7.gif");
 
 //------------------------------------------------------------------------------
 // This example shows how the scale & translate methods work
 //
-        newImage (400,150, $im, $colors);     // Create a new image to draw our polygons
+newImage (400,150, $im, $colors);     // Create a new image to draw our polygons
 
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,50);
-        $polyA->addv(50,100);
-        $polyA->addv(65,65);
-        $polyA->addv(100,50);
-        $polyA->addv(50,0);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,50);
+$polyA->addv(50,100);
+$polyA->addv(65,65);
+$polyA->addv(100,50);
+$polyA->addv(50,0);
 
-        drawPolyAt(0, 20, $im, $polyA, $colors, "red");
-		$polyA->scale(1.2,1.2);			// Increase size by 20%
-        drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
+drawPolyAt(0, 20, $im, $polyA, $colors, "red");
+$polyA->scale(1.2,1.2);			// Increase size by 20%
+drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
 
-		$polyA->translate(150,0,250,50);
-        drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
+$polyA->translate(150,0,250,50);
+drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
 
-		$polyA->translate(300,50,350,100);
-        drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
+$polyA->translate(300,50,350,100);
+drawPolyAt(0, 20, $im, $polyA, $colors, "blu");
 
-        imageGif($im,"poly_ex8.gif");
+imageGif($im,"poly_ex8.gif");
 
 //------------------------------------------------------------------------------
 // This example checks the degenerate case when the vertex of one polygon lies
 // exactly one the edge of the other polygon.
 //
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,80);
-        $polyA->addv(80,80);
-        $polyA->addv(80,0);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,80);
+$polyA->addv(80,80);
+$polyA->addv(80,0);
 
-        $polyB = new polygon;          // Create a second polygon with some more points
-        $polyB->addv(40,80);
-        $polyB->addv(80,40,80,80,1);
-        $polyB->addv(120,80);
-        $polyB->addv(80,80);
-        $polyB->addv(80,120);
+$polyB = new polygon;          // Create a second polygon with some more points
+$polyB->addv(40,80);
+$polyB->addv(80,40,80,80,1);
+$polyB->addv(120,80);
+$polyB->addv(80,80);
+$polyB->addv(80,120);
 //
 // THIS IS THE IMPORTANT BIT
 //
-        $poly3 =& $polyA->boolean($polyB, "A&B");// A&B .. A AND B .. (A intersection B)
-        $poly4 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
-        $poly5 =& $polyA->boolean($polyB, "A\B");
-        $poly6 =& $polyA->boolean($polyB, "B\A");
+$poly3 =& $polyA->boolean($polyB, "A&B");// A&B .. A AND B .. (A intersection B)
+$poly4 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
+$poly5 =& $polyA->boolean($polyB, "A\B");
+$poly6 =& $polyA->boolean($polyB, "B\A");
 //
 // Output the results
 //
-        newImage (600,150, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(0, 20, $im, $polyA, $colors, "red");
-        drawPolyAt(0, 20, $im, $polyB, $colors, "grn");
-        drawPolyAt(120, 20, $im, $poly3, $colors, "blu");
-        drawPolyAt(240, 20, $im, $poly4, $colors, "blu");
-        drawPolyAt(360, 20, $im, $poly5, $colors,"blu");
-        drawPolyAt(480, 20, $im, $poly6, $colors, "blu");
-        imagestring ($im, 1, 35, 140, "A", $colors["red"]);
-        imagestring ($im, 1, 45, 140, "B", $colors["grn"]);
-        imagestring ($im, 1, 155, 140, "A&B", $colors["blu"]);
-        imagestring ($im, 1, 275, 140, "A|B", $colors["blu"]);
-        imagestring ($im, 1, 395, 140, "A\B", $colors["blu"]);
-        imagestring ($im, 1, 515, 140, "B\A", $colors["blu"]);
-        imageGif($im,"poly_ex9.gif");
+newImage (600,150, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 20, $im, $polyA, $colors, "red");
+drawPolyAt(0, 20, $im, $polyB, $colors, "grn");
+drawPolyAt(120, 20, $im, $poly3, $colors, "blu");
+drawPolyAt(240, 20, $im, $poly4, $colors, "blu");
+drawPolyAt(360, 20, $im, $poly5, $colors,"blu");
+drawPolyAt(480, 20, $im, $poly6, $colors, "blu");
+imagestring ($im, 1, 35, 140, "A", $colors["red"]);
+imagestring ($im, 1, 45, 140, "B", $colors["grn"]);
+imagestring ($im, 1, 155, 140, "A&B", $colors["blu"]);
+imagestring ($im, 1, 275, 140, "A|B", $colors["blu"]);
+imagestring ($im, 1, 395, 140, "A\B", $colors["blu"]);
+imagestring ($im, 1, 515, 140, "B\A", $colors["blu"]);
+imageGif($im,"poly_ex9.gif");
 
 //------------------------------------------------------------------------------
 // A second example that checks the degenerate case when the vertex of one
 // polygon lies exactly one the edge of the other polygon. This is the diamond
 // inside a square from the Kim Kim paper
 //
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(0,0);
-        $polyA->addv(0,80);
-        $polyA->addv(80,80);
-        $polyA->addv(80,0);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,80);
+$polyA->addv(80,80);
+$polyA->addv(80,0);
 
-        $polyB = new polygon;          // Create a second polygon with some more points
-        $polyB->addv(0,40);
-        $polyB->addv(40,80);
-        $polyB->addv(80,40);
-        $polyB->addv(40,0);
+$polyB = new polygon;          // Create a second polygon with some more points
+$polyB->addv(0,40);
+$polyB->addv(40,80);
+$polyB->addv(80,40);
+$polyB->addv(40,0);
 //
 // THIS IS THE IMPORTANT BIT
 //
-        $poly3 =& $polyA->boolean($polyB, "A&B");// A&B .. A AND B .. (A intersection B)
-        $poly4 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
-        $poly5 =& $polyA->boolean($polyB, "A\B");
-        $poly6 =& $polyA->boolean($polyB, "B\A");
+$poly3 =& $polyA->boolean($polyB, "A&B");// A&B .. A AND B .. (A intersection B)
+$poly4 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
+$poly5 =& $polyA->boolean($polyB, "A\B");
+$poly6 =& $polyA->boolean($polyB, "B\A");
 //
 // Output the results
 //
-        newImage (600,120, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(1, 20, $im, $polyA, $colors, "red");
-        drawPolyAt(1, 20, $im, $polyB, $colors, "grn");
-        drawPolyAt(120, 20, $im, $poly3, $colors, "blu");
-        drawPolyAt(240, 20, $im, $poly4, $colors, "blu");
-        drawPolyAt(360, 20, $im, $poly5, $colors,"blu");
-        drawPolyAt(480, 20, $im, $poly6, $colors, "blu");
-        imagestring ($im, 1, 35, 110, "A", $colors["red"]);
-        imagestring ($im, 1, 45, 110, "B", $colors["grn"]);
-        imagestring ($im, 1, 155, 110, "A&B", $colors["blu"]);
-        imagestring ($im, 1, 275, 110, "A|B", $colors["blu"]);
-        imagestring ($im, 1, 395, 110, "A\B", $colors["blu"]);
-        imagestring ($im, 1, 515, 110, "B\A", $colors["blu"]);
-        imageGif($im,"poly_ex10.gif");
+newImage (600,120, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(1, 20, $im, $polyA, $colors, "red");
+drawPolyAt(1, 20, $im, $polyB, $colors, "grn");
+drawPolyAt(120, 20, $im, $poly3, $colors, "blu");
+drawPolyAt(240, 20, $im, $poly4, $colors, "blu");
+drawPolyAt(360, 20, $im, $poly5, $colors,"blu");
+drawPolyAt(480, 20, $im, $poly6, $colors, "blu");
+imagestring ($im, 1, 35, 110, "A", $colors["red"]);
+imagestring ($im, 1, 45, 110, "B", $colors["grn"]);
+imagestring ($im, 1, 155, 110, "A&B", $colors["blu"]);
+imagestring ($im, 1, 275, 110, "A|B", $colors["blu"]);
+imagestring ($im, 1, 395, 110, "A\B", $colors["blu"]);
+imagestring ($im, 1, 515, 110, "B\A", $colors["blu"]);
+imageGif($im,"poly_ex10.gif");
 
 //------------------------------------------------------------------------------
 // A third degenerate vertex example re-creates the example in Figure 15 of the
 // pre-published Kim Kim paper
 //
-        $polyA = new polygon();        // Create a new polygon and add some vertices to it
-        $polyA->addv(  0, 26);
-        $polyA->addv(  0, 74);
-        $polyA->addv( 84,116); // int
-        $polyA->addv( 84, 26);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(  0, 26);
+$polyA->addv(  0, 74);
+$polyA->addv( 84,116); // int
+$polyA->addv( 84, 26);
 
-        $polyB = new polygon;          // Create a second polygon with some more points
-        $polyB->addv( 26,116);
-        $polyB->addv( 84,116); // int
-        $polyB->addv(124, 54);
-        $polyB->addv( 68, 54);
-        $polyB->addv( 68,  0);
-        $polyB->addv( 50, 26); // int
-        $polyB->addv( 26, 26); // int
-        $polyB->addv( 26, 42);
-        $polyB->addv(  0, 52); // int
-        $polyB->addv( 26, 64);
-        $polyB->addv( 26, 87); // int
-        $polyB->addv( 58,103); // int
+$polyB = new polygon;          // Create a second polygon with some more points
+$polyB->addv( 26,116);
+$polyB->addv( 84,116); // int
+$polyB->addv(124, 54);
+$polyB->addv( 68, 54);
+$polyB->addv( 68,  0);
+$polyB->addv( 50, 26); // int
+$polyB->addv( 26, 26); // int
+$polyB->addv( 26, 42);
+$polyB->addv(  0, 52); // int
+$polyB->addv( 26, 64);
+$polyB->addv( 26, 87); // int
+$polyB->addv( 58,103); // int
 
 //
 // THIS IS THE IMPORTANT BIT
 //
 
-        $poly1 =& $polyA->boolean($polyB, "A&B");// A|B  .. A OR B .. (A union B)
-        $poly2 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
-        $poly3 =& $polyA->boolean($polyB, "A\B");
-        $poly4 =& $polyA->boolean($polyB, "B\A");
+$poly1 =& $polyA->boolean($polyB, "A&B");// A|B  .. A OR B .. (A union B)
+$poly2 =& $polyA->boolean($polyB, "A|B");// A|B  .. A OR B .. (A union B)
+$poly3 =& $polyA->boolean($polyB, "A\B");
+$poly4 =& $polyA->boolean($polyB, "B\A");
 //      $polyA->print_poly();
 //		$polyB->print_poly();
 //		$poly1->print_poly();
 //
 // Output the results
 //
-        newImage (750,150, $im, $colors);               // Create a new image to draw our polygons
-        drawPolyAt(1, 20, $im, $polyA, $colors, "red");
-        drawPolyAt(1, 20, $im, $polyB, $colors, "grn");
-        drawPolyAt(151, 20, $im, $poly1, $colors, "blu");
-        drawPolyAt(301, 20, $im, $poly2, $colors, "blu");
-        drawPolyAt(451, 20, $im, $poly3, $colors,"blu");
-        drawPolyAt(601, 20, $im, $poly4, $colors, "blu");
-        imagestring ($im, 1, 60, 140, "A", $colors["red"]);
-        imagestring ($im, 1, 70, 140, "B", $colors["grn"]);
-        imagestring ($im, 1, 215, 140, "A&B", $colors["blu"]);
-        imagestring ($im, 1, 365, 140, "A|B", $colors["blu"]);
-        imagestring ($im, 1, 515, 140, "A\B", $colors["blu"]);
-        imagestring ($im, 1, 665, 140, "B\A", $colors["blu"]);
-        imageGif($im,"poly_ex11.gif");   // Save the image to a file
+newImage (750,150, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(1, 20, $im, $polyA, $colors, "red");
+drawPolyAt(1, 20, $im, $polyB, $colors, "grn");
+drawPolyAt(151, 20, $im, $poly1, $colors, "blu");
+drawPolyAt(301, 20, $im, $poly2, $colors, "blu");
+drawPolyAt(451, 20, $im, $poly3, $colors,"blu");
+drawPolyAt(601, 20, $im, $poly4, $colors, "blu");
+imagestring ($im, 1, 60, 140, "A", $colors["red"]);
+imagestring ($im, 1, 70, 140, "B", $colors["grn"]);
+imagestring ($im, 1, 215, 140, "A&B", $colors["blu"]);
+imagestring ($im, 1, 365, 140, "A|B", $colors["blu"]);
+imagestring ($im, 1, 515, 140, "A\B", $colors["blu"]);
+imagestring ($im, 1, 665, 140, "B\A", $colors["blu"]);
+imageGif($im,"poly_ex11.gif");   // Save the image to a file
 
 
 //------------------------------------------------------------------------------
 // This example checks the isPolySelfIntersect method
 //
+
+//------------------------------------------------------------------------------
+// This example checks the new vertexIntsLine method
+//
+$h1 = new Vertex(0, 15);
+$h2 = new Vertex(31, 15);
+$v1 = new Vertex(15, 0);
+$v2 = new Vertex(15, 31);
+$v1 = new Vertex(0, 0);
+$v2 = new Vertex(31, 31);
+newImage(32, 32, $img, $col);
+for ($x = 0; $x < 32; $x++) {
+    for ($y = 0; $y < 32; $y++) {
+        $p5 = new Vertex($x, $y);
+        $rVertical = Polygon::vertexIntsLine($p5, $v1, $v2); // |
+        $rHorizontal = Polygon::vertexIntsLine($p5, $h1, $h2); // -
+        if ($rVertical && $rHorizontal) {
+            $r = imagesetpixel($img, $x, $y, $col['red']);
+        } else if ($rVertical || $rHorizontal) {
+            $r = imagesetpixel($img, $x, $y, $col['blu']);
+        }
+    }
+}
+$r = imageGif($img,"poly_exi.gif");
+
 
 //
 // Some links to display the created images
@@ -700,4 +725,5 @@ echo '<p><div align="center"><strong>EXAMPLE 8 - Scale and Translate Methods</st
 echo '<p><div align="center"><strong>EXAMPLE 9 - Degenerate Vertices</strong><br><img src="poly_ex9.gif" width="600" height="150"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 10 - Degenerate Vertices</strong><br><img src="poly_ex10.gif" width="600" height="120"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 11 - Degenerate Vertices</strong><br><img src="poly_ex11.gif" width="750" height="150"><br></div></p>';
+echo '<p><div align="center"><strong>EXAMPLE 12 - new pixel intersections</strong><br><img src="poly_exi.gif" width="128" height="128" style="image-rendering: pixelated"><br></div></p>';
 ?>

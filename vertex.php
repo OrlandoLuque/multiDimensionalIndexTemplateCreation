@@ -262,4 +262,19 @@ class Vertex
             print(" Unchecked");
         print("<br>");
     }
+
+    function intersectVertex($v) {
+        return ($this->x == $v->x && $this->y == $v->y);
+    }
+
+    function isVerticalVertex() {
+        /** @var Vertex $p */
+        /** @var Vertex $n */
+        /** @var Vertex $t */
+        $p = $this->prevV;
+        $n = $this->nextV;
+        $t = $this;
+        return ($p->y > $t->y && $t->y > $n->y
+            || $p-> y < $t->y && $t->y < $n->y);
+    }
 } //end of class vertex

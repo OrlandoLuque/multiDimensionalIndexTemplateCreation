@@ -4,7 +4,7 @@ $num1 = 0; // (string) 0 => '0'
 $num2 = -0.000005; // (string) -0.000005 => '-5.05E-6'
 //echo bcadd($num1, $num2, 6); // => '0.000000'
 
-setlocale(LC_NUMERIC, 'de_DE'); // uses a decimal comma
+//setlocale(LC_NUMERIC, 'de_DE'); // uses a decimal comma
 $num2 = 1.2; // (string) 1.2 => '1,2'
 //echo bcsub($num1, $num2, 1); // => '0.0'
 //echo '\n/n ------- ' . bcdiv(1, 3, 100);
@@ -83,14 +83,38 @@ function getScalatedPolygonCopy($polygon, $xScale, $yScale) {
     return $r;
 }
 
-$v1 = new Vertex(-1, 0);
-$v2 = new Vertex(1, 0);
-$v3 = new Vertex(0, -1);
-$v4 = new Vertex(0, 1);
-$v5 = new Vertex(0, 0);
-$r = Polygon::vertexIntsLine($v5, $v3, $v4); // |
-$r = Polygon::vertexIntsLine($v5, $v1, $v2); // -
-$r = Polygon::ints($v5, $v5, $v3, $v4, $n, $ix, $iy, $alphaP, $alphaQ);
+$h1 = new Vertex(-1, 0);
+$h2 = new Vertex(1, 0);
+$v1 = new Vertex(0, -1);
+$v2 = new Vertex(0, 1);
+$p5 = new Vertex(0, 0);
+$rVertical = Polygon::vertexIntsLine($p5, $v1, $v2); // |
+$rHorizontal = Polygon::vertexIntsLine($p5, $h1, $h2); // -
+$r = Polygon::ints($p5, $p5, $v1, $v2, $n, $ix, $iy, $alphaP, $alphaQ);
+
+$h1 = new Vertex(0, 15);
+$h2 = new Vertex(31, 15);
+$v1 = new Vertex(15, 0);
+$v2 = new Vertex(15, 31);
+$v1 = new Vertex(0, 0);
+$v2 = new Vertex(31, 31);
+newImage(32, 32, $img, $col);
+for ($x = 0; $x < 32; $x++) {
+    for ($y = 0; $y < 32; $y++) {
+        $p5 = new Vertex($x, $y);
+        $rVertical = Polygon::vertexIntsLine($p5, $v1, $v2); // |
+        $rHorizontal = Polygon::vertexIntsLine($p5, $h1, $h2); // -
+        if ($rVertical && $rHorizontal) {
+            $r = imagesetpixel($img, $x, $y, $col['red']);
+        } else if ($rVertical || $rHorizontal) {
+            $r = imagesetpixel($img, $x, $y, $col['blu']);
+        }
+    }
+}
+//$r = imageGif($img,"poly_exi.gif");
+//echo '<p><div align="center"><strong>EXAMPLE 1 - intersections</strong><br><img src="poly_exi.gif" width="600" height="200"><br></div></p>';
+//die();
+
 
 $polyA = new polygon();        // Create a new polygon and add some vertices to it
 $polyA->addv( 0,0);
@@ -104,8 +128,8 @@ $polyB->addv( 0,2);
 $polyB->addv(2,2);
 $polyB->addv( 2, 0);
 
-$r = $polyA->isPolyInside($polyB);
-
+$r = $polyB->completelyContains($polyA);
+die();
 define("OUT", 0);
 define("IN", 2);
 define("MAYBE", 1);
@@ -157,9 +181,9 @@ function getTemplateGrid($grid, $poly) {
         $r[$ix] = [];
         /** @var polygon $cell */
         foreach($row as $iy => $cell) {
-            if ($cell->isPolyInside($poly)) {
+            if ($cell->completelyContains($poly)) {
                 $intersectResult = IN;
-            } else if ($poly->isPolyInside($cell)
+            } else if ($poly->completelyContains($cell)
                 || $poly->isPolyIntersect($cell)) {
                 $intersectResult = MAYBE;
             } else {

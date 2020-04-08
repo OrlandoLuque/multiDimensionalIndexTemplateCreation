@@ -450,7 +450,7 @@ class Polygon {
      * * and their associated alpha values.
      */
 
-    static function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ) {
+    function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ) {
 
         $found = FALSE;
         $n = 0; // No intersections found yet
@@ -470,8 +470,16 @@ class Polygon {
             $y3 = $q1->Y();
             $x4 = $q2->X();
             $y4 = $q2->Y();
+            ////////
+            if ($x1 == $x3 && $y1 == $y3
+                || $x2 == $x3 && $y2 == $y3
+                || $x1 == $x4 && $y1 == $y4
+                || $x2 == $x4 && $y2 == $y4) {
+                return true;
+            }
+            ////////
             $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
-            if ($d != 0) { // The lines intersect at a point somewhere
+            if ($d >= 0) { // The lines intersect at a point somewhere
                 $ua = (($x4 - $x3) * ($y1 - $y3) - ($y4 - $y3) * ($x1 - $x3)) / $d;
                 $ub = (($x2 - $x1) * ($y1 - $y3) - ($y2 - $y1) * ($x1 - $x3)) / $d;
                 // The values of $ua and $ub tell us where the intersection occurred.
@@ -695,7 +703,7 @@ class Polygon {
 
         $slope = ($y2 - $y1) / ($x2 - $x1);
 
-        $y = $slope * ($xv - $x1) - $y1;
+        $y = $slope * ($xv - $x1) + $y1;
         return ($y == $yv);
     }
 
@@ -717,13 +725,37 @@ class Polygon {
         $point_at_infinity = new Vertex(-10000000, $v->Y()); // Create point at infinity
         $q = $this->first; // End vertex of a line segment in polygon
         do {
+            $r = $q->nextV;
+            //if it intersects with an edge, it is inside
+            if ($this->ints($v, $v, $q, $r
+                , $n, $x, $y, $aP, $aQ)) {
+                return true;
+            }
+            if($this->ints($point_at_infinity, $v, $q, $r
+                , $n, $x, $y, $aP, $aQ)) {
+                //if it intercepts, then there are some cases...
+                $qIntercepts = $this->ints($point_at_infinity, $v, $q, $q
+                    , $n, $x, $y, $aP, $aQ);
+                $rIntercepts = $this->ints($point_at_infinity, $v, $r, $r
+                    , $n, $x, $y, $aP, $aQ);
+                //If no polygon's vertex interceps with our line, then it is a +1.
+                //If one or two of them intercepts, we check only $q to see if it is a +1 or not.
+                //There is not need to check $r as it will be checked in the next iteration
+                //(or was done already if it was the first one)
+                if (!$qIntercepts && !$rIntercepts
+                    || $qIntercepts && $q->isVerticalVertex()) {
+                    $winding_number++;
+                }
+            }
+        } while ($q->id() != $this->first->id());
+        /*do {
             if (!$q->isIntersect()) {
                 if ($this->ints($point_at_infinity, $v, $q, $this->nxt($q->Next()), $n, $x, $y, $aP, $aQ)) {
                     $winding_number += $n;
                 } // Add number of intersections found
             }
             $q = $q->Next();
-        } while ($q->id() != $this->first->id());
+        } while ($q->id() != $this->first->id());*/
         $point_at_infinity = NULL; // Free the memory for neatness
         if ($winding_number % 2 == 0) // Check even or odd
         {
@@ -986,7 +1018,7 @@ class Polygon {
      * * must be completely enclosed by this polygon.
      */
 
-    function isPolyInside(&$p) {
+    function completelyContains(&$p) {
         $inside = TRUE;
         $c = $p->getFirst(); // Get the first vertex in polygon $p
         do {
