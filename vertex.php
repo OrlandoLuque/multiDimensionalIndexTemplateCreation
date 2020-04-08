@@ -284,4 +284,12 @@ class Vertex
     function lineToString($v) {
         return "[{$this->x}, {$this->y} -> {$v->x}, {$v->y}]";
     }
+
+    /**
+     * @param Vertex $v
+     * @return bool
+     */
+    function equals($v) {
+        return $this->x == $v->x && $this->y == $v->y;
+    }
 } //end of class vertex
