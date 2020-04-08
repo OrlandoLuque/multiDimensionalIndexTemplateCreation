@@ -128,7 +128,63 @@ $polyB->addv( 0,2);
 $polyB->addv(2,2);
 $polyB->addv( 2, 0);
 
-$r = $polyB->completelyContains($polyA);
+//$r = $polyB->completelyContains($polyA);
+
+$polyA = new polygon();
+$polyA->addv( 16,131);
+$polyA->addv( 71,166);
+$polyA->addv(105,138);
+$polyA->addv( 25, 63);
+$polyA->addv(118, 75);
+
+$polyA = new polygon();
+$polyA->addv( 3,11);
+$polyA->addv( 9,15);
+$polyA->addv(12,12);
+$polyA->addv( 6, 3);
+$polyA->addv(15, 5);
+
+newImage($polyA->x_max + 1,$polyA->y_max + 1, $img, $col);
+directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
+//$r = imageGif($img,"poly_ex4insidePolygon.gif");
+//echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
+//die();
+
+$toCheck = [/*[2, 2], [15, 3], [6, 3], [15, 3]*/[5, 11]];
+foreach ($toCheck as $coords) {
+    $v = new Vertex($coords[0], $coords[1]);
+    $rv = $polyA->isInside($v);
+    if ($rv){
+        $r = imagesetpixel($img, $coords[0], $coords[1], $col['grn']);
+    } else {
+        $r = imagesetpixel($img, $coords[0], $coords[1], $col['red']);
+    }
+}
+$r = imageGif($img,"poly_ex4insidePolygon.gif");
+echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
+//die();
+
+newImage ($polyA->x_max + 1,$polyA->y_max + 1, $im, $colors);               // Create a new image to draw our polygons
+directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
+$r = imageGif($im,"poly_ex2polygon.gif");
+echo '<p><div align="center"><strong>EXAMPLE 2 - poligon used on example 3</strong><br><img src="poly_ex2polygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
+
+newImage($polyA->x_max + 1,$polyA->y_max + 1, $img, $col);
+directDrawPolyAt(0, 0, $img, $polyA, $colors, "red");
+for ($x = 0; $x < $polyA->x_max + 1; $x++) {
+    for ($y = 0; $y < $polyA->y_max + 1; $y++) {
+        $p5 = new Vertex($x, $y);
+        if ($polyA->isInside($p5)) {
+            $r = imagesetpixel($img, $x, $y, $col['grn']);
+        } else {
+            //$r = imagesetpixel($img, $x, $y, $col['red']);
+        }
+    }
+}
+$r = imageGif($img,"poly_ex_vertex_inside.gif");
+echo '<p><div align="center"><strong>EXAMPLE 3 - vertex is inside</strong><br><img src="poly_ex_vertex_inside.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
+die();
+
 die();
 define("OUT", 0);
 define("IN", 2);

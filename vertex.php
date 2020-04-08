@@ -277,4 +277,11 @@ class Vertex
         return ($p->y > $t->y && $t->y > $n->y
             || $p-> y < $t->y && $t->y < $n->y);
     }
+
+    function toString() {
+        return "[{$this->x}, {$this->y}]";
+    }
+    function lineToString($v) {
+        return "[{$this->x}, {$this->y} -> {$v->x}, {$v->y}]";
+    }
 } //end of class vertex

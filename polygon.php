@@ -477,9 +477,19 @@ class Polygon {
                 || $x2 == $x4 && $y2 == $y4) {
                 return true;
             }
-            ////////
+            //////// vertexIntsLine
+            /*
+                $slope = ($y2 - $y1) / ($x2 - $x1);
+
+                $y = $slope * ($xv - $x1) + $y1;
+                return ($y == $yv);
+             */
             $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
-            if ($d >= 0) { // The lines intersect at a point somewhere
+            if ($d == 0) {
+                if ($y4 == $y3 && $y2 == $y1 && $y1 == $y3) {
+
+                }
+            } else { //$d != 0) { // The lines intersect at a point somewhere
                 $ua = (($x4 - $x3) * ($y1 - $y3) - ($y4 - $y3) * ($x1 - $x3)) / $d;
                 $ub = (($x2 - $x1) * ($y1 - $y3) - ($y2 - $y1) * ($x1 - $x3)) / $d;
                 // The values of $ua and $ub tell us where the intersection occurred.
@@ -747,6 +757,7 @@ class Polygon {
                     $winding_number++;
                 }
             }
+            $q = $r;
         } while ($q->id() != $this->first->id());
         /*do {
             if (!$q->isIntersect()) {
