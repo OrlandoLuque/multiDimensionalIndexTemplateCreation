@@ -278,6 +278,10 @@ class Vertex
             || $p-> y < $t->y && $t->y < $n->y);
     }
 
+    function __toString() {
+        return $this->toString();
+    }
+
     function toString() {
         return "[{$this->x}, {$this->y}]";
     }

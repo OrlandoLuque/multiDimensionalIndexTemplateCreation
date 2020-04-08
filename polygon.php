@@ -517,9 +517,9 @@ class Polygon {
                 } else { // The lines do not intersect within the line segments
                     $found = FALSE;
                 }
-            } else { // The lines do not intersect
+            } /*else { // The lines do not intersect
                 $found = FALSE;
-            }
+            }*/
         } // End of find Line/Line intersection
         elseif ($pt != 0 && $qt != 0) // Is  it Arc/Arc?
         {

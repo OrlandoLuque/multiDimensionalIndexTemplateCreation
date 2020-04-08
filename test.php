@@ -282,9 +282,9 @@ class Point {
 }
 
 function IsIntersecting(Point $a, Point $b, Point $c, Point $d): boolean {
-    float denominator = ((b.X - a.X) * (d.Y - c.Y)) - ((b.Y - a.Y) * (d.X - c.X));
-    float numerator1 = ((a.Y - c.Y) * (d.X - c.X)) - ((a.X - c.X) * (d.Y - c.Y));
-    float numerator2 = ((a.Y - c.Y) * (b.X - a.X)) - ((a.X - c.X) * (b.Y - a.Y));
+    float denominator = ((b->X() - a->X()) * (d->Y() - c->Y())) - ((b->Y() - a->Y()) * (d->X() - c->X()));
+    float numerator1 = ((a->Y() - c->Y()) * (d->X() - c->X())) - ((a->X() - c->X()) * (d->Y() - c->Y()));
+    float numerator2 = ((a->Y() - c->Y()) * (b->X() - a->X())) - ((a->X() - c->X()) * (b->Y() - a->Y()));
 
     // Detect coincident lines (has a problem, read below)
     if (denominator == 0) return numerator1 == 0 && numerator2 == 0;
