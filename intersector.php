@@ -1,5 +1,7 @@
 <?php
-//source: https://stackoverflow.com/questions/2255842/detecting-coincident-subset-of-two-coincident-line-segments/2255848#2255848
+//sources:
+//  https://stackoverflow.com/questions/2255842/detecting-coincident-subset-of-two-coincident-line-segments/2255848#2255848
+//https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
 
 // port of this JavaScript code with some changes:
 //   http://www.kevlindev.com/gui/math/intersection/Intersection.js
@@ -198,5 +200,98 @@ class Intersector {
                 return [];
             }
         }
+    }
+
+    public static function lineCircleIntersection(Vertex $l1, Vertex $l2, Vertex $c, float $radius) {
+        // Find the points of intersection.)
+        //float $dx, $dy, $A, $B, $C, $det, $t;
+
+        $dx = $l2->x - $l1->x;
+        $dy = $l2->y - $l1->y;
+
+        $A = $dx * $dx + $dy * $dy;
+        $B = 2 * ($dx * ($l1->x - $c->x) + $dy * ($l1->y - $c->y));
+        $C = ($l1->x - $c->x) * ($l1->x - $c->x) +
+            ($l1->y - $c->y) * ($l1->y - $c->y) -
+            $radius * $radius;
+
+        $det = $B * $B - 4 * $A * $C;
+        if (($A <= 0.0000001) || ($det < 0)) {
+            // No real solutions.
+            return [];
+        } else if ($det == 0) {
+            // One solution.
+            $t = -$B / (2 * $A);
+            $intersection1 =
+                new Vertex($l1->x + $t * $dx, $l1->y + $t * $dy);
+            return [$intersection1];
+        } else {
+            // Two solutions.
+            $t = (float)((-$B + sqrt($det)) / (2 * $A));
+            $intersection1 =
+                new Vertex($l1->x + $t * $dx, $l1->y + $t * $dy);
+            $t = (float)((-$B - sqrt($det)) / (2 * $A));
+            $intersection2 =
+                new Vertex($l1->x + $t * $dx, $l1->y + $t * $dy);
+            return [$intersection1, $intersection2];
+        }
+    }
+    public static function lineArcIntersection(Vertex $l1, Vertex $l2, Vertex $a1, Vertex $a2): array {
+        $xc = $a1->Xc();
+        $yc = $a1->Yc();
+        $xs = $a1->X();
+        $ys = $a1->Y();
+        $type = $a1->d();
+        $circleIntersections = Intersector::lineCircleIntersection($l1, $l2
+            , new Vertex($a1->Xc(), $a1->Yc()), Intersector::dist($xc, $yc, $xs, $ys));
+        $arcAngle1 = Intersector::angle($xc, $yc, $a1->x, $a1->y);
+        $arcAngle2 = Intersector::angle($xc, $yc, $a2->x, $a2->y);
+        $result = [];
+        if ($type == -1) { // clock-wise
+            $t = $arcAngle1;
+            $arcAngle1 = $arcAngle2;
+            $arcAngle2 = $t;
+        }
+        foreach ($circleIntersections as $intersection) {
+            if ($intersection->isInside($l1, $l2)) {
+                $intersectionAngle = Intersector::angle($xc, $yc, $intersection->x, $intersection->y);
+                if ($arcAngle2 >= $arcAngle1) {
+                    if ($arcAngle2 >= $intersectionAngle and $intersectionAngle >= $arcAngle1) {
+                        $result[] = $intersection;
+                    }
+                } else {
+                    if ($intersectionAngle <= $arcAngle2 or $intersectionAngle >= $arcAngle1) {
+                        $result[] = $intersection;
+                    }
+                }
+            }
+        }
+        return $result;
+    }
+
+    /*
+     * * Return the distance between two points
+     */
+    public static function dist($x1, $y1, $x2, $y2) {
+        return sqrt(($x1 - $x2) * ($x1 - $x2) + ($y1 - $y2) * ($y1 - $y2));
+    }
+    /*
+     * * Calculate the angle between 2 points, where Xc,Yc is the center of a circle
+     * * and x,y is a point on its circumference. All angles are relative to
+     * * the 3 O'Clock position. Result returned in radians
+     */
+
+    public static function angle($xc, $yc, $x1, $y1) {
+        $d = Intersector::dist($xc, $yc, $x1, $y1); // calc distance between two points
+        if ($d != 0) {
+            if (asin(($y1 - $yc) / $d) >= 0) {
+                $a1 = acos(($x1 - $xc) / $d);
+            } else {
+                $a1 = 2 * pi() - acos(($x1 - $xc) / $d);
+            }
+        } else {
+            $a1 = 0;
+        }
+        return $a1;
     }
 }

@@ -82,6 +82,54 @@ function getScalatedPolygonCopy($polygon, $xScale, $yScale) {
     $r->scale($xScale, $yScale);
     return $r;
 }
+$width = 200;
+$height = 200;
+newImage($width, $height, $img, $col);
+$r = imageline($img, 0, 0, $width - 1, 0, $col['blk']);
+$r = imageline($img, $width - 1, 0, $width - 1, $height - 1, $col['blk']);
+$r = imageline($img, $width - 1, $height - 1, 0, $height - 1, $col['blk']);
+$r = imageline($img, 0, $height - 1, 0, 0, $col['blk']);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,20,0,40,1); //
+$polyA->addv(0,60);
+$polyA->addv(0,80);
+$polyA->addv(10,80);
+$polyA->addv(25,0); //
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,20,0,40,1);
+$polyA->addv(0,60);
+$polyA->addv(0,80);
+$polyA->addv(45,80);
+$polyA->addv(45,60,45,40,1);
+$polyA->addv(45,20);
+$polyA->addv(45,0);
+/*$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,80);
+$polyA->addv(40,80);
+$polyA->addv(40,0);
+$polyA->addv(10,0,0,20,1);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0,0,20,1);
+$polyA->addv(0,40,20,40,1);
+$polyA->addv(40,40,40,20,1);
+$polyA->addv(40,0,20,0,1);*/
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,80); //-
+$polyA->addv(40,0);
+$polyA->addv(40,80); //-
+
+if ($polyA->isPolySelfIntersect())
+    drawPolyAt(50, 50, $img, $polyA, $col, "grn");
+else
+    drawPolyAt(50, 50, $img, $polyA, $col, "red");
+$r = imageGif($img,"poly_ex_autointersection.gif");
+echo '<p><div align="center"><strong>EXAMPLE 1 - intersections</strong><br><img src="poly_ex_autointersection.gif" xwidth="600" xheight="200"><br></div></p>';
+
+die();
 
 $h1 = new Vertex(-1, 0);
 $h2 = new Vertex(1, 0);
@@ -115,6 +163,56 @@ for ($x = 0; $x < 32; $x++) {
 //echo '<p><div align="center"><strong>EXAMPLE 1 - intersections</strong><br><img src="poly_exi.gif" width="600" height="200"><br></div></p>';
 //die();
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+$a1 = new Vertex( 9,4, 9, 9, -1);
+$a2 = new Vertex(9,14);
+$a1 = new Vertex( 9,4, 9, 9, -1);
+$a2 = new Vertex(4,9);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->add($a1);
+$polyA->add($a2);
+$c = new Vertex(9, 9);
+newImage(20, 20, $img, $col);
+$r = imageline($img, 0, 0, 19, 0, $col['blk']);
+$r = imageline($img, 19, 0, 19, 19, $col['blk']);
+$r = imageline($img, 19, 19, 0, 19, $col['blk']);
+$r = imageline($img, 0, 19, 0, 0, $col['blk']);
+/**
+ * @param int $x
+ * @param int $y
+ * @param Vertex $c
+ * @param Vertex $a1
+ * @param Vertex $a2
+ * @param $img
+ * @param $col
+ */
+function checkingLineArcIntersection(int $x, int $y, Vertex $c, Vertex $a1, Vertex $a2, $img, $col): bool {
+    $target = new Vertex($x, $y);
+    $r = Intersector::lineArcIntersection($c, $target, $a1, $a2);
+    if (count($r) > 0) {
+        //$r = imagesetpixel($img, $x, $y, $col['grn']);
+        $r = imageline($img, $c->x, $c->y, $x, $y, $col['grn']);
+        return true;
+    } else {
+        $r = imageline($img, $c->x, $c->y, $x, $y, $col['red']);
+    }
+    return false;
+}
+
+for ($x = 0; $x < 20; $x++) {
+    $r1 = checkingLineArcIntersection($x, 0, $c, $a1, $a2, $img, $col); //top
+    $r2 = checkingLineArcIntersection($x, 19, $c, $a1, $a2, $img, $col); //bottom
+    $r3 = checkingLineArcIntersection(0, $x, $c, $a1, $a2, $img, $col); //left
+    $r4 = checkingLineArcIntersection(19, $x, $c, $a1, $a2, $img, $col); //right
+    $a = 1;
+}
+directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
+$r = imageGif($img,"poly_exArcInterception.gif");
+echo '<p><div align="center"><strong>EXAMPLE X - arc interception</strong><br><img src="poly_exArcInterception.gif" style="image-rendering: pixelated" width="' . 40 . '" height="' . 40 . '"><br></div></p>';
+die();
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 
 $polyA = new polygon();        // Create a new polygon and add some vertices to it
 $polyA->addv( 0,0);
@@ -129,21 +227,29 @@ $polyB->addv(2,2);
 $polyB->addv( 2, 0);
 
 //$r = $polyB->completelyContains($polyA);
-
+/*
 $polyA = new polygon();
 $polyA->addv( 16,131);
 $polyA->addv( 71,166);
 $polyA->addv(105,138);
 $polyA->addv( 25, 63);
 $polyA->addv(118, 75);
-/*
+*/
+
 $polyA = new polygon();
 $polyA->addv( 3,11);
 $polyA->addv( 9,15);
 $polyA->addv(12,12);
 $polyA->addv( 6, 3);
 $polyA->addv(15, 5);
-*/
+$polyA = new polygon();
+$polyA->addv( 3,11);
+$polyA->addv( 9,15);
+$polyA->addv( 11,15);
+$polyA->addv(12,12);
+$polyA->addv( 6, 3);
+$polyA->addv(15, 5);
+
 $polyA = new polygon();
 $polyA->addv( 0,0);
 $polyA->addv( 0,5, 0, 10, +1);
@@ -152,6 +258,7 @@ $polyA->addv( 0, 20);
 $polyA->addv(20, 20);
 $polyA->addv(20, 5, 20, 0, -1);
 $polyA->addv(15, 0);
+
 /*$polyA = new polygon();        // Create a new polygon and add some vertices to it
 $polyA->addv(0,0);
 $polyA->addv(0,20,0,40,1);

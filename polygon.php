@@ -451,7 +451,7 @@ class Polygon {
      * * and their associated alpha values.
      */
 
-    function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternateMode = false) {
+    function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternateMode = true) {
 
         $found = FALSE;
         $n = 0; // No intersections found yet
@@ -462,7 +462,27 @@ class Polygon {
         {
             if ($alternateMode) {
                 $int = Intersector::intersection($p1, $p2, $q1, $q2);
-                $found = count($int) > 0;
+                $n = count($int);
+                $ix = []; $iy = [];
+                foreach($int as $anInt) {
+                    $ix[] = $anInt->x;
+                    $iy[] = $anInt->y;
+                }
+                $x1 = $p1->X();
+                $y1 = $p1->Y();
+                $x2 = $p2->X();
+                $y2 = $p2->Y();
+                $x3 = $q1->X();
+                $y3 = $q1->Y();
+                $x4 = $q2->X();
+                $y4 = $q2->Y();
+                $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
+                $ua = (($x4 - $x3) * ($y1 - $y3) - ($y4 - $y3) * ($x1 - $x3)) / $d;
+                $ub = (($x2 - $x1) * ($y1 - $y3) - ($y2 - $y1) * ($x1 - $x3)) / $d;
+                $alphaP[0] = $ua;
+                $alphaQ[0] = $ub;
+                return $int;
+                //$found = count($int) > 0;
             } else {
                 /* LINE/LINE
                  * * Algorithm from: http://astronomy.swin.edu.au/~pbourke/geometry/lineline2d/
@@ -568,6 +588,7 @@ class Polygon {
                         $iy[0] = $y2;
                         $n = 1;
                         $found = TRUE;
+                        return [new Vertex($x2, $y2)];
                     }
                 } else // Arcs intersect at two points
                 {
@@ -583,15 +604,20 @@ class Polygon {
                     $alQ[0] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x[0], $y[0], $qt);
                     $alP[1] = $this->aAlpha($p1->X(), $p1->Y(), $p2->X(), $p2->Y(), $x0, $y0, $x[1], $y[1], $pt);
                     $alQ[1] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x[1], $y[1], $qt);
+                    $result = [];
                     for ($i = 0; $i <= 1; $i++) {
                         if (($alP[$i] > 0 && $alP[$i] < 1) && ($alQ[$i] > 0 && $alQ[$i] < 1)) {
                             $ix[$n] = $x[$i];
                             $iy[$n] = $y[$i];
+                            $result[] = new Vertex($x[$i], $y[$i]);
                             $alphaP[$n] = $alP[$i];
                             $alphaQ[$n] = $alQ[$i];
                             $n++;
                             $found = TRUE;
                         }
+                    }
+                    if ($found) {
+                        return $result;
                     }
                 }
             }
@@ -601,100 +627,110 @@ class Polygon {
             /* ARC/LINE
              * * Algorithm from: http://astronomy.swin.edu.au/~pbourke/geometry/sphereline/
              */
-            if ($pt == 0) // Segment p1,p2 is the line
-            { // Segment q1,q2 is the arc
-                $x1 = $p1->X();
-                $y1 = $p1->Y();
-                $x2 = $p2->X();
-                $y2 = $p2->Y();
-                $xc = $q1->Xc();
-                $yc = $q1->Yc();
-                $xs = $q1->X();
-                $ys = $q1->Y();
-                $xe = $q2->X();
-                $ye = $q2->Y();
-                $d = $qt;
-            } else // Segment q1,q2 is the line
-            { // Segment p1,p2 is the arc
-                $x1 = $q1->X();
-                $y1 = $q1->Y();
-                $x2 = $q2->X();
-                $y2 = $q2->Y();
-                $xc = $p1->Xc();
-                $yc = $p1->Yc();
-                $xs = $p1->X();
-                $ys = $p1->Y();
-                $xe = $p2->X();
-                $ye = $p2->Y();
-                $d = $pt;
-            }
-            $r = $this->dist($xc, $yc, $xs, $ys);
-            $a = pow(($x2 - $x1), 2) + pow(($y2 - $y1), 2);
-            $b = 2 * (($x2 - $x1) * ($x1 - $xc)
-                    + ($y2 - $y1) * ($y1 - $yc));
-            $c = pow($xc, 2) + pow($yc, 2) +
-                pow($x1, 2) + pow($y1, 2) -
-                2 * ($xc * $x1 + $yc * $y1) - pow($r, 2);
-            $i = $b * $b - 4 * $a * $c;
-            if ($i < 0.0) // no intersection
-            {
-                $found = FALSE;
-            } elseif ($i == 0.0) // one intersection
-            {
-                if ($a != 0) {
-                    $mu = -$b / (2 * $a);
+            if ($alternateMode) {
+                if ($pt == 0) {
+                    $int = Intersector::lineArcIntersection($p1, $p2, $q1, $q2);
+                } else {
+                    $int = Intersector::lineArcIntersection($q1, $q2, $p1, $p2);
                 }
-                $x = $x1 + $mu * ($x2 - $x1);
-                $y = $y1 + $mu * ($y2 - $y1);
-                $al = $mu; // Line Alpha
-                $aa = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x, $y, $d); // Arc Alpha
-                if (($al > 0 && $al < 1) && ($aa > 0 && $aa < 1)) {
-                    $ix[0] = $x;
-                    $iy[0] = $y;
-                    $n = 1;
-                    $found = TRUE;
-                    if ($pt == 0) {
-                        $alphaP[0] = $al;
-                        $alphaQ[0] = $aa;
-                    } else {
-                        $alphaP[0] = $aa;
-                        $alphaQ[0] = $al;
+                return $int;
+                //$found = count($int) > 0;
+            } else {
+                if ($pt == 0) // Segment p1,p2 is the line
+                { // Segment q1,q2 is the arc
+                    $x1 = $p1->X();
+                    $y1 = $p1->Y();
+                    $x2 = $p2->X();
+                    $y2 = $p2->Y();
+                    $xc = $q1->Xc();
+                    $yc = $q1->Yc();
+                    $xs = $q1->X();
+                    $ys = $q1->Y();
+                    $xe = $q2->X();
+                    $ye = $q2->Y();
+                    $d = $qt;
+                } else {// Segment q1,q2 is the line
+                    // Segment p1,p2 is the arc
+                    $x1 = $q1->X();
+                    $y1 = $q1->Y();
+                    $x2 = $q2->X();
+                    $y2 = $q2->Y();
+                    $xc = $p1->Xc();
+                    $yc = $p1->Yc();
+                    $xs = $p1->X();
+                    $ys = $p1->Y();
+                    $xe = $p2->X();
+                    $ye = $p2->Y();
+                    $d = $pt;
+                }
+                $r = $this->dist($xc, $yc, $xs, $ys);
+                $a = pow(($x2 - $x1), 2) + pow(($y2 - $y1), 2);
+                $b = 2 * (($x2 - $x1) * ($x1 - $xc)
+                        + ($y2 - $y1) * ($y1 - $yc));
+                $c = pow($xc, 2) + pow($yc, 2) +
+                    pow($x1, 2) + pow($y1, 2) -
+                    2 * ($xc * $x1 + $yc * $y1) - pow($r, 2);
+                $i = $b * $b - 4 * $a * $c;
+                if ($i < 0.0) // no intersection
+                {
+                    $found = FALSE;
+                } elseif ($i == 0.0) // one intersection
+                {
+                    if ($a != 0) {
+                        $mu = -$b / (2 * $a);
                     }
-                }
-            } elseif ($i > 0.0) // two intersections
-            {
-                if ($a != 0) {
-                    $mu[0] = (-$b + sqrt(pow($b, 2) - 4 * $a * $c)) / (2 * $a);
-                } // first intersection
-                $x[0] = $x1 + $mu[0] * ($x2 - $x1);
-                $y[0] = $y1 + $mu[0] * ($y2 - $y1);
-                if ($a != 0) {
-                    $mu[1] = (-$b - sqrt(pow($b, 2) - 4 * $a * $c)) / (2 * $a);
-                } // second intersection
-                $x[1] = $x1 + $mu[1] * ($x2 - $x1);
-                $y[1] = $y1 + $mu[1] * ($y2 - $y1);
-                $al[0] = $mu[0];
-                $aa[0] = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x[0], $y[0], $d);
-                $al[1] = $mu[1];
-                $aa[1] = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x[1], $y[1], $d);
-                for ($i = 0; $i <= 1; $i++) {
-                    if (($al[$i] > 0 && $al[$i] < 1) && ($aa[$i] > 0 && $aa[$i] < 1)) {
-                        $ix[$n] = $x[$i];
-                        $iy[$n] = $y[$i];
-                        if ($pt == 0) {
-                            $alphaP[$n] = $al[$i];
-                            $alphaQ[$n] = $aa[$i];
-                        } else {
-                            $alphaP[$n] = $aa[$i];
-                            $alphaQ[$n] = $al[$i];
-                        }
-                        $n++;
+                    $x = $x1 + $mu * ($x2 - $x1);
+                    $y = $y1 + $mu * ($y2 - $y1);
+                    $al = $mu; // Line Alpha
+                    $aa = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x, $y, $d); // Arc Alpha
+                    if (($al > 0 && $al < 1) && ($aa > 0 && $aa < 1)) {
+                        $ix[0] = $x;
+                        $iy[0] = $y;
+                        $n = 1;
                         $found = TRUE;
+                        if ($pt == 0) {
+                            $alphaP[0] = $al;
+                            $alphaQ[0] = $aa;
+                        } else {
+                            $alphaP[0] = $aa;
+                            $alphaQ[0] = $al;
+                        }
+                    }
+                } elseif ($i > 0.0) // two intersections
+                {
+                    if ($a != 0) {
+                        $mu[0] = (-$b + sqrt(pow($b, 2) - 4 * $a * $c)) / (2 * $a);
+                    } // first intersection
+                    $x[0] = $x1 + $mu[0] * ($x2 - $x1);
+                    $y[0] = $y1 + $mu[0] * ($y2 - $y1);
+                    if ($a != 0) {
+                        $mu[1] = (-$b - sqrt(pow($b, 2) - 4 * $a * $c)) / (2 * $a);
+                    } // second intersection
+                    $x[1] = $x1 + $mu[1] * ($x2 - $x1);
+                    $y[1] = $y1 + $mu[1] * ($y2 - $y1);
+                    $al[0] = $mu[0];
+                    $aa[0] = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x[0], $y[0], $d);
+                    $al[1] = $mu[1];
+                    $aa[1] = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x[1], $y[1], $d);
+                    for ($i = 0; $i <= 1; $i++) {
+                        if (($al[$i] > 0 && $al[$i] < 1) && ($aa[$i] > 0 && $aa[$i] < 1)) {
+                            $ix[$n] = $x[$i];
+                            $iy[$n] = $y[$i];
+                            if ($pt == 0) {
+                                $alphaP[$n] = $al[$i];
+                                $alphaQ[$n] = $aa[$i];
+                            } else {
+                                $alphaP[$n] = $aa[$i];
+                                $alphaQ[$n] = $al[$i];
+                            }
+                            $n++;
+                            $found = TRUE;
+                        }
                     }
                 }
             }
         } // End of find Arc/Line intersection
-        return $found;
+        return $found? [true]: [];
     }
 
     function ints2(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternative = false) {
@@ -984,11 +1020,23 @@ class Polygon {
         do {
             $r = $q->nextV;
             //if it intersects with an edge, it is inside
-            if ($this->ints($v, $v, $q, $r
-                , $n, $x, $y, $aP, $aQ, $alternateMode)) {
+            if (count($this->ints($v, $v, $q, $r
+                , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0) {
                 return true;
             }
-            if($this->ints($point_at_infinity, $v, $q, $r
+            $int = $this->ints($point_at_infinity, $v, $q, $r
+                , $n, $x, $y, $aP, $aQ, $alternateMode);
+            if (count($int) == 1) {
+                $qIntercepts = count($this->ints($point_at_infinity, $v, $q, $q
+                    , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
+                $rIntercepts = count($this->ints($point_at_infinity, $v, $r, $r
+                    , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
+                if (!$qIntercepts && !$rIntercepts
+                    || $qIntercepts && $q->isVerticalVertex()) {
+                    $winding_number++;
+                }
+            }
+            /*if($this->ints($point_at_infinity, $v, $q, $r
                 , $n, $x, $y, $aP, $aQ, $alternateMode)) {
                 //if it intercepts, then there are some cases...
                 $qIntercepts = $this->ints($point_at_infinity, $v, $q, $q
@@ -1003,7 +1051,7 @@ class Polygon {
                     || $qIntercepts && $q->isVerticalVertex()) {
                     $winding_number++;
                 }
-            }
+            }*/
             $q = $r;
         } while ($q->id() != $this->first->id());
         /*do {
@@ -1093,10 +1141,16 @@ class Polygon {
             if (!$s->isIntersect()) {
                 do {
                     if (!$c->isIntersect()) {
-                        if ($this->ints($s, $this->nxt($s->Next()), $c, $polyB->nxt($c->Next()), $n, $ix, $iy, $alphaS, $alphaC)) {
+                        $interceptions = $this->ints($s, $this->nxt($s->Next()), $c, $polyB->nxt($c->Next()), $n, $ix, $iy, $alphaS, $alphaC);
+                        //$n = count($interceptions);
+                        if (count($interceptions) > 0) {
                             for ($i = 0; $i < $n; $i++) {
-                                $is = new Vertex($ix[$i], $iy[$i], $s->Xc(), $s->Yc(), $s->d(), NULL, NULL, NULL, TRUE, NULL, $alphaS[$i], FALSE, FALSE);
-                                $ic = new Vertex($ix[$i], $iy[$i], $c->Xc(), $c->Yc(), $c->d(), NULL, NULL, NULL, TRUE, NULL, $alphaC[$i], FALSE, FALSE);
+                            //foreach($interceptions as $interception) {
+                                $interception = $interceptions[$i];
+                                //$is = new Vertex($ix[$i], $iy[$i], $s->Xc(), $s->Yc(), $s->d(), NULL, NULL, NULL, TRUE, NULL, $alphaS[$i], FALSE, FALSE);
+                                //$ic = new Vertex($ix[$i], $iy[$i], $c->Xc(), $c->Yc(), $c->d(), NULL, NULL, NULL, TRUE, NULL, $alphaC[$i], FALSE, FALSE);
+                                $is = new Vertex($interception->x, $interception->y, $s->Xc(), $s->Yc(), $s->d(), NULL, NULL, NULL, TRUE, NULL, $alphaS[$i], FALSE, FALSE);
+                                $ic = new Vertex($interception->x, $interception->y, $c->Xc(), $c->Yc(), $c->d(), NULL, NULL, NULL, TRUE, NULL, $alphaC[$i], FALSE, FALSE);
                                 $is->setNeighbor($ic);
                                 $ic->setNeighbor($is);
                                 $this->insertSort($is, $s, $this->nxt($s->Next()));
@@ -1291,7 +1345,7 @@ class Polygon {
             $s = $this->getFirst(); // Get the first vertex in this polygon
             do {
                 do {
-                    if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) {
+                    if (count($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) > 0) {
                         $inside = FALSE;
                     }
                     $c = $c->Next();
@@ -1328,7 +1382,7 @@ class Polygon {
             $s = $this->getFirst(); // Get the first vertex in this polygon
             do {
                 do {
-                    if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) {
+                    if (count($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) > 0) {
                         $outside = FALSE;
                     }
                     $c = $c->Next();
@@ -1354,7 +1408,7 @@ class Polygon {
         $s = $this->getFirst(); // Get the first vertex in this polygon
         do {
             do {
-                if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) {
+                if (count($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) > 0) {
                     $intersect = TRUE;
                 }
                 $c = $c->Next();
@@ -1378,19 +1432,39 @@ class Polygon {
         $c = $s->Next(); // Get the next vertex
         do {
             do {
-                if ($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) // If the segments intersect
-                {
-                    for ($i = 0; $i <= $n; $i++) // then for each intersection point
+                $intersections = $this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC);
+                if (count($intersections) == 2) {
+                    return true;
+                }
+                /** @var Vertex $intersection */
+                foreach ($intersections as $intersection) {
+                    if ($s->Next() === $c) {
+                       if (!($intersection->equals($c))) {
+                           return true;
+                       }
+                    } else if ($c->Next() === $s) {
+                        if (!($intersection->equals($s))) {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+                //if ($s->Next() !== $c && $c->Next() !== $s
+                //    && count() > 0) { // If the segments intersect
+                //    return true;
+                    /*for ($i = 0; $i <= $n; $i++) // then for each intersection point
                     {
                         if ((isset($aS[$i]) && $aS[$i] <> 0) || (isset($aC[$i]) && $aC[$i] <> 0)) // check that it NOT at the end of the segment
                         {
                             $intersect = TRUE;
                         }
-                    }
-                } // Because sequential segments always intersect at their ends
+                    }*/
+                //} // Because sequential segments always intersect at their ends
                 $c = $c->Next();
-            } while ($c->id() != $this->first->id());
+            } while ($c->id() != $s->id()); //$this->first->id());
             $s = $s->Next();
+            $c = $s->Next();
         } while ($s->id() != $this->first->id());
         return $intersect;
     }
@@ -1490,7 +1564,7 @@ class Polygon {
                         $vn = $v->Next(); // end vertex of the arc segment
                         $v1 = new Vertex($v->Xc(), -infinity); // bottom point of vertical line thru arc center
                         $v2 = new Vertex($v->Xc(), +infinity); // top point of vertical line thru arc center
-                        if ($p->ints($v, $vn, $v1, $v2, $n, $x, $y, $aS, $aC)) // Does line intersect the arc ?
+                        if (count($p->ints($v, $vn, $v1, $v2, $n, $x, $y, $aS, $aC)) > 0) // Does line intersect the arc ?
                         {
                             for ($i = 0; $i < $n; $i++) // check y portion of all intersections
                             {
@@ -1506,7 +1580,7 @@ class Polygon {
                         $v2 = NULL; // Free the memory used
                         $h1 = new Vertex(-infinity, $v->Yc()); // left point of horozontal line thru arc center
                         $h2 = new Vertex(+infinity, $v->Yc()); // right point of horozontal line thru arc center
-                        if ($p->ints($v, $vn, $h1, $h2, $n, $x, $y, $aS, $aC)) // Does line intersect the arc ?
+                        if (count($p->ints($v, $vn, $h1, $h2, $n, $x, $y, $aS, $aC)) > 0) // Does line intersect the arc ?
                         {
                             for ($i = 0; $i < $n; $i++) // check x portion of all intersections
                             {

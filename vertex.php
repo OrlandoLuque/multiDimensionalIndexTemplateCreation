@@ -192,17 +192,17 @@ class Vertex
     /*
     ** Set/Get the reference to the next vertex
     */
-    function setNext ($nextV){ $this->nextV = $nextV; }
-    function &Next (){ return $this->nextV; }
+    function setNext ($nextV) { $this->nextV = $nextV; }
+    function &Next ():Vertex { return $this->nextV; }
     /*
     ** Set/Get the reference to the previous vertex
     */
-    function setPrev ($prevV){ $this->prevV = $prevV; }
-    function &Prev (){ return $this->prevV; }
+    function setPrev ($prevV){  $this->prevV = $prevV; }
+    function &Prev ():Vertex { return $this->prevV; }
     /*
     ** Set/Get the reference to the next segment
     */
-    function setNseg ($nSeg){ $this->nSeg = $nSeg; }
+    function setNseg ($nSeg) { $this->nSeg = $nSeg; }
     function &Nseg (){ return $this->nSeg; }
     /*
     ** Set/Get the reference to the previous segment
@@ -289,6 +289,10 @@ class Vertex
         return "[{$this->x}, {$this->y} -> {$v->x}, {$v->y}]";
     }
 
+    function isInside(Vertex $v1, Vertex $v2) {
+        return ($v1->x >= $this->x && $this->x >= $v2->x || $v1->x <= $this->x && $this->x <= $v2->x)
+            && ($v1->y >= $this->y && $this->y >= $v2->y || $v1->y <= $this->y && $this->y <= $v2->y);
+    }
     /**
      * @param Vertex $v
      * @return bool

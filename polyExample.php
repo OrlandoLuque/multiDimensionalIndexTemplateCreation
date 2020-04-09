@@ -102,6 +102,7 @@ imagestring ($im, 1, 305, 190, "A|B", $colors["blu"]);
 imagestring ($im, 1, 425, 190, "A\B", $colors["blu"]);
 imagestring ($im, 1, 545, 190, "B\A", $colors["blu"]);
 imageGif($im,"poly_ex1.gif");   // Save the image to a file
+echo '<p><div align="center"><strong>EXAMPLE 1 - Boolean Operations</strong><br><img src="poly_ex1.gif" width="600" height="200"><br></div></p>';
 
 //------------------------------------------------------------------------------
 // Second example shows how to handle more than two polygons
@@ -351,14 +352,14 @@ if ($poly1->completelyContains($poly2))
     imagestring ($im, 1, 160, 130, "isPolyInside   =T", $colors["grn"]);
 else
     imagestring ($im, 1, 160, 130, "isPolyInside   =F", $colors["red"]);
-if ($poly1->isPolyOutside($poly2))
-    imagestring ($im, 1, 160, 140, "isPolyOutside  =T", $colors["grn"]);
-else
-    imagestring ($im, 1, 160, 140, "isPolyOutside  =F", $colors["red"]);
 if ($poly1->isPolyIntersect($poly2))
-    imagestring ($im, 1, 160, 150, "isPolyIntersect=T", $colors["grn"]);
+    imagestring ($im, 1, 160, 140, "isPolyIntersect=T", $colors["grn"]);
 else
-    imagestring ($im, 1, 160, 150, "isPolyIntersect=F", $colors["red"]);
+    imagestring ($im, 1, 160, 140, "isPolyIntersect=F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 160, 150, "isPolyOutside =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 160, 150, "isPolyOutside =F", $colors["red"]);
 //
 // Now move the 2 polygons and repeat
 //
@@ -374,14 +375,14 @@ if ($poly1->completelyContains($poly2))
     imagestring ($im, 1, 310, 130, "isPolyInside   =T", $colors["grn"]);
 else
     imagestring ($im, 1, 310, 130, "isPolyInside   =F", $colors["red"]);
-if ($poly1->isPolyOutside($poly2))
-    imagestring ($im, 1, 310, 140, "isPolyOutside  =T", $colors["grn"]);
-else
-    imagestring ($im, 1, 310, 140, "isPolyOutside  =F", $colors["red"]);
 if ($poly1->isPolyIntersect($poly2))
-    imagestring ($im, 1, 310, 150, "isPolyIntersect=T", $colors["grn"]);
+    imagestring ($im, 1, 310, 140, "isPolyIntersect=T", $colors["grn"]);
 else
-    imagestring ($im, 1, 310, 150, "isPolyIntersect=F", $colors["red"]);
+    imagestring ($im, 1, 310, 140, "isPolyIntersect=F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 310, 150, "isPolyOutside =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 310, 150, "isPolyOutside =F", $colors["red"]);
 //
 // Now move the 2 polygons and repeat
 //
@@ -396,14 +397,14 @@ if ($poly1->completelyContains($poly2))
     imagestring ($im, 1, 460, 130, "isPolyInside   =T", $colors["grn"]);
 else
     imagestring ($im, 1, 460, 130, "isPolyInside   =F", $colors["red"]);
-if ($poly1->isPolyOutside($poly2))
-    imagestring ($im, 1, 460, 140, "isPolyOutside  =T", $colors["grn"]);
-else
-    imagestring ($im, 1, 460, 140, "isPolyOutside  =F", $colors["red"]);
 if ($poly1->isPolyIntersect($poly2))
-    imagestring ($im, 1, 460, 150, "isPolyIntersect=T", $colors["grn"]);
+    imagestring ($im, 1, 460, 140, "isPolyIntersect=T", $colors["grn"]);
 else
-    imagestring ($im, 1, 460, 150, "isPolyIntersect=F", $colors["red"]);
+    imagestring ($im, 1, 460, 140, "isPolyIntersect=F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 460, 150, "isPolyOutside =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 460, 150, "isPolyOutside =F", $colors["red"]);
 
 imageGif($im,"poly_ex6.gif");
 
@@ -745,7 +746,6 @@ $r = imageGif($img, "poly_ex_vertex_inside.gif");
 //
 // Some links to display the created images
 //
-echo '<p><div align="center"><strong>EXAMPLE 1 - Boolean Operations</strong><br><img src="poly_ex1.gif" width="600" height="200"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 2 - Sequential Boolean Operations</strong><br><img src="poly_ex2.gif" width="400" height="200"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 3 - Arc Segments</strong><br><img src="poly_ex3.gif" width="600" height="140"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 4 - Move, Rotate & bRect Methods</strong><br><img src="poly_ex4.gif" width="600" height="120"><br></div></p>';
