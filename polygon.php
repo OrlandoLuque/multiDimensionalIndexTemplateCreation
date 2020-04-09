@@ -70,6 +70,7 @@ define("infinity", 100000000); // for places that are far far away
 
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'vertex.php'); // A polygon consists of vertices. So the polygon
 // class is just a reference to a linked list of vertices
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'intersector.php');
 
 class Polygon {
     /* ------------------------------------------------------------------------------
@@ -450,7 +451,253 @@ class Polygon {
      * * and their associated alpha values.
      */
 
-    function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ) {
+    function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternateMode = false) {
+
+        $found = FALSE;
+        $n = 0; // No intersections found yet
+        $pt = $p1->d();
+        $qt = $q1->d(); // Do we have Arcs or Lines?
+
+        if ($pt == 0 && $qt == 0) // Is it line/Line ?
+        {
+            if ($alternateMode) {
+                $int = Intersector::intersection($p1, $p2, $q1, $q2);
+                $found = count($int) > 0;
+            } else {
+                /* LINE/LINE
+                 * * Algorithm from: http://astronomy.swin.edu.au/~pbourke/geometry/lineline2d/
+                 */
+                $x1 = $p1->X();
+                $y1 = $p1->Y();
+                $x2 = $p2->X();
+                $y2 = $p2->Y();
+                $x3 = $q1->X();
+                $y3 = $q1->Y();
+                $x4 = $q2->X();
+                $y4 = $q2->Y();
+                ////////
+                if ($x1 == $x3 && $y1 == $y3
+                    || $x2 == $x3 && $y2 == $y3
+                    || $x1 == $x4 && $y1 == $y4
+                    || $x2 == $x4 && $y2 == $y4) {
+                    return true;
+                }
+                //////// vertexIntsLine
+                /*
+                    $slope = ($y2 - $y1) / ($x2 - $x1);
+
+                    $y = $slope * ($xv - $x1) + $y1;
+                    return ($y == $yv);
+                 */
+                $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
+                if ($d == 0) {
+                    if ($y4 == $y3 && $y2 == $y1 && $y1 == $y3) {
+
+                    }
+                } else { //$d != 0) { // The lines intersect at a point somewhere
+                    $ua = (($x4 - $x3) * ($y1 - $y3) - ($y4 - $y3) * ($x1 - $x3)) / $d;
+                    $ub = (($x2 - $x1) * ($y1 - $y3) - ($y2 - $y1) * ($x1 - $x3)) / $d;
+                    // The values of $ua and $ub tell us where the intersection occurred.
+                    // A value between 0 and 1 means the intersection occurred within the
+                    // line segment.
+                    // A value less tha 0 or greater than 1 means the intersection occurred
+                    // outside the line segment
+                    // A value of exactly 0 or 1 means the intersection occurred right at the
+                    // start or end of the line segment. For our purposes we will consider this
+                    // NOT to be an intersection and we will move the vertex a tiny distance
+                    // away from the intersecting line.
+                    if ((($ua == 0 || $ua == 1) && ($ub >= 0 && $ub <= 1)) || (($ub == 0 || $ub == 1) && ($ua >= 0 && $ua <= 1))) { // Degenerate case - vertex exactly touches a line
+                        //					print("Perturb: P(".$p1->X().",".$p1->Y().")(".$p2->X().",".$p2->Y().") Q(".$q1->X().",".$q1->Y().")(".$q2->X().",".$q2->Y().") UA(".$ua.") UB(".$ub.")<br>");
+                        //$this->perturb($p1, $p2, $q1, $q2, $ua, $ub);
+                        $found = TRUE;
+                    } elseif (($ua > 0 && $ua < 1) && ($ub > 0 && $ub < 1)) { // Intersection occurs on both line segments
+                        $x = $x1 + $ua * ($x2 - $x1);
+                        $y = $y1 + $ua * ($y2 - $y1);
+                        $iy[0] = $y;
+                        $ix[0] = $x;
+                        $alphaP[0] = $ua;
+                        $alphaQ[0] = $ub;
+                        $n = 1;
+                        $found = TRUE;
+                    } else { // The lines do not intersect within the line segments
+                        $found = FALSE;
+                    }
+                } /*else { // The lines do not intersect
+                $found = FALSE;
+            }*/
+            }
+        } // End of find Line/Line intersection
+        elseif ($pt != 0 && $qt != 0) // Is  it Arc/Arc?
+        {
+            /* ARC/ARC
+             * * Algorithm from: http://astronomy.swin.edu.au/~pbourke/geometry/2circle/
+             */
+            $x0 = $p1->Xc();
+            $y0 = $p1->Yc(); // Center of first Arc
+            $r0 = $this->dist($x0, $y0, $p1->X(), $p1->Y()); // Calc the radius
+            $x1 = $q1->Xc();
+            $y1 = $q1->Yc(); // Center of second Arc
+            $r1 = $this->dist($x1, $y1, $q1->X(), $q1->Y()); // Calc the radius
+
+            $dx = $x1 - $x0; // dx and dy are the vertical and horizontal
+            $dy = $y1 - $y0; // distances between the circle centers.
+            $d = sqrt(($dy * $dy) + ($dx * $dx)); // Distance between the centers.
+
+            if ($d == 0) // Don't try an find intersection if centers are the same.
+            { // Added in Rev 1.2
+                $found = FALSE;
+            } elseif ($d > ($r0 + $r1)) // Check for solvability.
+            { // no solution. circles do not intersect.
+                $found = FALSE;
+            } elseif ($d < abs($r0 - $r1)) { // no solution. one circle inside the other
+                $found = FALSE;
+            } else {
+                /*
+                 * * 'xy2' is the point where the line through the circle intersection
+                 * * points crosses the line between the circle centers.
+                 */
+                $a = (($r0 * $r0) - ($r1 * $r1) + ($d * $d)) / (2.0 * $d); // Calc the distance from xy0 to xy2.
+                $x2 = $x0 + ($dx * $a / $d); // Determine the coordinates of xy2.
+                $y2 = $y0 + ($dy * $a / $d);
+                if ($d == ($r0 + $r1)) // Arcs touch at xy2 exactly (unlikely)
+                {
+                    $alphaP[0] = $this->aAlpha($p1->X(), $p1->Y(), $p2->X(), $p2->Y(), $x0, $y0, $x2, $y2, $pt);
+                    $alphaQ[0] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x2, $y2, $qt);
+                    if (($alphaP[0] > 0 && $alphaP[0] < 1) && ($alphaQ[0] > 0 && $alphaQ[0] < 1)) {
+                        $ix[0] = $x2;
+                        $iy[0] = $y2;
+                        $n = 1;
+                        $found = TRUE;
+                    }
+                } else // Arcs intersect at two points
+                {
+                    $h = sqrt(($r0 * $r0) - ($a * $a)); // Calc the distance from xy2 to either
+                    // of the intersection points.
+                    $rx = -$dy * ($h / $d); // Now determine the offsets of the
+                    $ry = $dx * ($h / $d); // intersection points from xy2
+                    $x[0] = $x2 + $rx;
+                    $x[1] = $x2 - $rx; // Calc the absolute intersection points.
+                    $y[0] = $y2 + $ry;
+                    $y[1] = $y2 - $ry;
+                    $alP[0] = $this->aAlpha($p1->X(), $p1->Y(), $p2->X(), $p2->Y(), $x0, $y0, $x[0], $y[0], $pt);
+                    $alQ[0] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x[0], $y[0], $qt);
+                    $alP[1] = $this->aAlpha($p1->X(), $p1->Y(), $p2->X(), $p2->Y(), $x0, $y0, $x[1], $y[1], $pt);
+                    $alQ[1] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x[1], $y[1], $qt);
+                    for ($i = 0; $i <= 1; $i++) {
+                        if (($alP[$i] > 0 && $alP[$i] < 1) && ($alQ[$i] > 0 && $alQ[$i] < 1)) {
+                            $ix[$n] = $x[$i];
+                            $iy[$n] = $y[$i];
+                            $alphaP[$n] = $alP[$i];
+                            $alphaQ[$n] = $alQ[$i];
+                            $n++;
+                            $found = TRUE;
+                        }
+                    }
+                }
+            }
+        } // End of find Arc/Arc intersection
+        else // It must be Arc/Line
+        {
+            /* ARC/LINE
+             * * Algorithm from: http://astronomy.swin.edu.au/~pbourke/geometry/sphereline/
+             */
+            if ($pt == 0) // Segment p1,p2 is the line
+            { // Segment q1,q2 is the arc
+                $x1 = $p1->X();
+                $y1 = $p1->Y();
+                $x2 = $p2->X();
+                $y2 = $p2->Y();
+                $xc = $q1->Xc();
+                $yc = $q1->Yc();
+                $xs = $q1->X();
+                $ys = $q1->Y();
+                $xe = $q2->X();
+                $ye = $q2->Y();
+                $d = $qt;
+            } else // Segment q1,q2 is the line
+            { // Segment p1,p2 is the arc
+                $x1 = $q1->X();
+                $y1 = $q1->Y();
+                $x2 = $q2->X();
+                $y2 = $q2->Y();
+                $xc = $p1->Xc();
+                $yc = $p1->Yc();
+                $xs = $p1->X();
+                $ys = $p1->Y();
+                $xe = $p2->X();
+                $ye = $p2->Y();
+                $d = $pt;
+            }
+            $r = $this->dist($xc, $yc, $xs, $ys);
+            $a = pow(($x2 - $x1), 2) + pow(($y2 - $y1), 2);
+            $b = 2 * (($x2 - $x1) * ($x1 - $xc)
+                    + ($y2 - $y1) * ($y1 - $yc));
+            $c = pow($xc, 2) + pow($yc, 2) +
+                pow($x1, 2) + pow($y1, 2) -
+                2 * ($xc * $x1 + $yc * $y1) - pow($r, 2);
+            $i = $b * $b - 4 * $a * $c;
+            if ($i < 0.0) // no intersection
+            {
+                $found = FALSE;
+            } elseif ($i == 0.0) // one intersection
+            {
+                if ($a != 0) {
+                    $mu = -$b / (2 * $a);
+                }
+                $x = $x1 + $mu * ($x2 - $x1);
+                $y = $y1 + $mu * ($y2 - $y1);
+                $al = $mu; // Line Alpha
+                $aa = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x, $y, $d); // Arc Alpha
+                if (($al > 0 && $al < 1) && ($aa > 0 && $aa < 1)) {
+                    $ix[0] = $x;
+                    $iy[0] = $y;
+                    $n = 1;
+                    $found = TRUE;
+                    if ($pt == 0) {
+                        $alphaP[0] = $al;
+                        $alphaQ[0] = $aa;
+                    } else {
+                        $alphaP[0] = $aa;
+                        $alphaQ[0] = $al;
+                    }
+                }
+            } elseif ($i > 0.0) // two intersections
+            {
+                if ($a != 0) {
+                    $mu[0] = (-$b + sqrt(pow($b, 2) - 4 * $a * $c)) / (2 * $a);
+                } // first intersection
+                $x[0] = $x1 + $mu[0] * ($x2 - $x1);
+                $y[0] = $y1 + $mu[0] * ($y2 - $y1);
+                if ($a != 0) {
+                    $mu[1] = (-$b - sqrt(pow($b, 2) - 4 * $a * $c)) / (2 * $a);
+                } // second intersection
+                $x[1] = $x1 + $mu[1] * ($x2 - $x1);
+                $y[1] = $y1 + $mu[1] * ($y2 - $y1);
+                $al[0] = $mu[0];
+                $aa[0] = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x[0], $y[0], $d);
+                $al[1] = $mu[1];
+                $aa[1] = $this->aAlpha($xs, $ys, $xe, $ye, $xc, $yc, $x[1], $y[1], $d);
+                for ($i = 0; $i <= 1; $i++) {
+                    if (($al[$i] > 0 && $al[$i] < 1) && ($aa[$i] > 0 && $aa[$i] < 1)) {
+                        $ix[$n] = $x[$i];
+                        $iy[$n] = $y[$i];
+                        if ($pt == 0) {
+                            $alphaP[$n] = $al[$i];
+                            $alphaQ[$n] = $aa[$i];
+                        } else {
+                            $alphaP[$n] = $aa[$i];
+                            $alphaQ[$n] = $al[$i];
+                        }
+                        $n++;
+                        $found = TRUE;
+                    }
+                }
+            }
+        } // End of find Arc/Line intersection
+        return $found;
+    }
+
+    function ints2(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternative = false) {
 
         $found = FALSE;
         $n = 0; // No intersections found yet
@@ -730,7 +977,7 @@ class Polygon {
      * * actually is a bit bigger. Those people have no lives.
      */
 
-    function isInside(&$v) {
+    function isInside(&$v, $alternateMode = false) {
         $winding_number = 0;
         $point_at_infinity = new Vertex(-10000000, $v->Y()); // Create point at infinity
         $q = $this->first; // End vertex of a line segment in polygon
@@ -738,16 +985,16 @@ class Polygon {
             $r = $q->nextV;
             //if it intersects with an edge, it is inside
             if ($this->ints($v, $v, $q, $r
-                , $n, $x, $y, $aP, $aQ)) {
+                , $n, $x, $y, $aP, $aQ, $alternateMode)) {
                 return true;
             }
             if($this->ints($point_at_infinity, $v, $q, $r
-                , $n, $x, $y, $aP, $aQ)) {
+                , $n, $x, $y, $aP, $aQ, $alternateMode)) {
                 //if it intercepts, then there are some cases...
                 $qIntercepts = $this->ints($point_at_infinity, $v, $q, $q
-                    , $n, $x, $y, $aP, $aQ);
+                    , $n, $x, $y, $aP, $aQ, $alternateMode);
                 $rIntercepts = $this->ints($point_at_infinity, $v, $r, $r
-                    , $n, $x, $y, $aP, $aQ);
+                    , $n, $x, $y, $aP, $aQ, $alternateMode);
                 //If no polygon's vertex interceps with our line, then it is a +1.
                 //If one or two of them intercepts, we check only $q to see if it is a +1 or not.
                 //There is not need to check $r as it will be checked in the next iteration

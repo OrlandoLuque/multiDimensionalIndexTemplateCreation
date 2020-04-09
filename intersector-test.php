@@ -1,8 +1,9 @@
 <?php
 //source: https://stackoverflow.com/questions/2255842/detecting-coincident-subset-of-two-coincident-line-segments/2255848#2255848
 
-IntersectTest::Main();
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'intersector.php');
 
+IntersectTest::Main();
 class IntersectTest {
     public static function PrintPoints(array $pf): void {
         if ($pf == null || count($pf) < 1) {
@@ -22,18 +23,23 @@ class IntersectTest {
      * @throws Exception
      */
     public static function TestIntersect(Vertex $a1, Vertex $a2, Vertex $b1, Vertex $b2): void {
-        echo "----------------------------------------------------------";
-        echo "Does      " . $a1 . " -- " . $a2;
-        echo "intersect " . $b1 . " -- " . $b2 . " and if so, where?";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "Does " . $a1 . " -- " . $a2;
+        echo " intersect " . $b1 . " -- " . $b2 . " and if so, where?\n";
+        echo "\n";
         /** @var array $result */
         $result = Intersector::intersection($a1, $a2, $b1, $b2);
         IntersectTest::PrintPoints($result);
+        echo "\n";
     }
 
+    /**
+     * @throws Exception
+     */
     public static function Main(): void {
-        echo "----------------------------------------------------------";
-        echo "line segments intersect";
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        echo "line segments intersect\n";
         IntersectTest::TestIntersect(new Vertex(0, 0),
             new Vertex(100, 100),
             new Vertex(100, 0),
@@ -42,56 +48,62 @@ class IntersectTest {
             new Vertex(100, 100),
             new Vertex(100, 29),
             new Vertex(8, 100));
-        echo "----------------------------------------------------------";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "\n";
 
-        echo "----------------------------------------------------------";
-        echo "just touching points and lines cross";
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        echo "just touching points and lines cross\n";
         IntersectTest::TestIntersect(new Vertex(0, 0),
             new Vertex(25, 25),
             new Vertex(25, 25),
             new Vertex(100, 75));
-        echo "----------------------------------------------------------";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "\n";
 
-        echo "----------------------------------------------------------";
-        echo "parallel";
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        echo "parallel\n";
         IntersectTest::TestIntersect(new Vertex(0, 0),
             new Vertex(0, 100),
             new Vertex(100, 0),
             new Vertex(100, 100));
-        echo "----------------------------------------------------------";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "\n";
 
-        echo "----";
-        echo "lines cross but segments don't intersect";
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        //echo "----\n";
+        echo "lines cross but segments don't intersect\n";
         IntersectTest::TestIntersect(new Vertex(50, 50),
             new Vertex(100, 100),
             new Vertex(0, 25),
             new Vertex(25, 0));
-        echo "----------------------------------------------------------";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "\n";
 
-        echo "----------------------------------------------------------";
-        echo "coincident but do not overlap!";
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        echo "coincident but do not overlap!\n";
         IntersectTest::TestIntersect(new Vertex(0, 0),
             new Vertex(25, 25),
             new Vertex(75, 75),
             new Vertex(100, 100));
-        echo "----------------------------------------------------------";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "\n";
 
-        echo "----------------------------------------------------------";
-        echo "touching points and coincident!";
+        echo "----------------------------------------------------------\n";
+        echo "touching points and coincident!\n";
         IntersectTest::TestIntersect(new Vertex(0, 0),
             new Vertex(25, 25),
             new Vertex(25, 25),
             new Vertex(100, 100));
-        echo "----------------------------------------------------------";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "\n";
 
-        echo "----------------------------------------------------------";
-        echo "overlap/coincident";
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        echo "overlap/coincident\n";
         IntersectTest::TestIntersect(new Vertex(0, 0),
             new Vertex(75, 75),
             new Vertex(25, 25),
@@ -100,9 +112,40 @@ class IntersectTest {
             new Vertex(100, 100),
             new Vertex(0, 0),
             new Vertex(100, 100));
-        echo "----------------------------------------------------------";
-        echo "";
+        echo "----------------------------------------------------------\n";
+        echo "\n";
 
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        echo "one line over another\n";
+        IntersectTest::TestIntersect(new Vertex(0, 0),
+            new Vertex(100, 0),
+            new Vertex(50, 0),
+            new Vertex(150, 0));
+        IntersectTest::TestIntersect(new Vertex(0, 0),
+            new Vertex(0, 100),
+            new Vertex(0, 50),
+            new Vertex(0, 150));
+        echo "----------------------------------------------------------\n";
+        echo "\n";
+
+        echo "----------------------------------------------------------\n";
+        echo "----------------------------------------------------------\n";
+        echo "one line (in point format) over another\n";
+        IntersectTest::TestIntersect(new Vertex(0, 0),
+            new Vertex(100, 0),
+            new Vertex(50, 0),
+            new Vertex(50, 0));
+        IntersectTest::TestIntersect(new Vertex(0, 0),
+            new Vertex(0, 100),
+            new Vertex(0, 50),
+            new Vertex(0, 50));
+        IntersectTest::TestIntersect(new Vertex(0, 0),
+            new Vertex(100, 100),
+            new Vertex(50, 50),
+            new Vertex(50, 50));
+        echo "----------------------------------------------------------\n";
+        echo "\n";
         //while (!System.Console.KeyAvailable) { }
     }
 

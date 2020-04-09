@@ -136,14 +136,14 @@ $polyA->addv( 71,166);
 $polyA->addv(105,138);
 $polyA->addv( 25, 63);
 $polyA->addv(118, 75);
-
+/*
 $polyA = new polygon();
 $polyA->addv( 3,11);
 $polyA->addv( 9,15);
 $polyA->addv(12,12);
 $polyA->addv( 6, 3);
 $polyA->addv(15, 5);
-
+*/
 newImage($polyA->x_max + 1,$polyA->y_max + 1, $img, $col);
 directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
 //$r = imageGif($img,"poly_ex4insidePolygon.gif");
@@ -174,7 +174,9 @@ directDrawPolyAt(0, 0, $img, $polyA, $colors, "red");
 for ($x = 0; $x < $polyA->x_max + 1; $x++) {
     for ($y = 0; $y < $polyA->y_max + 1; $y++) {
         $p5 = new Vertex($x, $y);
-        if ($polyA->isInside($p5)) {
+        //$r1 = $polyA->isInside($p5);
+        $r1 = $polyA->isInside($p5, true);
+        if ($r1) {
             $r = imagesetpixel($img, $x, $y, $col['grn']);
         } else {
             //$r = imagesetpixel($img, $x, $y, $col['red']);

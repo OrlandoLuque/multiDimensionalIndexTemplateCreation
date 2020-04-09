@@ -6,7 +6,8 @@
 // found here:
 //   http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/563240#563240
 
-require_once('vertex.php');
+//require_once('vertex.php');
+require_once(__DIR__ . DIRECTORY_SEPARATOR . 'vertex.php');
 
 class Intersector {
     /** @var float */
@@ -83,7 +84,9 @@ class Intersector {
         /** @var float $dummyU */
         $dummyU = 0.0;
         $d = Intersector::distFromSeg($p, $a1, $a2, Intersector::$MyEpsilon, $dummyU);
-        return $d < Intersector::$MyEpsilon;
+        return $d < Intersector::$MyEpsilon
+            && ($p->x >= $a1->x && $p->x <= $a2->x || $p->x >= $a2->x && $p->x <= $a1->x)
+            && ($p->y >= $a1->y && $p->y <= $a2->y || $p->y >= $a2->y && $p->y <= $a1->y);
     }
 
     /**
