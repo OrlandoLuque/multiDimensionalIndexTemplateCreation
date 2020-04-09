@@ -144,13 +144,38 @@ $polyA->addv(12,12);
 $polyA->addv( 6, 3);
 $polyA->addv(15, 5);
 */
-newImage($polyA->x_max + 1,$polyA->y_max + 1, $img, $col);
+$polyA = new polygon();
+$polyA->addv( 0,0);
+$polyA->addv( 0,5, 0, 10, +1);
+$polyA->addv(0,15);
+$polyA->addv( 0, 20);
+$polyA->addv(20, 20);
+$polyA->addv(20, 5, 20, 0, -1);
+$polyA->addv(15, 0);
+/*$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->addv(0,0);
+$polyA->addv(0,20,0,40,1);
+$polyA->addv(0,60);
+$polyA->addv(0,80);
+$polyA->addv(45,80);
+$polyA->addv(45,60,45,40,1);
+$polyA->addv(45,20);
+$polyA->addv(45,0);*/
+$extraMargin = 6;
+newImage($polyA->x_max + $extraMargin * 2,$polyA->y_max + $extraMargin * 2, $img, $col);
+newImage($polyA->x_max + $extraMargin * 2,$polyA->y_max + $extraMargin * 2, $img2, $col);
+//directDrawPolyAt(30, 30, $img, $polyA, $col, "blk");
+//drawPolyAt(30, 30, $img2, $polyA, $col, "blk");
+$polyA->move($extraMargin, $extraMargin);
 directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
-//$r = imageGif($img,"poly_ex4insidePolygon.gif");
-//echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
+drawPolyAt(0, 0, $img2, $polyA, $col, "blk");
+$r = imageGif($img,"poly_ex4insidePolygon.gif");
+$r = imageGif($img2,"poly_ex4insidePolygon2.gif");
+/////// echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 60) * 4 . '" height="' . ($polyA->y_max + 60) * 4 . '"><br></div></p>';
+/////// echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon2.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 60) * 4 . '" height="' . ($polyA->y_max + 60) * 4 . '"><br></div></p>';
 //die();
-
-$toCheck = [/*[2, 2], [15, 3], [6, 3], [15, 3]*/[5, 11]];
+/*
+$toCheck = [[2, 2], [15, 3], [6, 3], [15, 3], [5, 11]];
 foreach ($toCheck as $coords) {
     $v = new Vertex($coords[0], $coords[1]);
     $rv = $polyA->isInside($v);
@@ -163,31 +188,33 @@ foreach ($toCheck as $coords) {
 $r = imageGif($img,"poly_ex4insidePolygon.gif");
 echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
 //die();
+*/
+if(true) {
+    newImage($polyA->x_max + $extraMargin * 2, $polyA->y_max + $extraMargin * 2, $im, $colors);               // Create a new image to draw our polygons
+    directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
+    $r = imageGif($im, "poly_ex2polygon.gif");
+    echo '<p><div align="center"><strong>EXAMPLE 2 - poligon used on example 3</strong><br><img src="poly_ex2polygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
 
-newImage ($polyA->x_max + 1,$polyA->y_max + 1, $im, $colors);               // Create a new image to draw our polygons
-directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
-$r = imageGif($im,"poly_ex2polygon.gif");
-echo '<p><div align="center"><strong>EXAMPLE 2 - poligon used on example 3</strong><br><img src="poly_ex2polygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
-
-newImage($polyA->x_max + 1,$polyA->y_max + 1, $img, $col);
-directDrawPolyAt(0, 0, $img, $polyA, $colors, "red");
-for ($x = 0; $x < $polyA->x_max + 1; $x++) {
-    for ($y = 0; $y < $polyA->y_max + 1; $y++) {
-        $p5 = new Vertex($x, $y);
-        //$r1 = $polyA->isInside($p5);
-        $r1 = $polyA->isInside($p5, true);
-        if ($r1) {
-            $r = imagesetpixel($img, $x, $y, $col['grn']);
-        } else {
-            //$r = imagesetpixel($img, $x, $y, $col['red']);
+    newImage($polyA->x_max + $extraMargin * 2, $polyA->y_max + $extraMargin * 2, $img, $col);
+    directDrawPolyAt(0, 0, $img, $polyA, $colors, "red");
+    for ($x = 0; $x < $polyA->x_max + $extraMargin * 2; $x++) {
+        for ($y = 0; $y < $polyA->y_max + $extraMargin * 2; $y++) {
+            $p5 = new Vertex($x, $y);
+            //$r1 = $polyA->isInside($p5);
+            $a = 1;
+            $r1 = $polyA->isInside($p5, true);
+            if ($r1) {
+                $r = imagesetpixel($img, $x, $y, $col['grn']);
+            } else {
+                //$r = imagesetpixel($img, $x, $y, $col['blu']);
+            }
         }
     }
+    $r = imageGif($img, "poly_ex_vertex_inside.gif");
+    echo '<p><div align="center"><strong>EXAMPLE 3 - vertex is inside</strong><br><img src="poly_ex_vertex_inside.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
+    die();
 }
-$r = imageGif($img,"poly_ex_vertex_inside.gif");
-echo '<p><div align="center"><strong>EXAMPLE 3 - vertex is inside</strong><br><img src="poly_ex_vertex_inside.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
-die();
-
-die();
+//die();
 define("OUT", 0);
 define("IN", 2);
 define("MAYBE", 1);
@@ -207,7 +234,7 @@ $angles = getAnglesToTest(0.5);
 $templates = [];
 $hashToTemplatesIdDictionary = [];
 $idToTemplatesDictionary = [];
-foreach ($polys as $originalPoly) {
+foreach ($polys as $indexPoly => $originalPoly) {
     foreach ($polygonScales as $polygonScale) {
         $scalatedPoly = getScalatedPolygonCopy($originalPoly, $polygonScale, $polygonScale);
         foreach ($grids as $gridDimensions) {
@@ -223,6 +250,12 @@ foreach ($polys as $originalPoly) {
                 $gridYRange = [floor($boxVertex[0][y] / $gridY), floor($boxVertex[1][y] / $gridY)];
                 $grid = getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
                 list($templateGrid, $templateHash) = getTemplateGrid($grid, $poly);
+                for ($x = 0; $x < $gridX; $x++) {
+                    for ($y = 0; $y < $gridY; $y++) {
+                        $hash = "$indexPoly-$polygonScale-$gridX,$gridY-$x,$y";
+                        $movedPoly = $poly->copy_poly()->move($x, $y);
+                    }
+                }
             }
         }
     }

@@ -86,43 +86,13 @@
 ** the polygon are assumed to exist in real world coordinates. Thus they
 ** are 'inverted' in the y-axis to plot them on the image.
 */
-function drawPolyAt($x, $y, &$i, $p, &$col, $c)
-{
-        if ($i) $sy = imagesy($i);      // Determine the height of the image in pixels
-                                                                // All $y coords will be subtracted from this
-        if ($p) // If a polygon exists
-        do              // For all polygons in the list
-        {
-                $v = $p->getFirst();           // get the first vertex of the first polygon
-                do                                                      // For all vertices in this polygon
-                {
-                        $n =& $v->Next();               // Get the next vertex
-                        if ($v->d() == 0)               // Check is this is an ARc segment
-                        { // It is a line
-                                imageLine ($i,round($x+$v->X()),round($sy-($y+$v->Y())),round($x+$n->X()),round($sy-($y+$n->Y())),$col[$c]);        // Draw a line vertex to vertex
-                        }
-                        else
-                        { // It is an Arc
-                                $s = 360 - rad2deg ($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
-                                $e = 360 - rad2deg ($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
-                                $dia = round(2*$p->dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()));
-                                if ($v->d() == -1)      // Clockwise
-                                        imagearc($i, round($x+$v->Xc()), round($sy-($y+$v->Yc())),$dia,$dia,$s,$e,$col[$c]);
-                                else                    // Anti-Clockwise
-                                        imagearc($i, round($x+$v->Xc()), round($sy-($y+$v->Yc())),$dia,$dia,$e,$s,$col[$c]);
-                        }
-                        $v =& $n;                       // Move to next vertex
-                }
-                while ($v->id() != $p->first->id());    // Keep drawing until the last vertex
-                $p = $p->NextPoly();                   // Get the next polygon in the list
-        }
-        while ($p);     // Keep drawing polygons as long as they exist
-}
-function directDrawPolyAt($x, $y, &$i, $p, &$col, $c)
-{
-    if ($i) $sy = imagesy($i);      // Determine the height of the image in pixels
+function drawPolyAt($x, $y, &$i, $p, &$col, $c) {
+    if ($i) {
+        $sy = imagesy($i);
+    }      // Determine the height of the image in pixels
     // All $y coords will be subtracted from this
     if ($p) // If a polygon exists
+    {
         do              // For all polygons in the list
         {
             $v = $p->getFirst();           // get the first vertex of the first polygon
@@ -131,39 +101,75 @@ function directDrawPolyAt($x, $y, &$i, $p, &$col, $c)
                 $n =& $v->Next();               // Get the next vertex
                 if ($v->d() == 0)               // Check is this is an ARc segment
                 { // It is a line
-                    $r = imageLine ($i,$x+$v->X(),$y+$v->Y(),$x+$n->X(),$y+$n->Y(),$col[$c]);        // Draw a line vertex to vertex
-                }
-                else
-                { // It is an Arc
-                    $s = 360 - rad2deg ($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
-                    $e = 360 - rad2deg ($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
-                    $dia = round(2*$p->dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()));
+                    imageLine($i, round($x + $v->X()), round($sy - ($y + $v->Y())), round($x + $n->X()), round($sy - ($y + $n->Y())), $col[$c]);        // Draw a line vertex to vertex
+                } else { // It is an Arc
+                    $s = 360 - rad2deg($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
+                    $e = 360 - rad2deg($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
+                    $dia = round(2 * $p->dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()));
                     if ($v->d() == -1)      // Clockwise
-                        $r = imagearc($i, $x+$v->Xc(), $y+$v->Yc(),$dia,$dia,$s,$e,$col[$c]);
-                    else                    // Anti-Clockwise
-                        $r = imagearc($i, $x+$v->Xc(), $y+$v->Yc(),$dia,$dia,$e,$s,$col[$c]);
+                    {
+                        imagearc($i, round($x + $v->Xc()), round($sy - ($y + $v->Yc())), $dia, $dia, $s, $e, $col[$c]);
+                    } else                    // Anti-Clockwise
+                    {
+                        imagearc($i, round($x + $v->Xc()), round($sy - ($y + $v->Yc())), $dia, $dia, $e, $s, $col[$c]);
+                    }
                 }
                 $v =& $n;                       // Move to next vertex
-            }
-            while ($v->id() != $p->first->id());    // Keep drawing until the last vertex
+            } while ($v->id() != $p->first->id());    // Keep drawing until the last vertex
             $p = $p->NextPoly();                   // Get the next polygon in the list
-        }
-        while ($p);     // Keep drawing polygons as long as they exist
+        } while ($p);
+    }     // Keep drawing polygons as long as they exist
+}
+
+function directDrawPolyAt($x, $y, &$i, $p, &$col, $c) {
+    if ($i) {
+        $sy = imagesy($i);
+    }      // Determine the height of the image in pixels
+    // All $y coords will be subtracted from this
+    if ($p) // If a polygon exists
+    {
+        do              // For all polygons in the list
+        {
+            $v = $p->getFirst();           // get the first vertex of the first polygon
+            do                                                      // For all vertices in this polygon
+            {
+                $n =& $v->Next();               // Get the next vertex
+                if ($v->d() == 0)               // Check is this is an ARc segment
+                { // It is a line
+                    $r = imageLine($i, $x + $v->X(), $y + $v->Y(), $x + $n->X(), $y + $n->Y(), $col[$c]);        // Draw a line vertex to vertex
+                } else { // It is an Arc
+                    $s = rad2deg($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
+                    $e = rad2deg($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
+                    $dia = round(2 * $p->dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()));
+                    if ($v->d() == -1)      // Clockwise
+                    {
+                        $r = imagearc($i, $x + $v->Xc(), $y + $v->Yc(), $dia, $dia, $e, $s, $col[$c]);
+                    } else                    // Anti-Clockwise
+                    {
+                        $r = imagearc($i, $x + $v->Xc(), $y + $v->Yc(), $dia, $dia, $s, $e, $col[$c]);
+                    }
+                }
+                $v =& $n;                       // Move to next vertex
+            } while ($v->id() != $p->first->id());    // Keep drawing until the last vertex
+            $p = $p->NextPoly();                   // Get the next polygon in the list
+        } while ($p);
+    }     // Keep drawing polygons as long as they exist
 }
 
 /*
 ** Function to create an image and allocate a color table to it
 */
-function newImage($width, $height, &$i, &$col)
-{
-        if($i)
-                imagedestroy($i);                               // Delete any old image
-        $i = imagecreate ($width,$height);      // New image to draw our polygons
-        $col["wht"] = imagecolorallocate ($i, 255, 255, 255);   // Allocate some colors
-        $col["blk"] = imagecolorallocate ($i, 0, 0, 0);
-        $col["red"] = imagecolorallocate ($i, 255,0,0);
-        $col["blu"] = imagecolorallocate ($i, 0,0,255);
-        $col["grn"] = imagecolorallocate ($i, 0,192,0);
-        $col["pur"] = imagecolorallocate ($i, 255,0,255);
+function newImage($width, $height, &$i, &$col) {
+    if ($i) {
+        imagedestroy($i);
+    }                               // Delete any old image
+    $i = imagecreate($width, $height);      // New image to draw our polygons
+    $col["wht"] = imagecolorallocate($i, 255, 255, 255);   // Allocate some colors
+    $col["blk"] = imagecolorallocate($i, 0, 0, 0);
+    $col["red"] = imagecolorallocate($i, 255, 0, 0);
+    $col["blu"] = imagecolorallocate($i, 0, 0, 255);
+    $col["grn"] = imagecolorallocate($i, 0, 192, 0);
+    $col["pur"] = imagecolorallocate($i, 255, 0, 255);
 }
+
 ?>

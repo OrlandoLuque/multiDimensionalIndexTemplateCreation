@@ -710,6 +710,37 @@ for ($x = 0; $x < 32; $x++) {
 }
 $r = imageGif($img,"poly_exi.gif");
 
+//------------------------------------------------------------------------------
+// This example checks the new isInside method in every pixel
+//
+/*newImage($poly13->x_max + 1, $poly13->y_max + 1, $im, $colors);               // Create a new image to draw our polygons
+directDrawPolyAt(0, 0, $im, $poly13, $colors, "red");
+$r = imageGif($im, "poly_ex13polygon.gif");
+echo '<p><div align="center"><strong>EXAMPLE 13 - poligon used on example 14</strong><br><img src="poly_ex13polygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
+*/
+$poly13 = new polygon();
+$poly13->addv( 8,24);
+$poly13->addv( 35,35);
+$poly13->addv(53,26);
+$poly13->addv( 12, 1);
+$poly13->addv(59, 7);
+newImage($poly13->x_max + 1, $poly13->y_max + 1, $img, $col);
+directDrawPolyAt(0, 0, $img, $poly13, $colors, "red");
+for ($x = 0; $x < $poly13->x_max + 1; $x++) {
+    for ($y = 0; $y < $poly13->y_max + 1; $y++) {
+        $p5 = new Vertex($x, $y);
+        //$r1 = $polyA->isInside($p5);
+        $r1 = $poly13->isInside($p5, true);
+        if ($r1) {
+            $r = imagesetpixel($img, $x, $y, $col['grn']);
+        } else {
+            //$r = imagesetpixel($img, $x, $y, $col['red']);
+        }
+    }
+}
+$r = imageGif($img, "poly_ex_vertex_inside.gif");
+
+
 
 //
 // Some links to display the created images
@@ -726,4 +757,5 @@ echo '<p><div align="center"><strong>EXAMPLE 9 - Degenerate Vertices</strong><br
 echo '<p><div align="center"><strong>EXAMPLE 10 - Degenerate Vertices</strong><br><img src="poly_ex10.gif" width="600" height="120"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 11 - Degenerate Vertices</strong><br><img src="poly_ex11.gif" width="750" height="150"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 12 - new pixel intersections</strong><br><img src="poly_exi.gif" width="128" height="128" style="image-rendering: pixelated"><br></div></p>';
+echo '<p><div align="center"><strong>EXAMPLE 13 - vertex is inside polygon</strong><br><img src="poly_ex_vertex_inside.gif" style="image-rendering: pixelated" width="' . ($poly13->x_max + 1) * 4 . '" height="' . ($poly13->y_max + 1) * 4 . '"><br></div></p>';
 ?>

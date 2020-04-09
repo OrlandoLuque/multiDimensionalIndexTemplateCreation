@@ -977,7 +977,7 @@ class Polygon {
      * * actually is a bit bigger. Those people have no lives.
      */
 
-    function isInside(&$v, $alternateMode = false) {
+    function isInside(&$v, $alternateMode = true) {
         $winding_number = 0;
         $point_at_infinity = new Vertex(-10000000, $v->Y()); // Create point at infinity
         $q = $this->first; // End vertex of a line segment in polygon
