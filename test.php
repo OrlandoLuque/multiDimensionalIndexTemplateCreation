@@ -360,7 +360,7 @@ $grids = getGridsFromSupportedSizes($gridSupportedSizes);
 $circlePoly = getCircleWithRadius(1);
 $boxPoly = getSquarePolygonWithDimensions(1);        // Create a new polygon and add some vertices to it
 $dropPoly = getDropPolygonWithDimensions(1/5, 1); // or 1/6
-$polys = ['box' => $boxPoly, 'circle' => $circlePoly, 'drop' => $dropPoly];
+$polys = ['drop' => $dropPoly, 'box' => $boxPoly, 'circle' => $circlePoly];
 $angles = getAnglesToTest(0.5);
 
 //$bBoxA = $polyA->bRect();
@@ -370,17 +370,19 @@ $hashToTemplatesIdDictionary = [];
 $idToTemplatesDictionary = [];
 $templateCount = 0;
 $calculatedTemplates = 0;
+$inicio = date("Y-m-d H:i:s");
 foreach ($polys as $indexPoly => $poly) {
     foreach ($polygonScales as $polygonScale) {
         $scalatedPoly = getScalatedPolygonCopy($poly, $polygonScale, $polygonScale);
         foreach ($grids as $gridDimensions) {
             $gridX = $gridDimensions[0];
             $gridY = $gridDimensions[1];
+            /** @var float $angle */
             foreach ($angles as $angleIndex => $angle) {
                 $rotatedPoly = getRotatedPolygonCopy($scalatedPoly, $angle);
                 for ($x = 0; $x < $gridX; $x++) {
                     for ($y = 0; $y < $gridY; $y++) {
-                        $hash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-dx$x,dy$y";
+                        $hash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle-dx$x,dy$y";
                         $movedPoly = $rotatedPoly->copy_poly();
                         $movedPoly->move($x, $y);
                         $box = $movedPoly->bRect();
@@ -395,19 +397,20 @@ foreach ($polys as $indexPoly => $poly) {
                         if (empty($hashToTemplatesIdDictionary[$templateHashYX])) {
                             $hashToTemplatesIdDictionary[$templateHashYX] = $templateGridXY;
                             $templateCount++;
-                            echo "+++++++++++++++++++++";
+                            echo "+++++++++++++++++++++ ";
                         } else {
-                            echo "repeated!";
+                            echo "repeated! ";
                         }
                         $idToTemplatesDictionary[$hash] = $hashToTemplatesIdDictionary[$templateHashYX];
                         $calculatedTemplates++;
+                        echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
                     }
                 }
             }
         }
     }
 }
-echo "Calculated templates: $calculatedTemplates - unique ones: $templateCount";
+echo "Calculated templates: $calculatedTemplates - unique ones: $templateCount - desde $inicio a " . date("Y-m-d H:i:s");
 /**
  * @param $grid
  * @param polygon $poly
