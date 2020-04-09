@@ -271,11 +271,10 @@ class Vertex
         /** @var Vertex $p */
         /** @var Vertex $n */
         /** @var Vertex $t */
-        $p = $this->prevV;
-        $n = $this->nextV;
-        $t = $this;
-        return ($p->y > $t->y && $t->y > $n->y
-            || $p-> y < $t->y && $t->y < $n->y);
+        $previousDirection = $this->verticalDirection($this->prevV);
+        $direction = $this->verticalDirection($this);
+         return ($previousDirection == 1 && $direction == 1)
+             || ($previousDirection == -1 && $direction == -1);
     }
 
     function __toString() {
@@ -299,5 +298,37 @@ class Vertex
      */
     function equals($v) {
         return $this->x == $v->x && $this->y == $v->y;
+    }
+
+    /**
+     * @param Vertex $t
+     * @return int
+     */
+    private function verticalDirection(Vertex $t): int {
+        $td = $t->d();
+        $direction = 0;
+        if ($td == 0) {
+            $n = $t->nextV;
+            if ($t->y < $n->y) {
+                $direction = 1;
+            } else if ($t->y > $n->y) {
+                $direction = -1;
+            }
+        } else {
+            $tcx = $t->Xc();
+            $tcy = $t->Yc();
+            $a = Polygon::angle($tcx, $tcy, $t->x, $t->y);
+            $a += ($td > 0 ? pi() / 2 : -pi() / 2);
+            $sen = sin($a);
+            if ($sen == 0) {
+                $sen = sin($a + ($td > 0 ? 0.001 : -0.001));
+            }
+            if ($sen > 0) {
+                $direction = 1;
+            } else /*if ($sen < 1)*/ {
+                $direction = -1;
+            };
+        }
+        return $direction;
     }
 } //end of class vertex

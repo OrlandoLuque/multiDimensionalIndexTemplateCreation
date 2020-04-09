@@ -10,8 +10,14 @@ $num2 = 1.2; // (string) 1.2 => '1,2'
 //echo '\n/n ------- ' . bcdiv(1, 3, 100);
 
 require_once('polygon.php');
+require_once('database.php');
 require_once('polygon-draw.php');
 require_once('matrix-utils.php');
+
+$connection = Database::connect([
+    'server' => 'localhost',
+    'username' => 'lander',
+]);
 
 
 function arrayPush($array, $item) {
@@ -98,7 +104,6 @@ function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $ve
     }
     return $r;
 }
-
 function getDropPolygonWithDimensions($radius, $length) {
     $dropPoly = new polygon();        // Create a new polygon and add some vertices to it
     $dropPoly->addv(-$radius, $length, 0, $length, -1);        // Arc with center 60,90 Clockwise
@@ -518,17 +523,22 @@ function storeOnlyNewTemplates(string $sourceHash, string $hashXY
 foreach ($polys as $indexPoly => $poly) {
     foreach ($polygonScales as $polygonScale) {
         $scalatedPoly = getScalatedPolygonCopy($poly, $polygonScale, $polygonScale);
+        $scalatedPoly2 = getScalatedPolygonCopy($poly, 32, 32); /////////////////
+
         foreach ($grids as $gridDimensions) {
             $gridX = $gridDimensions[0];
             $gridY = $gridDimensions[1];
             /** @var float $angle */
             foreach ($angles as $angleIndex => $angle) {
                 $rotatedPoly = getRotatedPolygonCopy($scalatedPoly, angleToRadians($angle));
+                $rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
                 for ($x = 0; $x < $gridX; $x++) {
                     for ($y = 0; $y < $gridY; $y++) {
                         $sourceHash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle-dx$x,dy$y";
                         $movedPoly = $rotatedPoly->copy_poly();
+                        $movedPoly2 = $rotatedPoly2->copy_poly(); /////////////////
                         $movedPoly->move($x, $y);
+                        $movedPoly2->move($x, $y); /////////////////
                         $box = $movedPoly->bRect();
                         $boxVertex = [0 => ['x' => $box->first->x, 'y' => $box->first->y]
                             , 1 => ['x' => $box->first->nextV->nextV->x, 'y' => $box->first->nextV->nextV->y]];
@@ -538,6 +548,41 @@ foreach ($polys as $indexPoly => $poly) {
                         $grid = getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
                         /*list($templateGridXY, $templateHashYX)*/
                         $templateGridXY = getTemplateGrid($grid, $movedPoly);
+///////////////////////////
+                        $bb = $movedPoly2->bRect();
+                        /** @var Polygon $polyA */
+                        $polyA = $movedPoly2->copy_poly();
+                        $polyA->move(-$bb->x_min, -$bb->y_min);
+                        $cc = $polyA->bRect();
+                        newImage(ceil($cc->x_max), ceil($cc->y_max), $im, $colors);               // Create a new image to draw our polygons
+                        directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
+                        $r = imageGif($im, "poly_ex_fill_figure1.gif");
+                        echo '<p><div align="center"><strong>EXAMPLE  - poligon used on example XX</strong><br><img src="poly_ex_fill_figure1.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
+
+                        if(false) {
+                            newImage(ceil($cc->x_max), ceil($cc->y_max), $img, $colors);
+                            directDrawPolyAt(0, 0, $img, $polyA, $colors, "red");
+                            for ($x = 0; $x < $cc->x_max; $x++) {
+                                for ($y = 0; $y < $cc->y_max; $y++) {
+                                    $p5 = new Vertex($x, $y);
+                                    //$r1 = $polyA->isInside($p5);
+                                    $a = 1;
+                                    $r1 = $polyA->isInside($p5, true);
+                                    if ($r1) {
+                                        $r = imagesetpixel($img, $x, $y, $col['grn']);
+                                    } else {
+                                        if ($y < 32 || $x == 0 || $y > 32) {
+                                            $r = imagesetpixel($img, $x, $y, $col['blu']);
+                                        } else {
+                                            $r = imagesetpixel($img, $x, $y, $col['red']);
+                                        }
+                                    }
+                                }
+                            }
+                            $r = imageGif($img, "poly_ex_fill_figure2.gif");
+                            echo '<p><div align="center"><strong>EXAMPLE 3 - vertex is inside</strong><br><img src="poly_ex_fill_figure2.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
+                            die();
+                        }
                         $hashXY = MatrixUtil::toString($templateGridXY);
                         echo "\n$sourceHash -->\n$hashXY";
                         $templateCount = storeOnlyNewTemplates($sourceHash, $hashXY
@@ -545,7 +590,7 @@ foreach ($polys as $indexPoly => $poly) {
                             , $templateGridXY, $templateCount, $idToTemplatesDictionary);
                         $calculatedTemplates++;
                         echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
-                        if (false) {
+                        if (true) {
                             $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
                             $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
                             $imageWidth = $cellXRange[1] - $cellXRange[0];
@@ -572,7 +617,7 @@ foreach ($polys as $indexPoly => $poly) {
                                             //drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
                                             break;
                                     }
-                                    if ($cellCount == 60) {
+                                    if ($cellCount == 40) {
                                         directDrawPolyAt(-$cellXRange[0], -$cellYRange[0], $im, $movedPoly, $colors, "blk");
                                         $r = imageGif($im, "template.gif");
                                         echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';

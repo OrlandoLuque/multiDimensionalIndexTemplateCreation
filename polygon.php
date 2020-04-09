@@ -337,7 +337,7 @@ class Polygon {
      * * Return the distance between two points
      */
 
-    function dist($x1, $y1, $x2, $y2) {
+    public static function dist($x1, $y1, $x2, $y2) {
         return sqrt(($x1 - $x2) * ($x1 - $x2) + ($y1 - $y2) * ($y1 - $y2));
     }
 
@@ -347,8 +347,8 @@ class Polygon {
      * * the 3 O'Clock position. Result returned in radians
      */
 
-    function angle($xc, $yc, $x1, $y1) {
-        $d = $this->dist($xc, $yc, $x1, $y1); // calc distance between two points
+    public static function angle($xc, $yc, $x1, $y1) {
+        $d = Polygon::dist($xc, $yc, $x1, $y1); // calc distance between two points
         if ($d != 0) {
             if (asin(($y1 - $yc) / $d) >= 0) {
                 $a1 = acos(($x1 - $xc) / $d);
