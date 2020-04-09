@@ -9,9 +9,9 @@ $num2 = 1.2; // (string) 1.2 => '1,2'
 //echo bcsub($num1, $num2, 1); // => '0.0'
 //echo '\n/n ------- ' . bcdiv(1, 3, 100);
 
-require_once ('polygon.php');
-require_once ('polygon-draw.php');
-require_once ('matrix-utils.php');
+require_once('polygon.php');
+require_once('polygon-draw.php');
+require_once('matrix-utils.php');
 
 $m = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
 echo "Original:\n";
@@ -45,18 +45,21 @@ function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $ve
     }
     return $r;
 }
+
 function getDropPolygonWithDimensions($radius, $length) {
     $dropPoly = new polygon();        // Create a new polygon and add some vertices to it
-    $dropPoly->addv(-$radius,$length,0,$length,-1);        // Arc with center 60,90 Clockwise
+    $dropPoly->addv(-$radius, $length, 0, $length, -1);        // Arc with center 60,90 Clockwise
     $dropPoly->addv($radius, $length);
     $dropPoly->addv(0, 0);
     return $dropPoly;
 }
+
 function getCircleWithRadius($radius) {
     $circlePoly = new polygon();        // Create a new polygon and add some vertices to it
-    $circlePoly->addv(  0,-$radius,0,0,-$radius);        // Arc with center 60,90 Clockwise
-    $circlePoly->addv(  0, $radius,0,0,-$radius);
+    $circlePoly->addv(0, -$radius, 0, 0, -$radius);        // Arc with center 60,90 Clockwise
+    $circlePoly->addv(0, $radius, 0, 0, -$radius);
 }
+
 function getSquarePolygonWithDimensions($sideLength) {
     $sideLength /= 2;
     /*$boxPoly = new polygon();
@@ -66,18 +69,24 @@ function getSquarePolygonWithDimensions($sideLength) {
     $boxPoly->addv(-$sideLength, $sideLength);*/
     return getSquarePolyFromXYXY(-$sideLength, -$sideLength, $sideLength, $sideLength);
 }
-function getSquarePolyFromXYXY($sx, $sy, $ex, $ey){
+
+function getSquarePolyFromXYXY($sx, $sy, $ex, $ey) {
     $boxPoly = new polygon();
-    $boxPoly->addv( $sx, $sy);
-    $boxPoly->addv( $ex, $sy);
-    $boxPoly->addv( $ex, $ey);
-    $boxPoly->addv( $sx, $ey);
+    $boxPoly->addv($sx, $sy);
+    $boxPoly->addv($ex, $sy);
+    $boxPoly->addv($ex, $ey);
+    $boxPoly->addv($sx, $ey);
     return $boxPoly;
 }
+
+function angleToRadians($angle): float {
+    return $angle * pi() / 180;
+}
+
 function getAnglesToTest($step) {
     $r = [];
     for ($i = 0; $i < 360; $i += $step) {
-        $r[] = $i * pi() / 180;
+        $r[] = $i;//angleToRadians($i);
     }
     return $r;
 }
@@ -92,6 +101,7 @@ function getRotatedPolygonCopy($polygon, $angle) {
     $r->rotate(0, 0, $angle);
     return $r;
 }
+
 /**
  * @param polygon $polygon
  * @param $angle
@@ -189,10 +199,10 @@ for ($x = 0; $x < 32; $x++) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-$a1 = new Vertex( 9,4, 9, 9, -1);
-$a2 = new Vertex(9,14);
-$a1 = new Vertex( 9,4, 9, 9, -1);
-$a2 = new Vertex(4,9);
+$a1 = new Vertex(9, 4, 9, 9, -1);
+$a2 = new Vertex(9, 14);
+$a1 = new Vertex(9, 4, 9, 9, -1);
+$a2 = new Vertex(4, 9);
 $polyA = new polygon();        // Create a new polygon and add some vertices to it
 $polyA->add($a1);
 $polyA->add($a2);
@@ -224,7 +234,7 @@ function checkingLineArcIntersection(int $x, int $y, Vertex $c, Vertex $a1, Vert
     return false;
 }
 
-if(false) {
+if (false) {
     for ($x = 0; $x < 20; $x++) {
         $r1 = checkingLineArcIntersection($x, 0, $c, $a1, $a2, $img, $col); //top
         $r2 = checkingLineArcIntersection($x, 19, $c, $a1, $a2, $img, $col); //bottom
@@ -241,16 +251,16 @@ if(false) {
 
 
 $polyA = new polygon();        // Create a new polygon and add some vertices to it
-$polyA->addv( 0,0);
-$polyA->addv( 0,1);
-$polyA->addv(1,1);
-$polyA->addv( 1, 0);
+$polyA->addv(0, 0);
+$polyA->addv(0, 1);
+$polyA->addv(1, 1);
+$polyA->addv(1, 0);
 
 $polyB = new polygon;          // Create a second polygon with some more points
-$polyB->addv( 0,0);
-$polyB->addv( 0,2);
-$polyB->addv(2,2);
-$polyB->addv( 2, 0);
+$polyB->addv(0, 0);
+$polyB->addv(0, 2);
+$polyB->addv(2, 2);
+$polyB->addv(2, 0);
 
 //$r = $polyB->completelyContains($polyA);
 /*
@@ -263,24 +273,24 @@ $polyA->addv(118, 75);
 */
 
 $polyA = new polygon();
-$polyA->addv( 3,11);
-$polyA->addv( 9,15);
-$polyA->addv(12,12);
-$polyA->addv( 6, 3);
+$polyA->addv(3, 11);
+$polyA->addv(9, 15);
+$polyA->addv(12, 12);
+$polyA->addv(6, 3);
 $polyA->addv(15, 5);
 $polyA = new polygon();
-$polyA->addv( 3,11);
-$polyA->addv( 9,15);
-$polyA->addv( 11,15);
-$polyA->addv(12,12);
-$polyA->addv( 6, 3);
+$polyA->addv(3, 11);
+$polyA->addv(9, 15);
+$polyA->addv(11, 15);
+$polyA->addv(12, 12);
+$polyA->addv(6, 3);
 $polyA->addv(15, 5);
 
 $polyA = new polygon();
-$polyA->addv( 0,0);
-$polyA->addv( 0,5, 0, 10, +1);
-$polyA->addv(0,15);
-$polyA->addv( 0, 20);
+$polyA->addv(0, 0);
+$polyA->addv(0, 5, 0, 10, +1);
+$polyA->addv(0, 15);
+$polyA->addv(0, 20);
 $polyA->addv(20, 20);
 $polyA->addv(20, 5, 20, 0, -1);
 $polyA->addv(15, 0);
@@ -295,15 +305,15 @@ $polyA->addv(45,60,45,40,1);
 $polyA->addv(45,20);
 $polyA->addv(45,0);*/
 $extraMargin = 6;
-newImage($polyA->x_max + $extraMargin * 2,$polyA->y_max + $extraMargin * 2, $img, $col);
-newImage($polyA->x_max + $extraMargin * 2,$polyA->y_max + $extraMargin * 2, $img2, $col);
+newImage($polyA->x_max + $extraMargin * 2, $polyA->y_max + $extraMargin * 2, $img, $col);
+newImage($polyA->x_max + $extraMargin * 2, $polyA->y_max + $extraMargin * 2, $img2, $col);
 //directDrawPolyAt(30, 30, $img, $polyA, $col, "blk");
 //drawPolyAt(30, 30, $img2, $polyA, $col, "blk");
 $polyA->move($extraMargin, $extraMargin);
 directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
 drawPolyAt(0, 0, $img2, $polyA, $col, "blk");
-$r = imageGif($img,"poly_ex4insidePolygon.gif");
-$r = imageGif($img2,"poly_ex4insidePolygon2.gif");
+$r = imageGif($img, "poly_ex4insidePolygon.gif");
+$r = imageGif($img2, "poly_ex4insidePolygon2.gif");
 /////// echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 60) * 4 . '" height="' . ($polyA->y_max + 60) * 4 . '"><br></div></p>';
 /////// echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon2.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 60) * 4 . '" height="' . ($polyA->y_max + 60) * 4 . '"><br></div></p>';
 //die();
@@ -322,7 +332,7 @@ $r = imageGif($img,"poly_ex4insidePolygon.gif");
 echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
 //die();
 */
-if(false) {
+if (false) {
     newImage($polyA->x_max + $extraMargin * 2, $polyA->y_max + $extraMargin * 2, $im, $colors);               // Create a new image to draw our polygons
     directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
     $r = imageGif($im, "poly_ex2polygon.gif");
@@ -349,10 +359,10 @@ if(false) {
 }
 
 $polyA = new polygon();
-$polyA->addv( 0,0);
-$polyA->addv( 0,5, 0, 10, +1);
-$polyA->addv(0,15);
-$polyA->addv( 0, 20);
+$polyA->addv(0, 0);
+$polyA->addv(0, 5, 0, 10, +1);
+$polyA->addv(0, 15);
+$polyA->addv(0, 20);
 $polyA->addv(20, 20);
 $polyA->addv(20, 5, 20, 0, -1);
 $polyA->addv(15, 0);
@@ -372,14 +382,15 @@ echo '<p><div align="center"><strong>EXAMPLE y - bounding rectangle</strong><br>
 define("OUT", 0);
 define("IN", 2);
 define("MAYBE", 1);
-$polygonScales = [/*32, 64, */128, 256, 512, 1024];
+$polygonScales = [/*32, 64, */
+    128, 256, 512, 1024];
 $gridSupportedSizes = [16, 32, 64, 128, 256, 512];
 $grids = getGridsFromSupportedSizes($gridSupportedSizes);
 
 
 $circlePoly = getCircleWithRadius(1);
 $boxPoly = getSquarePolygonWithDimensions(1);        // Create a new polygon and add some vertices to it
-$dropPoly = getDropPolygonWithDimensions(1/5, 1); // or 1/6
+$dropPoly = getDropPolygonWithDimensions(1 / 5, 1); // or 1/6
 $polys = ['drop' => $dropPoly, 'box' => $boxPoly, 'circle' => $circlePoly];
 $angles = getAnglesToTest(0.5);
 
@@ -399,7 +410,7 @@ foreach ($polys as $indexPoly => $poly) {
             $gridY = $gridDimensions[1];
             /** @var float $angle */
             foreach ($angles as $angleIndex => $angle) {
-                $rotatedPoly = getRotatedPolygonCopy($scalatedPoly, $angle);
+                $rotatedPoly = getRotatedPolygonCopy($scalatedPoly, angleToRadians($angle));
                 for ($x = 0; $x < $gridX; $x++) {
                     for ($y = 0; $y < $gridY; $y++) {
                         $hash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle-dx$x,dy$y";
@@ -409,11 +420,12 @@ foreach ($polys as $indexPoly => $poly) {
                         $boxVertex = [0 => ['x' => $box->first->x, 'y' => $box->first->y]
                             , 1 => ['x' => $box->first->nextV->nextV->x, 'y' => $box->first->nextV->nextV->y]];
                         $template = [];
-                        $gridXRange = [floor($boxVertex[0]['x'] / $gridX), floor($boxVertex[1]['x'] / $gridX)];
-                        $gridYRange = [floor($boxVertex[0]['y'] / $gridY), floor($boxVertex[1]['y'] / $gridY)];
+                        $gridXRange = [floor($boxVertex[0]['x'] / $gridX), ceil($boxVertex[1]['x'] / $gridX)];
+                        $gridYRange = [floor($boxVertex[0]['y'] / $gridY), ceil($boxVertex[1]['y'] / $gridY)];
                         $grid = getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
-                        /*list($templateGridXY, $templateHashYX)*/ $templateGridXY = getTemplateGrid($grid, $movedPoly);
-                        $hashXY = MatrixUtil::toStringYX($templateGridXY);
+                        /*list($templateGridXY, $templateHashYX)*/
+                        $templateGridXY = getTemplateGrid($grid, $movedPoly);
+                        $hashXY = MatrixUtil::toString($templateGridXY);
                         echo "\n$hash -->\n$hashXY";
                         if (empty($hashToTemplatesIdDictionary[$hashXY])) {
                             $hashToTemplatesIdDictionary[$hashXY] = $templateGridXY;
@@ -425,6 +437,25 @@ foreach ($polys as $indexPoly => $poly) {
                         $idToTemplatesDictionary[$hash] = $hashToTemplatesIdDictionary[$hashXY];
                         $calculatedTemplates++;
                         echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
+                        $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
+                        $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
+                        newImage ($cellXRange[1] - $cellXRange[0],$cellYRange[1] - $cellYRange[0], $im, $colors);
+                        foreach ($grid as $x => $column) {
+                            foreach ($column as $y => $cell) {
+                                switch($templateGridXY[$x][$y]) {
+                                    case 0:
+                                        drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "blk");
+                                        break;
+                                    case 1:
+                                        drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "yel");
+                                        break;
+                                    case 2:
+                                        drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
+                                        break;
+                                }
+                            }
+                        }
+                        $r = imageGif($im,"template.gif");
                     }
                 }
             }
@@ -439,9 +470,9 @@ echo "Calculated templates: $calculatedTemplates - unique ones: $templateCount -
  */
 function getTemplateGrid($grid, $poly) {
     $r = []; //$sr = '';
-    foreach($grid as $iy => $row) {
+    foreach ($grid as $ix => $column) {
         /** @var polygon $cell */
-        foreach($row as $ix => $cell) {
+        foreach ($column as $iy => $cell) {
             if ($poly->completelyContains($cell)) {
                 $intersectResult = IN;
             } else if ($cell->completelyContains($poly)
@@ -457,19 +488,20 @@ function getTemplateGrid($grid, $poly) {
     }
     return $r; //[$r, $sr];
 }
+
 function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY) {
-    $unDecimal = 0.0000000001; /////////// para 4 dígitos
+    //$unDecimal = 0.0000000001; /////////// para 4 dígitos
     $unDecimal = 0.0;
     $dx = $ex - $sx;
     $dy = $ey - $sy;
     $grid = [];
-    for ($y = 0; $y < $dy; $y++) {
-        $syCell = ($sy + $y) * $gridX;
-        $eyCell = ($sy + $y + 1) * $gridY - $unDecimal;
-        for ($x = 0; $x < $dx; $x++) {
-            $sxCell = ($sx + $x) * $gridX;
-            $exCell = ($sx + $x + 1) * $gridX - $unDecimal;
-            $grid[$y][$x] = getSquarePolyFromXYXY($sxCell, $syCell, $exCell, $eyCell);
+    for ($x = 0; $x < $dx; $x++) {
+        $sxCell = ($sx + $x) * $gridX;
+        $exCell = ($sx + $x + 1) * $gridX - $unDecimal;
+        for ($y = 0; $y < $dy; $y++) {
+            $syCell = ($sy + $y) * $gridX;
+            $eyCell = ($sy + $y + 1) * $gridY - $unDecimal;
+            $grid[$x][$y] = getSquarePolyFromXYXY($sxCell, $syCell, $exCell, $eyCell);
         }
     }
     return $grid;

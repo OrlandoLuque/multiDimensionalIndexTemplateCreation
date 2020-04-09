@@ -155,7 +155,7 @@ class Polygon {
      * * vertex.
      */
 
-    function add(Vertex &$nv) {
+    function add(Vertex &$nv) { //TODO: support arcs if possible (probably not, as you need the next vertex and you do not know which one is the last one
 
         $this->x_min = min($this->x_min, $nv->X());
         $this->x_max = max($this->x_max, $nv->X());
