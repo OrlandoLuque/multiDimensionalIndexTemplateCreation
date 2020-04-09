@@ -11,6 +11,26 @@ $num2 = 1.2; // (string) 1.2 => '1,2'
 
 require_once ('polygon.php');
 require_once ('polygon-draw.php');
+require_once ('matrix-utils.php');
+
+$m = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+echo "Original:\n";
+MatrixUtil::print($m);
+echo "90 clockwise rotation:\n";
+MatrixUtil::print(MatrixUtil::rotateClockwise90($m));
+echo "90 counter-clockwise rotation:\n";
+MatrixUtil::print(MatrixUtil::rotateCounterClockwise90($m));
+echo "180 rotation:\n";
+MatrixUtil::print(MatrixUtil::rotate180($m));
+echo "flip left right:\n";
+MatrixUtil::print(MatrixUtil::flipLR($m));
+echo "flip top bottom:\n";
+MatrixUtil::print(MatrixUtil::flipTB($m));
+echo "flip top left bottom right:\n";
+MatrixUtil::print(MatrixUtil::flipTLBR($m));
+echo "flip top right bottom left:\n";
+MatrixUtil::print(MatrixUtil::flipTRBL($m));
+//die();
 
 function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $vertical = true) {
     $r = [];
@@ -352,7 +372,7 @@ echo '<p><div align="center"><strong>EXAMPLE y - bounding rectangle</strong><br>
 define("OUT", 0);
 define("IN", 2);
 define("MAYBE", 1);
-$polygonScales = [32, 64, 128, 256, 512, 1024];
+$polygonScales = [/*32, 64, */128, 256, 512, 1024];
 $gridSupportedSizes = [16, 32, 64, 128, 256, 512];
 $grids = getGridsFromSupportedSizes($gridSupportedSizes);
 
@@ -392,16 +412,17 @@ foreach ($polys as $indexPoly => $poly) {
                         $gridXRange = [floor($boxVertex[0]['x'] / $gridX), floor($boxVertex[1]['x'] / $gridX)];
                         $gridYRange = [floor($boxVertex[0]['y'] / $gridY), floor($boxVertex[1]['y'] / $gridY)];
                         $grid = getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
-                        list($templateGridXY, $templateHashYX) = getTemplateGrid($grid, $movedPoly);
-                        echo "\n$hash --> $templateHashYX ";
-                        if (empty($hashToTemplatesIdDictionary[$templateHashYX])) {
-                            $hashToTemplatesIdDictionary[$templateHashYX] = $templateGridXY;
+                        /*list($templateGridXY, $templateHashYX)*/ $templateGridXY = getTemplateGrid($grid, $movedPoly);
+                        $hashXY = MatrixUtil::toStringYX($templateGridXY);
+                        echo "\n$hash -->\n$hashXY";
+                        if (empty($hashToTemplatesIdDictionary[$hashXY])) {
+                            $hashToTemplatesIdDictionary[$hashXY] = $templateGridXY;
                             $templateCount++;
                             echo "+++++++++++++++++++++ ";
                         } else {
                             echo "repeated! ";
                         }
-                        $idToTemplatesDictionary[$hash] = $hashToTemplatesIdDictionary[$templateHashYX];
+                        $idToTemplatesDictionary[$hash] = $hashToTemplatesIdDictionary[$hashXY];
                         $calculatedTemplates++;
                         echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
                     }
@@ -417,7 +438,7 @@ echo "Calculated templates: $calculatedTemplates - unique ones: $templateCount -
  * @return array
  */
 function getTemplateGrid($grid, $poly) {
-    $r = []; $sr = '';
+    $r = []; //$sr = '';
     foreach($grid as $iy => $row) {
         /** @var polygon $cell */
         foreach($row as $ix => $cell) {
@@ -430,11 +451,11 @@ function getTemplateGrid($grid, $poly) {
                 $intersectResult = OUT;
             }
             $r[$ix][$iy] = $intersectResult;
-            $sr .= $intersectResult;
+            //$sr .= $intersectResult;
         }
-        $sr .= '|';
+        //$sr .= '|';
     }
-    return [$r, $sr];
+    return $r; //[$r, $sr];
 }
 function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY) {
     $unDecimal = 0.0000000001; /////////// para 4 dígitos
@@ -454,26 +475,4 @@ function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY) {
     return $grid;
 }
 
-/*
-class Point {
-    public float $x, $y;
 
-    function __construct($x, $y) {
-        $this->x = $x;
-        $this->y = $y;
-    }
-}
-
-function IsIntersecting(Point $a, Point $b, Point $c, Point $d): boolean {
-    float denominator = ((b->X() - a->X()) * (d->Y() - c->Y())) - ((b->Y() - a->Y()) * (d->X() - c->X()));
-    float numerator1 = ((a->Y() - c->Y()) * (d->X() - c->X())) - ((a->X() - c->X()) * (d->Y() - c->Y()));
-    float numerator2 = ((a->Y() - c->Y()) * (b->X() - a->X())) - ((a->X() - c->X()) * (b->Y() - a->Y()));
-
-    // Detect coincident lines (has a problem, read below)
-    if (denominator == 0) return numerator1 == 0 && numerator2 == 0;
-
-    float r = numerator1 / denominator;
-    float s = numerator2 / denominator;
-
-    return (r >= 0 && r <= 1) && (s >= 0 && s <= 1);
-}*/
