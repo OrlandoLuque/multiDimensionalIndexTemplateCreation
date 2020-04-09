@@ -463,8 +463,9 @@ class Polygon {
             if ($alternateMode) {
                 $int = Intersector::intersection($p1, $p2, $q1, $q2);
                 $n = count($int);
-                $ix = []; $iy = [];
-                foreach($int as $anInt) {
+                $ix = [];
+                $iy = [];
+                foreach ($int as $anInt) {
                     $ix[] = $anInt->x;
                     $iy[] = $anInt->y;
                 }
@@ -633,6 +634,11 @@ class Polygon {
                 } else {
                     $int = Intersector::lineArcIntersection($q1, $q2, $p1, $p2);
                 }
+                $n = count($int);
+                foreach ($int as $anInt) {
+                    $ix[] = $anInt->x;
+                    $iy[] = $anInt->y;
+                }
                 return $int;
                 //$found = count($int) > 0;
             } else {
@@ -730,7 +736,7 @@ class Polygon {
                 }
             }
         } // End of find Arc/Line intersection
-        return $found? [true]: [];
+        return $found ? [true] : [];
     }
 
     function ints2(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternative = false) {
@@ -1021,16 +1027,16 @@ class Polygon {
             $r = $q->nextV;
             //if it intersects with an edge, it is inside
             if (count($this->ints($v, $v, $q, $r
-                , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0) {
+                    , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0) {
                 return true;
             }
             $int = $this->ints($point_at_infinity, $v, $q, $r
                 , $n, $x, $y, $aP, $aQ, $alternateMode);
             if (count($int) == 1) {
                 $qIntercepts = count($this->ints($point_at_infinity, $v, $q, $q
-                    , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
+                        , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
                 $rIntercepts = count($this->ints($point_at_infinity, $v, $r, $r
-                    , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
+                        , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
                 if (!$qIntercepts && !$rIntercepts
                     || $qIntercepts && $q->isVerticalVertex()) {
                     $winding_number++;
@@ -1145,7 +1151,7 @@ class Polygon {
                         //$n = count($interceptions);
                         if (count($interceptions) > 0) {
                             for ($i = 0; $i < $n; $i++) {
-                            //foreach($interceptions as $interception) {
+                                //foreach($interceptions as $interception) {
                                 $interception = $interceptions[$i];
                                 //$is = new Vertex($ix[$i], $iy[$i], $s->Xc(), $s->Yc(), $s->d(), NULL, NULL, NULL, TRUE, NULL, $alphaS[$i], FALSE, FALSE);
                                 //$ic = new Vertex($ix[$i], $iy[$i], $c->Xc(), $c->Yc(), $c->d(), NULL, NULL, NULL, TRUE, NULL, $alphaC[$i], FALSE, FALSE);
@@ -1439,9 +1445,9 @@ class Polygon {
                 /** @var Vertex $intersection */
                 foreach ($intersections as $intersection) {
                     if ($s->Next() === $c) {
-                       if (!($intersection->equals($c))) {
-                           return true;
-                       }
+                        if (!($intersection->equals($c))) {
+                            return true;
+                        }
                     } else if ($c->Next() === $s) {
                         if (!($intersection->equals($s))) {
                             return true;
@@ -1453,13 +1459,13 @@ class Polygon {
                 //if ($s->Next() !== $c && $c->Next() !== $s
                 //    && count() > 0) { // If the segments intersect
                 //    return true;
-                    /*for ($i = 0; $i <= $n; $i++) // then for each intersection point
+                /*for ($i = 0; $i <= $n; $i++) // then for each intersection point
+                {
+                    if ((isset($aS[$i]) && $aS[$i] <> 0) || (isset($aC[$i]) && $aC[$i] <> 0)) // check that it NOT at the end of the segment
                     {
-                        if ((isset($aS[$i]) && $aS[$i] <> 0) || (isset($aC[$i]) && $aC[$i] <> 0)) // check that it NOT at the end of the segment
-                        {
-                            $intersect = TRUE;
-                        }
-                    }*/
+                        $intersect = TRUE;
+                    }
+                }*/
                 //} // Because sequential segments always intersect at their ends
                 $c = $c->Next();
             } while ($c->id() != $s->id()); //$this->first->id());
@@ -1477,6 +1483,7 @@ class Polygon {
      */
 
     function move($dx, $dy) {
+        /** @var Polygon $p */
         $p = $this;
         if ($p) // For a valid polygon
         {
@@ -1493,6 +1500,10 @@ class Polygon {
                 } while ($v->id() != $p->first->id());
                 $p = $p->NextPoly(); // Get the next polygon in the list
             } while ($p);
+            //$this->x_max += $dx;
+            //$this->x_min += $dx;
+            //$this->y_max += $dy;
+            //$this->y_min += $dy;
         } // Keep checking polygons as long as they exist
     }
 
@@ -1554,25 +1565,23 @@ class Polygon {
         $maxX = -INF;
         $maxY = -INF;
         $p = $this;
-        if ($p) // For a valid polygon
-        {
+        if ($p) { // For a valid polygon
             do {
                 $v = $p->first; // Get the first vertex
                 do {
-                    if ($v->d() != 0) // Is it an arc segment
-                    {
+                    if ($v->d() != 0) { // Is it an arc segment
                         $vn = $v->Next(); // end vertex of the arc segment
                         $v1 = new Vertex($v->Xc(), -infinity); // bottom point of vertical line thru arc center
                         $v2 = new Vertex($v->Xc(), +infinity); // top point of vertical line thru arc center
-                        if (count($p->ints($v, $vn, $v1, $v2, $n, $x, $y, $aS, $aC)) > 0) // Does line intersect the arc ?
-                        {
-                            for ($i = 0; $i < $n; $i++) // check y portion of all intersections
-                            {
+                        $ints = $p->ints($v, $vn, $v1, $v2
+                            , $n, $x, $y, $aS, $aC);
+                        if (count($ints) > 0) { // Does line intersect the arc ?
+                            for ($i = 0; $i < $n; $i++) { // check y portion of all intersections
                                 $minY = min($minY, $y[$i], $v->Y());
                                 $maxY = max($maxY, $y[$i], $v->Y());
                             }
-                        } else // There was no intersection so bounding rect is determined
-                        { // by the start point only, not the edge of the arc
+                        } else { // There was no intersection so bounding rect is determined
+                                // by the start point only, not the edge of the arc
                             $minY = min($minY, $v->Y());
                             $maxY = max($maxY, $v->Y());
                         }
@@ -1580,10 +1589,9 @@ class Polygon {
                         $v2 = NULL; // Free the memory used
                         $h1 = new Vertex(-infinity, $v->Yc()); // left point of horozontal line thru arc center
                         $h2 = new Vertex(+infinity, $v->Yc()); // right point of horozontal line thru arc center
-                        if (count($p->ints($v, $vn, $h1, $h2, $n, $x, $y, $aS, $aC)) > 0) // Does line intersect the arc ?
-                        {
-                            for ($i = 0; $i < $n; $i++) // check x portion of all intersections
-                            {
+                        if (count($p->ints($v, $vn, $h1, $h2
+                                , $n, $x, $y, $aS, $aC)) > 0) {// Does line intersect the arc ?
+                            for ($i = 0; $i < $n; $i++) { // check x portion of all intersections
                                 $minX = min($minX, $x[$i], $v->X());
                                 $maxX = max($maxX, $x[$i], $v->X());
                             }
@@ -1593,8 +1601,7 @@ class Polygon {
                         }
                         $h1 = NULL;
                         $h2 = NULL;
-                    } else // Straight segment so just check the vertex
-                    {
+                    } else { // Straight segment so just check the vertex
                         $minX = min($minX, $v->X());
                         $minY = min($minY, $v->Y());
                         $maxX = max($maxX, $v->X());
