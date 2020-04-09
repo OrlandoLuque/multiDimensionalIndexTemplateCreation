@@ -2,9 +2,9 @@
 
 class MatrixUtil {
     public static function print($matrix) {
-        echo "------------\n";
-        self::toString($matrix);
-        echo "------------\n";
+        //echo "------------\n";
+        echo self::toString($matrix);
+        //echo "------------\n";
     }
 
 
@@ -15,12 +15,16 @@ class MatrixUtil {
         return [count($matrix), count($matrix[0])];
     }
 
+    public static function same($matrix) {
+        return $matrix;
+    }
+
     public static function rotateClockwise90($matrix) {
         List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
-                $r[$y][$tx - $x - 1] = $matrix[$x][$y];
+                $r[$ty - $y - 1][$x] = $matrix[$x][$y];
             }
         }
         return $r;
@@ -40,13 +44,13 @@ class MatrixUtil {
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
-                $r[$ty - $y - 1][$x] = $matrix[$x][$y];
+                $r[$y][$tx - $x - 1] = $matrix[$x][$y];
             }
         }
         return $r;
     }
 
-    public static function flipLR($matrix) {
+    public static function flipTB($matrix) {
         List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
@@ -57,7 +61,7 @@ class MatrixUtil {
         return $r;
     }
 
-    public static function flipTB($matrix) {
+    public static function flipLR($matrix) {
         List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {

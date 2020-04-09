@@ -12,25 +12,77 @@ $num2 = 1.2; // (string) 1.2 => '1,2'
 require_once('polygon.php');
 require_once('polygon-draw.php');
 require_once('matrix-utils.php');
+
+
+function arrayPush($array, $item) {
+    $array[] = $item;
+    return $array;
+}
+function recursiveMatrixOperationsCheck(&$resultListOfOperationsCache, $previousOperations, $currentMatrix) {
+    $hash = MatrixUtil::toString($currentMatrix);
+    //if (array_key_exists($$hash, $resultListOfOperationsCache)) {
+    //if (!empty($resultListOfOperationsCache[$hash])) {
+    //if (count($resultListOfOperationsCache[$hash])) {
+    if (is_array($resultListOfOperationsCache[$hash])) {
+        if (count($previousOperations) < count($resultListOfOperationsCache[$hash])) {
+            $resultListOfOperationsCache[$hash] = $previousOperations;
+            echo "better - $hash\n";
+        } else {
+            echo "no - $hash\n";
+        }
+        return;
+    }
+    echo "- $hash\n";
+    $resultListOfOperationsCache[$hash] = $previousOperations;
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache
+        , arrayPush($previousOperations, 'tc90')
+        , MatrixUtil::rotateClockwise90($currentMatrix));
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache
+        , arrayPush($previousOperations, 'tcc90')
+        , MatrixUtil::rotateCounterClockwise90($currentMatrix));
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache
+        , arrayPush($previousOperations, 'tr180')
+        , MatrixUtil::rotate180($currentMatrix));
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache
+        , arrayPush($previousOperations, 'flr')
+        , MatrixUtil::flipLR($currentMatrix));
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache
+        , arrayPush($previousOperations, 'ftb')
+        , MatrixUtil::flipTB($currentMatrix));
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache
+        , arrayPush($previousOperations, 'ftlbr')
+        , MatrixUtil::flipTLBR($currentMatrix));
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache
+        , arrayPush($previousOperations, 'ftrbl')
+        , MatrixUtil::flipTRBL($currentMatrix));
+}
 if (false) {
     $m = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-    echo "Original:\n";
+    $m = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]];
+    echo "######### Original ###########################\n\n";
     MatrixUtil::print($m);
-    echo "90 clockwise rotation:\n";
+    echo "\n90 clockwise rotation:\n\n";
     MatrixUtil::print(MatrixUtil::rotateClockwise90($m));
-    echo "90 counter-clockwise rotation:\n";
+    echo "\n90 counter-clockwise rotation:\n\n";
     MatrixUtil::print(MatrixUtil::rotateCounterClockwise90($m));
-    echo "180 rotation:\n";
+    echo "\n180 rotation:\n\n";
     MatrixUtil::print(MatrixUtil::rotate180($m));
-    echo "flip left right:\n";
+    echo "\n\n######### Original ###########################\n\n";
+    MatrixUtil::print($m);
+    echo "\nflip left right:\n\n";
     MatrixUtil::print(MatrixUtil::flipLR($m));
-    echo "flip top bottom:\n";
+    echo "\nflip top bottom:\n\n";
     MatrixUtil::print(MatrixUtil::flipTB($m));
-    echo "flip top left bottom right:\n";
+    echo "\n\n######### Original ###########################\n\n";
+    MatrixUtil::print($m);
+    echo "\nflip top left bottom right:\n\n";
     MatrixUtil::print(MatrixUtil::flipTLBR($m));
-    echo "flip top right bottom left:\n";
+    echo "\nflip top right bottom left:\n\n";
     MatrixUtil::print(MatrixUtil::flipTRBL($m));
-    //die();
+    echo "\n\n-----------------------------------------------------------------\n\n";
+    $resultListOfOperationsCache = [];
+    recursiveMatrixOperationsCheck($resultListOfOperationsCache, [], $m);
+    die();
 }
 
 function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $vertical = true) {
@@ -421,6 +473,47 @@ function paintCell($cellOffsetX, $cellOffsetY, $cell, &$im, $fgColor, $bgColor, 
         , ($cell->y_max + $cell->y_min) / 2 + $cellOffsetY
         , $colors[$bgColor]);
 }
+$matrixClass = 'MatrixUtil';
+// rC <==> rCC por ser contrarias mientras que todas las
+// demás son 'reflejas': si las repites una vez se deshace
+$matrixMethods = ['same' => '', 'rotateClockwise90' => 'rCC'
+                    , 'rotateCounterClockwise90' => 'rC', 'rotate180' => 'r180'
+                    , 'flipLR' => 'fLR', 'flipTB' => 'fTB'
+                    , 'flipTLBR' => 'fTLBR', 'flipTRBL' => 'fTRBL'];
+/**
+ * @param string $sourceHash
+ * @param string $hashXY
+ * @param array $hashToTemplatesIdDictionary
+ * @param array $templateGridXY
+ * @param int $templateCount
+ * @param array $idToTemplatesDictionary
+ * @return int
+ */
+function storeOnlyNewTemplates(string $sourceHash, string $hashXY
+        , array $hashToTemplatesIdDictionary, array $templateGridXY
+        , int $templateCount, array $idToTemplatesDictionary): int {
+    global $matrixClass, $matrixMethods;
+
+    //$found = false;
+    foreach ($matrixMethods as $method => $operation) {
+        $matrix = call_user_func(array($matrixClass, $method), $templateGridXY);
+        $nHash = MatrixUtil::toString($matrix);
+        if (!empty($hashToTemplatesIdDictionary[$nHash])) {
+            echo 'repeated! ' . (count($operation) > 0? " doing a $operation": '');
+            $hashToTemplatesIdDictionary[$hashXY] = [$hashToTemplatesIdDictionary[$nHash][0], $operation];
+            return $templateCount;
+            //$found = true;
+            //break;
+        }
+    }
+    //if (!$found) {
+        echo "+++++++++++++++++++++ ";
+        $hashToTemplatesIdDictionary[$hashXY] = [$templateCount, ''];
+        //$idToTemplatesDictionary[$templateCount] = $templateGridXY;
+        $templateCount++;
+    return $templateCount;
+    //}
+}
 
 foreach ($polys as $indexPoly => $poly) {
     foreach ($polygonScales as $polygonScale) {
@@ -433,7 +526,7 @@ foreach ($polys as $indexPoly => $poly) {
                 $rotatedPoly = getRotatedPolygonCopy($scalatedPoly, angleToRadians($angle));
                 for ($x = 0; $x < $gridX; $x++) {
                     for ($y = 0; $y < $gridY; $y++) {
-                        $hash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle-dx$x,dy$y";
+                        $sourceHash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle-dx$x,dy$y";
                         $movedPoly = $rotatedPoly->copy_poly();
                         $movedPoly->move($x, $y);
                         $box = $movedPoly->bRect();
@@ -446,56 +539,53 @@ foreach ($polys as $indexPoly => $poly) {
                         /*list($templateGridXY, $templateHashYX)*/
                         $templateGridXY = getTemplateGrid($grid, $movedPoly);
                         $hashXY = MatrixUtil::toString($templateGridXY);
-                        echo "\n$hash -->\n$hashXY";
-                        if (empty($hashToTemplatesIdDictionary[$hashXY])) {
-                            $hashToTemplatesIdDictionary[$hashXY] = $templateGridXY;
-                            $templateCount++;
-                            echo "+++++++++++++++++++++ ";
-                        } else {
-                            echo "repeated! ";
-                        }
-                        $idToTemplatesDictionary[$hash] = $hashToTemplatesIdDictionary[$hashXY];
+                        echo "\n$sourceHash -->\n$hashXY";
+                        $templateCount = storeOnlyNewTemplates($sourceHash, $hashXY
+                            , $hashToTemplatesIdDictionary
+                            , $templateGridXY, $templateCount, $idToTemplatesDictionary);
                         $calculatedTemplates++;
                         echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
-                        $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
-                        $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
-                        $imageWidth = $cellXRange[1] - $cellXRange[0];
-                        $imageHeight = $cellYRange[1] - $cellYRange[0];
-                        /** @var resource $im */
-                        newImage ($imageWidth, $imageHeight, $im, $colors);
-                        $cellCount = 0;
-                        foreach ($grid as $x => $column) {
-                            /** @var Polygon $cell */
-                            foreach ($column as $y => $cell) {
-                                switch($templateGridXY[$x][$y]) {
-                                    case 0:
-                                        paintCell($cellXRange[0], $cellYRange[0], $cell
-                                            , $im, 'blk', 'dgra', $colors);
-                                        break;
-                                    case 1:
-                                        paintCell($cellXRange[0], $cellYRange[0], $cell
-                                            , $im, 'yel', 'ora', $colors);
-                                        //drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "blu");
-                                        break;
-                                    case 2:
-                                        paintCell($cellXRange[0], $cellYRange[0], $cell
-                                            , $im, 'blu', 'grn', $colors);
-                                        //drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
-                                        break;
+                        if (false) {
+                            $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
+                            $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
+                            $imageWidth = $cellXRange[1] - $cellXRange[0];
+                            $imageHeight = $cellYRange[1] - $cellYRange[0];
+                            /** @var resource $im */
+                            newImage($imageWidth, $imageHeight, $im, $colors);
+                            $cellCount = 0;
+                            foreach ($grid as $x => $column) {
+                                /** @var Polygon $cell */
+                                foreach ($column as $y => $cell) {
+                                    switch ($templateGridXY[$x][$y]) {
+                                        case 0:
+                                            paintCell($cellXRange[0], $cellYRange[0], $cell
+                                                , $im, 'blk', 'dgra', $colors);
+                                            break;
+                                        case 1:
+                                            paintCell($cellXRange[0], $cellYRange[0], $cell
+                                                , $im, 'yel', 'ora', $colors);
+                                            //drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "blu");
+                                            break;
+                                        case 2:
+                                            paintCell($cellXRange[0], $cellYRange[0], $cell
+                                                , $im, 'blu', 'grn', $colors);
+                                            //drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
+                                            break;
+                                    }
+                                    if ($cellCount == 60) {
+                                        directDrawPolyAt(-$cellXRange[0], -$cellYRange[0], $im, $movedPoly, $colors, "blk");
+                                        $r = imageGif($im, "template.gif");
+                                        echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
+                                        die();
+                                    }
+                                    $cellCount++;
                                 }
-                                if ($cellCount == 60) {
-                                    directDrawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $movedPoly, $colors, "blk");
-                                    $r = imageGif($im,"template.gif");
-                                    echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
-                                    die();
-                                }
-                                $cellCount++;
                             }
+                            directDrawPolyAt(-$cellXRange[0], -$cellYRange[0], $im, $movedPoly, $colors, "blk");
+                            $r = imageGif($im, "template.gif");
+                            echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
+                            die();
                         }
-                        directDrawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $movedPoly, $colors, "blk");
-                        $r = imageGif($im,"template.gif");
-                        echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
-                        die();
                     }
                 }
             }
