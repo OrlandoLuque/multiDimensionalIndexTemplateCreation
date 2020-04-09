@@ -12,25 +12,26 @@ $num2 = 1.2; // (string) 1.2 => '1,2'
 require_once('polygon.php');
 require_once('polygon-draw.php');
 require_once('matrix-utils.php');
-
-$m = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-echo "Original:\n";
-MatrixUtil::print($m);
-echo "90 clockwise rotation:\n";
-MatrixUtil::print(MatrixUtil::rotateClockwise90($m));
-echo "90 counter-clockwise rotation:\n";
-MatrixUtil::print(MatrixUtil::rotateCounterClockwise90($m));
-echo "180 rotation:\n";
-MatrixUtil::print(MatrixUtil::rotate180($m));
-echo "flip left right:\n";
-MatrixUtil::print(MatrixUtil::flipLR($m));
-echo "flip top bottom:\n";
-MatrixUtil::print(MatrixUtil::flipTB($m));
-echo "flip top left bottom right:\n";
-MatrixUtil::print(MatrixUtil::flipTLBR($m));
-echo "flip top right bottom left:\n";
-MatrixUtil::print(MatrixUtil::flipTRBL($m));
-//die();
+if (false) {
+    $m = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+    echo "Original:\n";
+    MatrixUtil::print($m);
+    echo "90 clockwise rotation:\n";
+    MatrixUtil::print(MatrixUtil::rotateClockwise90($m));
+    echo "90 counter-clockwise rotation:\n";
+    MatrixUtil::print(MatrixUtil::rotateCounterClockwise90($m));
+    echo "180 rotation:\n";
+    MatrixUtil::print(MatrixUtil::rotate180($m));
+    echo "flip left right:\n";
+    MatrixUtil::print(MatrixUtil::flipLR($m));
+    echo "flip top bottom:\n";
+    MatrixUtil::print(MatrixUtil::flipTB($m));
+    echo "flip top left bottom right:\n";
+    MatrixUtil::print(MatrixUtil::flipTLBR($m));
+    echo "flip top right bottom left:\n";
+    MatrixUtil::print(MatrixUtil::flipTRBL($m));
+    //die();
+}
 
 function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $vertical = true) {
     $r = [];
@@ -172,7 +173,7 @@ $v2 = new Vertex(0, 1);
 $p5 = new Vertex(0, 0);
 $rVertical = Polygon::vertexIntsLine($p5, $v1, $v2); // |
 $rHorizontal = Polygon::vertexIntsLine($p5, $h1, $h2); // -
-$r = Polygon::ints($p5, $p5, $v1, $v2, $n, $ix, $iy, $alphaP, $alphaQ);
+//$r = Polygon::ints($p5, $p5, $v1, $v2, $n, $ix, $iy, $alphaP, $alphaQ);
 
 $h1 = new Vertex(0, 15);
 $h2 = new Vertex(31, 15);
@@ -358,26 +359,28 @@ if (false) {
     die();
 }
 
-$polyA = new polygon();
-$polyA->addv(0, 0);
-$polyA->addv(0, 5, 0, 10, +1);
-$polyA->addv(0, 15);
-$polyA->addv(0, 20);
-$polyA->addv(20, 20);
-$polyA->addv(20, 5, 20, 0, -1);
-$polyA->addv(15, 0);
-$polyB = $polyA->bRect();
+if (false) {
+    $polyA = new polygon();
+    $polyA->addv(0, 0);
+    $polyA->addv(0, 5, 0, 10, +1);
+    $polyA->addv(0, 15);
+    $polyA->addv(0, 20);
+    $polyA->addv(20, 20);
+    $polyA->addv(20, 5, 20, 0, -1);
+    $polyA->addv(15, 0);
+    $polyB = $polyA->bRect();
 
-$maxX = $polyA->x_max + $extraMargin * 2;
-$maxY = $polyA->y_max + $extraMargin * 2;
-newImage($maxX, $maxY, $img, $col);
-$r = imageline($img, 0, $maxY - 8, $maxX, $maxY - 8, $col["grn"]);
-$r = imageline($img, 4, 0, 4, $maxY, $col["grn"]);
-drawPolyAt(4, 8, $img, $polyA, $col, "blk");
-drawPolyAt(4, 8, $img, $polyB, $col, "red");
-$r = imageGif($img, "poly_ex_bounding_rectangle.gif");
-echo '<p><div align="center"><strong>EXAMPLE y - bounding rectangle</strong><br><img src="poly_ex_bounding_rectangle.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
-//die();
+    $maxX = $polyA->x_max + $extraMargin * 2;
+    $maxY = $polyA->y_max + $extraMargin * 2;
+    newImage($maxX, $maxY, $img, $col);
+    $r = imageline($img, 0, $maxY - 8, $maxX, $maxY - 8, $col["grn"]);
+    $r = imageline($img, 4, 0, 4, $maxY, $col["grn"]);
+    drawPolyAt(4, 8, $img, $polyA, $col, "blk");
+    drawPolyAt(4, 8, $img, $polyB, $col, "red");
+    $r = imageGif($img, "poly_ex_bounding_rectangle.gif");
+    echo '<p><div align="center"><strong>EXAMPLE y - bounding rectangle</strong><br><img src="poly_ex_bounding_rectangle.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
+    //die();
+}
 
 define("OUT", 0);
 define("IN", 2);
@@ -402,6 +405,23 @@ $idToTemplatesDictionary = [];
 $templateCount = 0;
 $calculatedTemplates = 0;
 $inicio = date("Y-m-d H:i:s");
+/**
+ * @param int $cellOffsetX
+ * @param int $cellOffsetY
+ * @param Polygon $cell
+ * @param resource $im
+ * @param string $fgColor
+ * @param string $bgColor
+ * @param array $colors
+ * @return void
+ */
+function paintCell($cellOffsetX, $cellOffsetY, $cell, &$im, $fgColor, $bgColor, $colors): void {
+    directDrawPolyAt(-$cellOffsetX, -$cellOffsetY, $im, $cell, $colors, $fgColor);
+    imagefill($im, ($cell->x_max + $cell->x_min) / 2 - $cellOffsetX
+        , ($cell->y_max + $cell->y_min) / 2 + $cellOffsetY
+        , $colors[$bgColor]);
+}
+
 foreach ($polys as $indexPoly => $poly) {
     foreach ($polygonScales as $polygonScale) {
         $scalatedPoly = getScalatedPolygonCopy($poly, $polygonScale, $polygonScale);
@@ -439,23 +459,43 @@ foreach ($polys as $indexPoly => $poly) {
                         echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
                         $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
                         $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
-                        newImage ($cellXRange[1] - $cellXRange[0],$cellYRange[1] - $cellYRange[0], $im, $colors);
+                        $imageWidth = $cellXRange[1] - $cellXRange[0];
+                        $imageHeight = $cellYRange[1] - $cellYRange[0];
+                        /** @var resource $im */
+                        newImage ($imageWidth, $imageHeight, $im, $colors);
+                        $cellCount = 0;
                         foreach ($grid as $x => $column) {
+                            /** @var Polygon $cell */
                             foreach ($column as $y => $cell) {
                                 switch($templateGridXY[$x][$y]) {
                                     case 0:
-                                        drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "blk");
+                                        paintCell($cellXRange[0], $cellYRange[0], $cell
+                                            , $im, 'blk', 'dgra', $colors);
                                         break;
                                     case 1:
-                                        drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "yel");
+                                        paintCell($cellXRange[0], $cellYRange[0], $cell
+                                            , $im, 'yel', 'ora', $colors);
+                                        //drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "blu");
                                         break;
                                     case 2:
-                                        drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
+                                        paintCell($cellXRange[0], $cellYRange[0], $cell
+                                            , $im, 'blu', 'grn', $colors);
+                                        //drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
                                         break;
                                 }
+                                if ($cellCount == 60) {
+                                    directDrawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $movedPoly, $colors, "blk");
+                                    $r = imageGif($im,"template.gif");
+                                    echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
+                                    die();
+                                }
+                                $cellCount++;
                             }
                         }
+                        directDrawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $movedPoly, $colors, "blk");
                         $r = imageGif($im,"template.gif");
+                        echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
+                        die();
                     }
                 }
             }

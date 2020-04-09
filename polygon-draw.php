@@ -95,13 +95,17 @@ function drawPolyAt($x, $y, &$i, $p, &$col, $c) {
     {
         do              // For all polygons in the list
         {
+            /** @var Vertex $v */
+            /** @var Vertex $n */
             $v = $p->getFirst();           // get the first vertex of the first polygon
             do                                                      // For all vertices in this polygon
             {
                 $n =& $v->Next();               // Get the next vertex
                 if ($v->d() == 0)               // Check is this is an ARc segment
                 { // It is a line
-                    imageLine($i, round($x + $v->X()), round($sy - ($y + $v->Y())), round($x + $n->X()), round($sy - ($y + $n->Y())), $col[$c]);        // Draw a line vertex to vertex
+                    imageLine($i, round($x + $v->X()), round($sy - ($y + $v->Y()))
+                                , round($x + $n->X()), round($sy - ($y + $n->Y()))
+                                , $col[$c]);        // Draw a line vertex to vertex
                 } else { // It is an Arc
                     $s = 360 - rad2deg($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
                     $e = 360 - rad2deg($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
@@ -159,6 +163,7 @@ function directDrawPolyAt($x, $y, &$i, $p, &$col, $c) {
 /*
 ** Function to create an image and allocate a color table to it
 */
+/** @var resource $i */
 function newImage($width, $height, &$i, &$col) {
     if ($i) {
         imagedestroy($i);
@@ -170,6 +175,10 @@ function newImage($width, $height, &$i, &$col) {
     $col["blu"] = imagecolorallocate($i, 0, 0, 255);
     $col["grn"] = imagecolorallocate($i, 0, 192, 0);
     $col["pur"] = imagecolorallocate($i, 255, 0, 255);
+    $col["yel"] = imagecolorallocate($i, 255, 255, 0);
+    $col["ora"] = imagecolorallocate($i, 240, 69, 0);
+    $col["lgra"] = imagecolorallocate($i, 240, 240, 240);
+    $col["dgra"] = imagecolorallocate($i, 120, 120, 120);
 }
 
 ?>
