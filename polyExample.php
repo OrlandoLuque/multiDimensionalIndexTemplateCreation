@@ -742,6 +742,90 @@ for ($x = 0; $x < $poly13->x_max + 1; $x++) {
 $r = imageGif($img, "poly_ex_vertex_inside.gif");
 
 
+//------------------------------------------------------------------------------
+// This example checks arc interceptions from the center of the arc
+//
+$a1 = new Vertex( 9,4, 9, 9, -1);
+$a2 = new Vertex(9,14);
+$a1 = new Vertex( 9,4, 9, 9, +1);
+$a2 = new Vertex(4,9);
+$polyA = new polygon();        // Create a new polygon and add some vertices to it
+$polyA->add($a1);
+$polyA->add($a2);
+$c = new Vertex(9, 9);
+newImage(20, 20, $img, $col);
+$r = imageline($img, 0, 0, 19, 0, $col['blk']);
+$r = imageline($img, 19, 0, 19, 19, $col['blk']);
+$r = imageline($img, 19, 19, 0, 19, $col['blk']);
+$r = imageline($img, 0, 19, 0, 0, $col['blk']);
+/**
+ * @param int $x
+ * @param int $y
+ * @param Vertex $c
+ * @param Vertex $a1
+ * @param Vertex $a2
+ * @param $img
+ * @param $col
+ */
+function checkingLineArcIntersection(int $x, int $y, Vertex $c, Vertex $a1, Vertex $a2, $img, $col): bool {
+    $target = new Vertex($x, $y);
+    $r = Intersector::lineArcIntersection($c, $target, $a1, $a2);
+    if (count($r) > 0) {
+        //$r = imagesetpixel($img, $x, $y, $col['grn']);
+        $r = imageline($img, $c->x, $c->y, $x, $y, $col['grn']);
+        return true;
+    } else {
+        $r = imageline($img, $c->x, $c->y, $x, $y, $col['red']);
+    }
+    return false;
+}
+
+for ($x = 0; $x < 20; $x++) {
+    $r1 = checkingLineArcIntersection($x, 0, $c, $a1, $a2, $img, $col); //top
+    $r2 = checkingLineArcIntersection($x, 19, $c, $a1, $a2, $img, $col); //bottom
+    $r3 = checkingLineArcIntersection(0, $x, $c, $a1, $a2, $img, $col); //left
+    $r4 = checkingLineArcIntersection(19, $x, $c, $a1, $a2, $img, $col); //right
+    $a = 1;
+}
+directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
+$r = imageGif($img, "poly_exArcInterception.gif");
+
+//------------------------------------------------------------------------------
+// This example checks polygons interceptions while they collide with one or more sides.
+//
+$poly1 = new polygon();
+$poly1->addv(0,0);
+$poly1->addv(0,80);
+$poly1->addv(80,80);
+$poly1->addv(80,0);
+//$poly1->move(10,40);
+
+$poly2 = new polygon();
+$poly2->addv(0,0);
+$poly2->addv(0,40);
+$poly2->addv(40,40);
+$poly2->addv(40,0);
+//$poly2->move(10,40);
+
+newImage (160,160, $im, $colors);               // Create a new image to draw our polygons
+drawPolyAt(0, 0, $im, $poly1, $colors, "blu");  // Draw the initial outer polygons
+drawPolyAt(0, 0, $im, $poly2, $colors, "blu");
+//
+// Display the results of isPolyInside, isPolyOutside & isPolyIntersect methods
+//
+if ($poly1->completelyContains($poly2))
+    imagestring ($im, 1, 10, 130, "isPolyInside   =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 10, 130, "isPolyInside   =F", $colors["red"]);
+if ($poly1->isPolyOutside($poly2))
+    imagestring ($im, 1, 10, 140, "isPolyOutside  =T", $colors["grn"]);
+else
+    imagestring ($im, 1, 10, 140, "isPolyOutside  =F", $colors["red"]);
+if ($poly1->isPolyIntersect($poly2))
+    imagestring ($im, 1, 10, 150, "isPolyIntersect=T", $colors["grn"]);
+else
+    imagestring ($im, 1, 10, 150, "isPolyIntersect=F", $colors["red"]);
+imageGif($im,"poly_ex_side_colliding_polygons.gif");
 
 //
 // Some links to display the created images
@@ -753,9 +837,14 @@ echo '<p><div align="center"><strong>EXAMPLE 5 - isPolyInside Method</strong><br
 echo '<p><div align="center"><strong>EXAMPLE 6 - isPolyOutside and isPolyIntersect Methods</strong><br><img src="poly_ex6.gif" width="600" height="160"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 7 - isPolySelfIntersect Method</strong><br><img src="poly_ex7.gif" width="600" height="110"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 8 - Scale and Translate Methods</strong><br><img src="poly_ex8.gif" width="400" height="150"><br></div></p>';
+
 echo '<p><div align="center"><strong>EXAMPLE 9 - Degenerate Vertices</strong><br><img src="poly_ex9.gif" width="600" height="150"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 10 - Degenerate Vertices</strong><br><img src="poly_ex10.gif" width="600" height="120"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 11 - Degenerate Vertices</strong><br><img src="poly_ex11.gif" width="750" height="150"><br></div></p>';
+
 echo '<p><div align="center"><strong>EXAMPLE 12 - new pixel intersections</strong><br><img src="poly_exi.gif" width="128" height="128" style="image-rendering: pixelated"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 13 - vertex is inside polygon</strong><br><img src="poly_ex_vertex_inside.gif" style="image-rendering: pixelated" width="' . ($poly13->x_max + 1) * 4 . '" height="' . ($poly13->y_max + 1) * 4 . '"><br></div></p>';
+echo '<p><div align="center"><strong>EXAMPLE 14 - arc interception</strong><br><img src="poly_exArcInterception.gif" style="image-rendering: pixelated" width="' . 40 . '" height="' . 40 . '"><br></div></p>';
+echo '<p><div align="center"><strong>EXAMPLE 15 - side colliding polygons</strong><br><img src="poly_ex_side_colliding_polygons.gif" style="image-rendering: pixelated" width="' . 160 . '" height="' . 160 . '"><br></div></p>';
+
 ?>

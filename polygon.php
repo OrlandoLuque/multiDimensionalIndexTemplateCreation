@@ -478,8 +478,12 @@ class Polygon {
                 $x4 = $q2->X();
                 $y4 = $q2->Y();
                 $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
-                $ua = (($x4 - $x3) * ($y1 - $y3) - ($y4 - $y3) * ($x1 - $x3)) / $d;
-                $ub = (($x2 - $x1) * ($y1 - $y3) - ($y2 - $y1) * ($x1 - $x3)) / $d;
+                if ($d == 0) {
+                    $ua = $ub = INF;
+                } else {
+                    $ua = (($x4 - $x3) * ($y1 - $y3) - ($y4 - $y3) * ($x1 - $x3)) / $d;
+                    $ub = (($x2 - $x1) * ($y1 - $y3) - ($y2 - $y1) * ($x1 - $x3)) / $d;
+                }
                 $alphaP[0] = $ua;
                 $alphaQ[0] = $ub;
                 return $int;
@@ -1353,8 +1357,22 @@ class Polygon {
             $s = $this->getFirst(); // Get the first vertex in this polygon
             do {
                 do {
-                    if (count($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) > 0) {
-                        $inside = FALSE;
+                    $int = $this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC);
+                    if (count($int) == 1) {
+                        /** @var Vertex $int */
+                        $int = $int[0];
+
+                        if ($s->d() == 0 && $c->d() == 0
+                            && !($int->equals($s)
+                                || $int->equals($s->Next())
+                                || $int->equals($c)
+                                || $int->equals($c->Next()))) {
+                            $inside = FALSE;
+                        }
+                    } else if (count($int) == 2) {
+                        if ($s->d() != 0 || $c->d() != 0) {
+                            $inside = FALSE;
+                        }
                     }
                     $c = $c->Next();
                 } while ($c->id() != $p->first->id());
@@ -1507,6 +1525,7 @@ class Polygon {
             //$this->y_max += $dy;
             //$this->y_min += $dy;
         } // Keep checking polygons as long as they exist
+        return $p;
     }
 
     // end of move polygon

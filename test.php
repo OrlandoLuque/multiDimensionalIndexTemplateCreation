@@ -347,7 +347,7 @@ drawPolyAt(4, 8, $img, $polyA, $col, "blk");
 drawPolyAt(4, 8, $img, $polyB, $col, "red");
 $r = imageGif($img, "poly_ex_bounding_rectangle.gif");
 echo '<p><div align="center"><strong>EXAMPLE y - bounding rectangle</strong><br><img src="poly_ex_bounding_rectangle.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
-die();
+//die();
 
 define("OUT", 0);
 define("IN", 2);
@@ -359,8 +359,8 @@ $grids = getGridsFromSupportedSizes($gridSupportedSizes);
 
 $circlePoly = getCircleWithRadius(1);
 $boxPoly = getSquarePolygonWithDimensions(1);        // Create a new polygon and add some vertices to it
-$dropPoly = getDropPolygonWithDimensions(1, 6);
-$polys = [$boxPoly, $circlePoly, $dropPoly];
+$dropPoly = getDropPolygonWithDimensions(1/5, 1); // or 1/6
+$polys = ['box' => $boxPoly, 'circle' => $circlePoly, 'drop' => $dropPoly];
 $angles = getAnglesToTest(0.5);
 
 //$bBoxA = $polyA->bRect();
@@ -368,33 +368,46 @@ $angles = getAnglesToTest(0.5);
 $templates = [];
 $hashToTemplatesIdDictionary = [];
 $idToTemplatesDictionary = [];
-foreach ($polys as $indexPoly => $originalPoly) {
+$templateCount = 0;
+$calculatedTemplates = 0;
+foreach ($polys as $indexPoly => $poly) {
     foreach ($polygonScales as $polygonScale) {
-        $scalatedPoly = getScalatedPolygonCopy($originalPoly, $polygonScale, $polygonScale);
+        $scalatedPoly = getScalatedPolygonCopy($poly, $polygonScale, $polygonScale);
         foreach ($grids as $gridDimensions) {
             $gridX = $gridDimensions[0];
             $gridY = $gridDimensions[1];
             foreach ($angles as $angleIndex => $angle) {
-                $poly = getRotatedPolygonCopy($scalatedPoly, $angle);
-                $box = $poly->bRect();
-                $boxVertex = [0 => [x => $box->first->x, y => $box->first->y]
-                    , 1 => [x => $box->first->nextV->nextV->x, y => $box->first->nextV->nextV->y]];
-                $template = [];
-                $gridXRange = [floor($boxVertex[0][x] / $gridX), floor($boxVertex[1][x] / $gridX)];
-                $gridYRange = [floor($boxVertex[0][y] / $gridY), floor($boxVertex[1][y] / $gridY)];
-                $grid = getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
-                list($templateGrid, $templateHash) = getTemplateGrid($grid, $poly);
+                $rotatedPoly = getRotatedPolygonCopy($scalatedPoly, $angle);
                 for ($x = 0; $x < $gridX; $x++) {
                     for ($y = 0; $y < $gridY; $y++) {
-                        $hash = "$indexPoly-$polygonScale-$gridX,$gridY-$x,$y";
-                        $movedPoly = $poly->copy_poly()->move($x, $y);
+                        $hash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-dx$x,dy$y";
+                        $movedPoly = $rotatedPoly->copy_poly();
+                        $movedPoly->move($x, $y);
+                        $box = $movedPoly->bRect();
+                        $boxVertex = [0 => ['x' => $box->first->x, 'y' => $box->first->y]
+                            , 1 => ['x' => $box->first->nextV->nextV->x, 'y' => $box->first->nextV->nextV->y]];
+                        $template = [];
+                        $gridXRange = [floor($boxVertex[0]['x'] / $gridX), floor($boxVertex[1]['x'] / $gridX)];
+                        $gridYRange = [floor($boxVertex[0]['y'] / $gridY), floor($boxVertex[1]['y'] / $gridY)];
+                        $grid = getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
+                        list($templateGridXY, $templateHashYX) = getTemplateGrid($grid, $movedPoly);
+                        echo "\n$hash --> $templateHashYX ";
+                        if (empty($hashToTemplatesIdDictionary[$templateHashYX])) {
+                            $hashToTemplatesIdDictionary[$templateHashYX] = $templateGridXY;
+                            $templateCount++;
+                            echo "+++++++++++++++++++++";
+                        } else {
+                            echo "repeated!";
+                        }
+                        $idToTemplatesDictionary[$hash] = $hashToTemplatesIdDictionary[$templateHashYX];
+                        $calculatedTemplates++;
                     }
                 }
             }
         }
     }
 }
-
+echo "Calculated templates: $calculatedTemplates - unique ones: $templateCount";
 /**
  * @param $grid
  * @param polygon $poly
@@ -402,13 +415,12 @@ foreach ($polys as $indexPoly => $originalPoly) {
  */
 function getTemplateGrid($grid, $poly) {
     $r = []; $sr = '';
-    foreach($grid as $ix => $row) {
-        $r[$ix] = [];
+    foreach($grid as $iy => $row) {
         /** @var polygon $cell */
-        foreach($row as $iy => $cell) {
-            if ($cell->completelyContains($poly)) {
+        foreach($row as $ix => $cell) {
+            if ($poly->completelyContains($cell)) {
                 $intersectResult = IN;
-            } else if ($poly->completelyContains($cell)
+            } else if ($cell->completelyContains($poly)
                 || $poly->isPolyIntersect($cell)) {
                 $intersectResult = MAYBE;
             } else {
@@ -427,14 +439,13 @@ function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY) {
     $dx = $ex - $sx;
     $dy = $ey - $sy;
     $grid = [];
-    for ($x = 0; $x < $dx; $x++) {
-        $grid[$x] = [];
-        $sxCell = ($sx + $x) * $gridX;
-        $exCell = ($sx + $x + 1) * $gridX - $unDecimal;
-        for ($y = 0; $y < $dy; $y++) {
-            $syCell = ($sy + $y) * $gridX;
-            $eyCell = ($sy + $y + 1) * $gridY - $unDecimal;
-            $grid[$x][$y] = getSquarePolyFromXYXY($sxCell, $syCell, $exCell, $eyCell);
+    for ($y = 0; $y < $dy; $y++) {
+        $syCell = ($sy + $y) * $gridX;
+        $eyCell = ($sy + $y + 1) * $gridY - $unDecimal;
+        for ($x = 0; $x < $dx; $x++) {
+            $sxCell = ($sx + $x) * $gridX;
+            $exCell = ($sx + $x + 1) * $gridX - $unDecimal;
+            $grid[$y][$x] = getSquarePolyFromXYXY($sxCell, $syCell, $exCell, $eyCell);
         }
     }
     return $grid;
