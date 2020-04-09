@@ -635,6 +635,8 @@ class Polygon {
                     $int = Intersector::lineArcIntersection($q1, $q2, $p1, $p2);
                 }
                 $n = count($int);
+                $ix = [];
+                $iy = [];
                 foreach ($int as $anInt) {
                     $ix[] = $anInt->x;
                     $iy[] = $anInt->y;

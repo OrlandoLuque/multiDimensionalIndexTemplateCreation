@@ -82,54 +82,58 @@ function getScalatedPolygonCopy($polygon, $xScale, $yScale) {
     $r->scale($xScale, $yScale);
     return $r;
 }
-$width = 200;
-$height = 200;
-newImage($width, $height, $img, $col);
-$r = imageline($img, 0, 0, $width - 1, 0, $col['blk']);
-$r = imageline($img, $width - 1, 0, $width - 1, $height - 1, $col['blk']);
-$r = imageline($img, $width - 1, $height - 1, 0, $height - 1, $col['blk']);
-$r = imageline($img, 0, $height - 1, 0, 0, $col['blk']);
-$polyA = new polygon();        // Create a new polygon and add some vertices to it
-$polyA->addv(0,0);
-$polyA->addv(0,20,0,40,1); //
-$polyA->addv(0,60);
-$polyA->addv(0,80);
-$polyA->addv(10,80);
-$polyA->addv(25,0); //
-$polyA = new polygon();        // Create a new polygon and add some vertices to it
-$polyA->addv(0,0);
-$polyA->addv(0,20,0,40,1);
-$polyA->addv(0,60);
-$polyA->addv(0,80);
-$polyA->addv(45,80);
-$polyA->addv(45,60,45,40,1);
-$polyA->addv(45,20);
-$polyA->addv(45,0);
-/*$polyA = new polygon();        // Create a new polygon and add some vertices to it
-$polyA->addv(0,0);
-$polyA->addv(0,80);
-$polyA->addv(40,80);
-$polyA->addv(40,0);
-$polyA->addv(10,0,0,20,1);
-$polyA = new polygon();        // Create a new polygon and add some vertices to it
-$polyA->addv(0,0,0,20,1);
-$polyA->addv(0,40,20,40,1);
-$polyA->addv(40,40,40,20,1);
-$polyA->addv(40,0,20,0,1);*/
-$polyA = new polygon();        // Create a new polygon and add some vertices to it
-$polyA->addv(0,0);
-$polyA->addv(0,80); //-
-$polyA->addv(40,0);
-$polyA->addv(40,80); //-
 
-if ($polyA->isPolySelfIntersect())
-    drawPolyAt(50, 50, $img, $polyA, $col, "grn");
-else
-    drawPolyAt(50, 50, $img, $polyA, $col, "red");
-$r = imageGif($img,"poly_ex_autointersection.gif");
-echo '<p><div align="center"><strong>EXAMPLE 1 - intersections</strong><br><img src="poly_ex_autointersection.gif" xwidth="600" xheight="200"><br></div></p>';
+if (false) {
+    $width = 200;
+    $height = 200;
+    newImage($width, $height, $img, $col);
+    $r = imageline($img, 0, 0, $width - 1, 0, $col['blk']);
+    $r = imageline($img, $width - 1, 0, $width - 1, $height - 1, $col['blk']);
+    $r = imageline($img, $width - 1, $height - 1, 0, $height - 1, $col['blk']);
+    $r = imageline($img, 0, $height - 1, 0, 0, $col['blk']);
+    $polyA = new polygon();        // Create a new polygon and add some vertices to it
+    $polyA->addv(0, 0);
+    $polyA->addv(0, 20, 0, 40, 1); //
+    $polyA->addv(0, 60);
+    $polyA->addv(0, 80);
+    $polyA->addv(10, 80);
+    $polyA->addv(25, 0); //
+    $polyA = new polygon();        // Create a new polygon and add some vertices to it
+    $polyA->addv(0, 0);
+    $polyA->addv(0, 20, 0, 40, 1);
+    $polyA->addv(0, 60);
+    $polyA->addv(0, 80);
+    $polyA->addv(45, 80);
+    $polyA->addv(45, 60, 45, 40, 1);
+    $polyA->addv(45, 20);
+    $polyA->addv(45, 0);
+    /*$polyA = new polygon();        // Create a new polygon and add some vertices to it
+    $polyA->addv(0,0);
+    $polyA->addv(0,80);
+    $polyA->addv(40,80);
+    $polyA->addv(40,0);
+    $polyA->addv(10,0,0,20,1);
+    $polyA = new polygon();        // Create a new polygon and add some vertices to it
+    $polyA->addv(0,0,0,20,1);
+    $polyA->addv(0,40,20,40,1);
+    $polyA->addv(40,40,40,20,1);
+    $polyA->addv(40,0,20,0,1);*/
+    $polyA = new polygon();        // Create a new polygon and add some vertices to it
+    $polyA->addv(0, 0);
+    $polyA->addv(0, 80); //-
+    $polyA->addv(40, 0);
+    $polyA->addv(40, 80); //-
 
-die();
+    if ($polyA->isPolySelfIntersect()) {
+        drawPolyAt(50, 50, $img, $polyA, $col, "grn");
+    } else {
+        drawPolyAt(50, 50, $img, $polyA, $col, "red");
+    }
+    $r = imageGif($img, "poly_ex_autointersection.gif");
+    echo '<p><div align="center"><strong>EXAMPLE 1 - intersections</strong><br><img src="poly_ex_autointersection.gif" xwidth="600" xheight="200"><br></div></p>';
+
+    die();
+}
 
 $h1 = new Vertex(-1, 0);
 $h2 = new Vertex(1, 0);
@@ -200,17 +204,19 @@ function checkingLineArcIntersection(int $x, int $y, Vertex $c, Vertex $a1, Vert
     return false;
 }
 
-for ($x = 0; $x < 20; $x++) {
-    $r1 = checkingLineArcIntersection($x, 0, $c, $a1, $a2, $img, $col); //top
-    $r2 = checkingLineArcIntersection($x, 19, $c, $a1, $a2, $img, $col); //bottom
-    $r3 = checkingLineArcIntersection(0, $x, $c, $a1, $a2, $img, $col); //left
-    $r4 = checkingLineArcIntersection(19, $x, $c, $a1, $a2, $img, $col); //right
-    $a = 1;
+if(false) {
+    for ($x = 0; $x < 20; $x++) {
+        $r1 = checkingLineArcIntersection($x, 0, $c, $a1, $a2, $img, $col); //top
+        $r2 = checkingLineArcIntersection($x, 19, $c, $a1, $a2, $img, $col); //bottom
+        $r3 = checkingLineArcIntersection(0, $x, $c, $a1, $a2, $img, $col); //left
+        $r4 = checkingLineArcIntersection(19, $x, $c, $a1, $a2, $img, $col); //right
+        $a = 1;
+    }
+    directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
+    $r = imageGif($img, "poly_exArcInterception.gif");
+    echo '<p><div align="center"><strong>EXAMPLE X - arc interception</strong><br><img src="poly_exArcInterception.gif" style="image-rendering: pixelated" width="' . 40 . '" height="' . 40 . '"><br></div></p>';
 }
-directDrawPolyAt(0, 0, $img, $polyA, $col, "blk");
-$r = imageGif($img,"poly_exArcInterception.gif");
-echo '<p><div align="center"><strong>EXAMPLE X - arc interception</strong><br><img src="poly_exArcInterception.gif" style="image-rendering: pixelated" width="' . 40 . '" height="' . 40 . '"><br></div></p>';
-die();
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -296,7 +302,7 @@ $r = imageGif($img,"poly_ex4insidePolygon.gif");
 echo '<p><div align="center"><strong>EXAMPLE 4 - points inside or outside polygon</strong><br><img src="poly_ex4insidePolygon.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + 1) * 4 . '" height="' . ($polyA->y_max + 1) * 4 . '"><br></div></p>';
 //die();
 */
-if(true) {
+if(false) {
     newImage($polyA->x_max + $extraMargin * 2, $polyA->y_max + $extraMargin * 2, $im, $colors);               // Create a new image to draw our polygons
     directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
     $r = imageGif($im, "poly_ex2polygon.gif");
@@ -321,7 +327,28 @@ if(true) {
     echo '<p><div align="center"><strong>EXAMPLE 3 - vertex is inside</strong><br><img src="poly_ex_vertex_inside.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
     die();
 }
-//die();
+
+$polyA = new polygon();
+$polyA->addv( 0,0);
+$polyA->addv( 0,5, 0, 10, +1);
+$polyA->addv(0,15);
+$polyA->addv( 0, 20);
+$polyA->addv(20, 20);
+$polyA->addv(20, 5, 20, 0, -1);
+$polyA->addv(15, 0);
+$polyB = $polyA->bRect();
+
+$maxX = $polyA->x_max + $extraMargin * 2;
+$maxY = $polyA->y_max + $extraMargin * 2;
+newImage($maxX, $maxY, $img, $col);
+$r = imageline($img, 0, $maxY - 8, $maxX, $maxY - 8, $col["grn"]);
+$r = imageline($img, 4, 0, 4, $maxY, $col["grn"]);
+drawPolyAt(4, 8, $img, $polyA, $col, "blk");
+drawPolyAt(4, 8, $img, $polyB, $col, "red");
+$r = imageGif($img, "poly_ex_bounding_rectangle.gif");
+echo '<p><div align="center"><strong>EXAMPLE y - bounding rectangle</strong><br><img src="poly_ex_bounding_rectangle.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
+die();
+
 define("OUT", 0);
 define("IN", 2);
 define("MAYBE", 1);
