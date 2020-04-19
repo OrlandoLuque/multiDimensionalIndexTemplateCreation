@@ -830,6 +830,7 @@ imageGif($im,"poly_ex_side_colliding_polygons.gif");
 //
 // Some links to display the created images
 //
+echo '<p><div align="center"><strong>EXAMPLE 1 - Boolean Operations</strong><br><img src="poly_ex1.gif" width="600" height="200"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 2 - Sequential Boolean Operations</strong><br><img src="poly_ex2.gif" width="400" height="200"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 3 - Arc Segments</strong><br><img src="poly_ex3.gif" width="600" height="140"><br></div></p>';
 echo '<p><div align="center"><strong>EXAMPLE 4 - Move, Rotate & bRect Methods</strong><br><img src="poly_ex4.gif" width="600" height="120"><br></div></p>';

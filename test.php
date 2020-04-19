@@ -14,11 +14,6 @@ require_once('database.php');
 require_once('polygon-draw.php');
 require_once('matrix-utils.php');
 
-$connection = Database::connect([
-    'server' => 'localhost',
-    'username' => 'lander',
-]);
-
 
 function arrayPush($array, $item) {
     $array[] = $item;
@@ -456,11 +451,10 @@ $angles = getAnglesToTest(0.5);
 
 //$bBoxA = $polyA->bRect();
 //$polyA->scale();
-$templates = [];
-$hashToTemplatesIdDictionary = [];
-$idToTemplatesDictionary = [];
-$templateCount = 0;
-$calculatedTemplates = 0;
+//$templates = [];
+//$hashToTemplatesIdDictionary = [];
+//$idToTemplatesDictionary = [];
+
 $inicio = date("Y-m-d H:i:s");
 /**
  * @param int $cellOffsetX
@@ -481,10 +475,83 @@ function paintCell($cellOffsetX, $cellOffsetY, $cell, &$im, $fgColor, $bgColor, 
 $matrixClass = 'MatrixUtil';
 // rC <==> rCC por ser contrarias mientras que todas las
 // demás son 'reflejas': si las repites una vez se deshace
-$matrixMethods = ['same' => '', 'rotateClockwise90' => 'rCC'
+$matrixMethods = ['equal' => 'eq', 'rotateClockwise90' => 'rCC'
                     , 'rotateCounterClockwise90' => 'rC', 'rotate180' => 'r180'
                     , 'flipLR' => 'fLR', 'flipTB' => 'fTB'
                     , 'flipTLBR' => 'fTLBR', 'flipTRBL' => 'fTRBL'];
+$matrixMethodsIndex = ['eq', 'rCC'
+    , 'rC', 'r180'
+    , 'fLR', 'fTB'
+    , 'fTLBR', 'fTRBL'];
+$lastTime = null;
+/**
+ * @param Redis $redis
+ * @param string $generationSetString
+ * @param array $templateGridXY
+ * @param string $templateCountKey
+ * @param string $LastTemplateKey
+ * @param string $templateListKey
+ * @param string $generationSetKey
+ * @param int $templateCount
+ */
+function redisStoreOnlyNewTemplates(Redis $redis, string $generationSetString
+        /*, string $templateHash*/, array $templateGridXY
+        , string $templateCountKey, string $LastTemplateKey
+        , string $templateListKey, string $generationSetKey
+        , int &$templateCount) {
+    global $matrixClass, $matrixMethods, $matrixMethodsIndex;
+    $keys = [];
+    foreach ($matrixMethods as $method => $operation) {
+        $matrix = call_user_func(array($matrixClass, $method), $templateGridXY);
+        $keys[] = MatrixUtil::binCode($matrix);
+    }
+    $templateId = null;
+    //$starttime = microtime(true);
+    $searchResult = $redis->mget($keys);
+    $found = false;
+    for ($i = 0; $i < count($searchResult); $i++) {
+        //$result = $searchResult[$i];
+        if (false !== $searchResult[$i]) {
+            $found = $i;
+            $templateId = $searchResult[$found];
+            //echo 'repeated! ' . (count($found) > 0? " doing a {$matrixMethods[$found]}": "id $templateId");
+            break;
+        }
+    }
+    if (false === $found) {
+        $templateId = $redis->get($templateCountKey);
+        $redis->multi();
+        //echo "++++++ with id $templateCount";
+        echo "++";
+        $templateCount++;
+        /*$templateId = */$redis->incr($templateCountKey);
+        $redis->set($keys[0], $templateId);
+        $redis->rPush($templateListKey, $keys[0]);
+        $found = 0;
+    } else {
+        $redis->multi();
+    }
+    //$endtime = microtime(true);
+
+    $generationProcessData = $generationSetString
+        . '->' . $matrixMethodsIndex[$found] . '->' . $templateId;
+    $r = $redis->rPush($generationSetKey, $generationProcessData);
+    $redis->set($LastTemplateKey, $generationSetString);
+    $r = $redis->exec();
+    $r2 = $redis->save();
+    echo $generationProcessData . "\n";
+    if ($r === false) {
+        echo " --- ERROR!! - " . $redis->getLastError() . "\n";
+        die();
+    } else {
+        foreach ($r as $value) {
+            if (false === $value) {
+                echo " --- ERROR!! - " . $redis->getLastError() . "\n";
+                die();
+            }
+        }
+    }
+}
 /**
  * @param string $sourceHash
  * @param string $hashXY
@@ -492,21 +559,22 @@ $matrixMethods = ['same' => '', 'rotateClockwise90' => 'rCC'
  * @param array $templateGridXY
  * @param int $templateCount
  * @param array $idToTemplatesDictionary
- * @return int
  */
 function storeOnlyNewTemplates(string $sourceHash, string $hashXY
-        , array $hashToTemplatesIdDictionary, array $templateGridXY
-        , int $templateCount, array $idToTemplatesDictionary): int {
+        , array &$hashToTemplatesIdDictionary, array $templateGridXY
+        , int &$templateCount, array $idToTemplatesDictionary) {
     global $matrixClass, $matrixMethods;
 
     //$found = false;
     foreach ($matrixMethods as $method => $operation) {
         $matrix = call_user_func(array($matrixClass, $method), $templateGridXY);
-        $nHash = MatrixUtil::toString($matrix);
+        //$nHash = MatrixUtil::toString($matrix);
+        $nHash = MatrixUtil::binCode($matrix);
         if (!empty($hashToTemplatesIdDictionary[$nHash])) {
             echo 'repeated! ' . (count($operation) > 0? " doing a $operation": '');
             $hashToTemplatesIdDictionary[$hashXY] = [$hashToTemplatesIdDictionary[$nHash][0], $operation];
-            return $templateCount;
+            //return $templateCount;
+            return;
             //$found = true;
             //break;
         }
@@ -516,29 +584,135 @@ function storeOnlyNewTemplates(string $sourceHash, string $hashXY
         $hashToTemplatesIdDictionary[$hashXY] = [$templateCount, ''];
         //$idToTemplatesDictionary[$templateCount] = $templateGridXY;
         $templateCount++;
-    return $templateCount;
+    //return $templateCount;
     //}
 }
 
-foreach ($polys as $indexPoly => $poly) {
-    foreach ($polygonScales as $polygonScale) {
-        $scalatedPoly = getScalatedPolygonCopy($poly, $polygonScale, $polygonScale);
-        $scalatedPoly2 = getScalatedPolygonCopy($poly, 32, 32); /////////////////
+if (false) {
+    $result = Database::connect([
+        'username' => 'root'
+    ]);
 
+    Database::query("
+        CREATE DATABASE `orlando-Luque` /*!40100 COLLATE 'utf8_bin' */;
+    ");
+}
+//Connecting to Redis server on localhost
+$redis = new Redis();
+$redis->connect('127.0.0.1', 6379);
+echo "Connection to server sucessfully done\n\n";
+//check whether server is running or not
+echo "Server is running: " . $redis->ping() . "\n";
+$redis->set("japapa", "japapa japa jacaca caca", 120);
+echo $redis->get("japapa") . "\n";
+$redis->del("japapa");
+
+/*
+$r = $redis->incr('i');
+$r = $redis->get('i');
+
+$r = $redis->lLen('1');
+$r = $redis->rPush('1', '1', '2', '3');
+$r = $redis->rPush('1', '1');
+$r = $redis->lLen('1');
+$r = $redis->get('1');
+$r = $redis->lLen('1');
+
+$r = $redis->set('1', null);
+$r = $redis->get('1');
+$r = $r;*/
+/*
+$r = $redis->set("
+UiiiiU", "hola");
+$r = $redis->del("
+UiiiiU", "hola");
+*/
+//$redis->hSet("
+//UiiiiU", "hola");
+/*
+$mc = new memcache();
+$mc->addServer("localhost", 11211);
+
+$mc->set("foo", "Hello!");
+$mc->set("bar", "Memcached...");
+
+$arr = array(
+    $mc->get("foo"),
+    $mc->get("bar")
+);
+var_dump($arr);
+*/
+//redisStoreOnlyNewTemplates
+//$redis->flushDB();
+$templateListKey = 'tl';
+$generationSetKey = 'gs';
+$templateCountKey = 'tc';
+$LastTemplateKey = 'lt';
+
+$templateCount = $redis->lLen($templateListKey);
+$calculatedTemplates = $redis->lLen($generationSetKey);
+$last = $redis->get($LastTemplateKey);
+if (false === $templateCount) {
+    $templateCount = 0;
+}
+if (false === $calculatedTemplates) {
+    $calculatedTemplates = 0;
+}
+echo "\n\nIniciando con $templateCount plantillas para $calculatedTemplates combinaciones\n";
+echo "Última en base de datos: $last\n\n";
+$continue = false;
+if (false !== $last && strlen($last) > 0) {
+    $continue = true;
+    $data = explode('-', $last);
+    $last = [];
+    $last[0] = $data[0];
+    $last[1] = ltrim($data[1], 's');
+    $coord = explode(',', $data[2]);
+    $last[2] = ltrim($coord[0], 'x');
+    $last[3] = ltrim($coord[1], 'y');
+    $last[4] = ltrim($data[3], 'a');
+    $disp = explode(',', $data[4]);
+    $last[5] = ltrim($disp[0], 'dx');
+    $last[6] = ltrim($disp[1], 'dy');
+
+}
+//$redis->set($templateCountKey, -1); comentado al hacer transacciones
+foreach ($polys as $indexPoly => $poly) {
+    if ($continue && $indexPoly !== $last[0]) {
+        continue;
+    }
+    foreach ($polygonScales as $polygonScale) {
+        if ($continue && $polygonScale != $last[1]) {
+            continue;
+        }
+        $scalatedPoly = getScalatedPolygonCopy($poly, $polygonScale, $polygonScale);
+        //$scalatedPoly2 = getScalatedPolygonCopy($poly, 32, 32); /////////////////
         foreach ($grids as $gridDimensions) {
-            $gridX = $gridDimensions[0];
-            $gridY = $gridDimensions[1];
+                $gridX = $gridDimensions[0];
+                $gridY = $gridDimensions[1];
+            if ($continue && !($gridX == $last[2] && $gridY == $last[3])) {
+                continue;
+            }
             /** @var float $angle */
             foreach ($angles as $angleIndex => $angle) {
+                if ($continue && $angle != $last[4]) {
+                    continue;
+                }
                 $rotatedPoly = getRotatedPolygonCopy($scalatedPoly, angleToRadians($angle));
-                $rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
+                //$rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
                 for ($x = 0; $x < $gridX; $x++) {
                     for ($y = 0; $y < $gridY; $y++) {
-                        $sourceHash = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle-dx$x,dy$y";
+                        if ($continue) {
+                            $x = $last[5];
+                            $y = $last[6];
+                            $continue = false;
+                            continue;
+                        }
+                        $generationSetString = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle-dx$x,dy$y";
                         $movedPoly = $rotatedPoly->copy_poly();
-                        $movedPoly2 = $rotatedPoly2->copy_poly(); /////////////////
+                        //$movedPoly2 = $rotatedPoly2->copy_poly(); /////////////////
                         $movedPoly->move($x, $y);
-                        $movedPoly2->move($x, $y); /////////////////
+                        //$movedPoly2->move($x, $y); /////////////////
                         $box = $movedPoly->bRect();
                         $boxVertex = [0 => ['x' => $box->first->x, 'y' => $box->first->y]
                             , 1 => ['x' => $box->first->nextV->nextV->x, 'y' => $box->first->nextV->nextV->y]];
@@ -548,18 +722,18 @@ foreach ($polys as $indexPoly => $poly) {
                         $grid = getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
                         /*list($templateGridXY, $templateHashYX)*/
                         $templateGridXY = getTemplateGrid($grid, $movedPoly);
-///////////////////////////
-                        $bb = $movedPoly2->bRect();
-                        /** @var Polygon $polyA */
-                        $polyA = $movedPoly2->copy_poly();
-                        $polyA->move(-$bb->x_min, -$bb->y_min);
-                        $cc = $polyA->bRect();
-                        newImage(ceil($cc->x_max), ceil($cc->y_max), $im, $colors);               // Create a new image to draw our polygons
-                        directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
-                        $r = imageGif($im, "poly_ex_fill_figure1.gif");
-                        echo '<p><div align="center"><strong>EXAMPLE  - poligon used on example XX</strong><br><img src="poly_ex_fill_figure1.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
+                        ///////////////////////////
+                        if (false) {
+                            $bb = $movedPoly2->bRect();
+                            /** @var Polygon $polyA */
+                            $polyA = $movedPoly2->copy_poly();
+                            $polyA->move(-$bb->x_min, -$bb->y_min);
+                            $cc = $polyA->bRect();
+                            newImage(ceil($cc->x_max), ceil($cc->y_max), $im, $colors);               // Create a new image to draw our polygons
+                            directDrawPolyAt(0, 0, $im, $polyA, $colors, "red");
+                            $r = imageGif($im, "poly_ex_fill_figure1.gif");
+                            echo '<p><div align="center"><strong>EXAMPLE  - poligon used on example XX</strong><br><img src="poly_ex_fill_figure1.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
 
-                        if(false) {
                             newImage(ceil($cc->x_max), ceil($cc->y_max), $img, $colors);
                             directDrawPolyAt(0, 0, $img, $polyA, $colors, "red");
                             for ($x = 0; $x < $cc->x_max; $x++) {
@@ -583,14 +757,23 @@ foreach ($polys as $indexPoly => $poly) {
                             echo '<p><div align="center"><strong>EXAMPLE 3 - vertex is inside</strong><br><img src="poly_ex_fill_figure2.gif" style="image-rendering: pixelated" width="' . ($polyA->x_max + $extraMargin) * 4 . '" height="' . ($polyA->y_max + $extraMargin) * 4 . '"><br></div></p>';
                             die();
                         }
-                        $hashXY = MatrixUtil::toString($templateGridXY);
-                        echo "\n$sourceHash -->\n$hashXY";
-                        $templateCount = storeOnlyNewTemplates($sourceHash, $hashXY
+                        //$hashXY = MatrixUtil::toString($templateGridXY);
+                        //echo $hashXY;
+                        //$test = MatrixUtil::binCode($templateGridXY);
+                        //$decodedTemplateGrid = MatrixUtil::binDecode($test);
+                        //echo MatrixUtil::toString($decodedTemplateGrid);
+
+                        echo "\n$generationSetString -->\n" . MatrixUtil::toString($templateGridXY);
+                        /*$templateHash = MatrixUtil::binCode($templateGridXY);
+                        storeOnlyNewTemplates($sourceHash, $hashXY
                             , $hashToTemplatesIdDictionary
-                            , $templateGridXY, $templateCount, $idToTemplatesDictionary);
+                            , $templateGridXY, $templateCount, $idToTemplatesDictionary);*/
+                        redisStoreOnlyNewTemplates($redis, $generationSetString/*, $templateHash*/
+                            , $templateGridXY, $templateCountKey, $LastTemplateKey
+                            , $templateListKey, $generationSetKey, $templateCount);
                         $calculatedTemplates++;
                         echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
-                        if (true) {
+                        if (false) {
                             $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
                             $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
                             $imageWidth = $cellXRange[1] - $cellXRange[0];
