@@ -469,7 +469,7 @@ $inicio = date("Y-m-d H:i:s");
 function paintCell($cellOffsetX, $cellOffsetY, $cell, &$im, $fgColor, $bgColor, $colors): void {
     directDrawPolyAt(-$cellOffsetX, -$cellOffsetY, $im, $cell, $colors, $fgColor);
     imagefill($im, ($cell->x_max + $cell->x_min) / 2 - $cellOffsetX
-        , ($cell->y_max + $cell->y_min) / 2 + $cellOffsetY
+        , ($cell->y_max + $cell->y_min) / 2 - $cellOffsetY
         , $colors[$bgColor]);
 }
 $matrixClass = 'MatrixUtil';
@@ -688,8 +688,8 @@ foreach ($polys as $indexPoly => $poly) {
         $scalatedPoly = getScalatedPolygonCopy($poly, $polygonScale, $polygonScale);
         //$scalatedPoly2 = getScalatedPolygonCopy($poly, 32, 32); /////////////////
         foreach ($grids as $gridDimensions) {
-                $gridX = $gridDimensions[0];
-                $gridY = $gridDimensions[1];
+            $gridX = $gridDimensions[0];
+            $gridY = $gridDimensions[1];
             if ($continue && !($gridX == $last[2] && $gridY == $last[3])) {
                 continue;
             }
@@ -800,17 +800,18 @@ foreach ($polys as $indexPoly => $poly) {
                                             //drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
                                             break;
                                     }
-                                    if ($cellCount == 40) {
+                                    /*if ($cellCount == 40) {
                                         directDrawPolyAt(-$cellXRange[0], -$cellYRange[0], $im, $movedPoly, $colors, "blk");
-                                        $r = imageGif($im, "template.gif");
-                                        echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
+                                        $r = imageGif($im, "$generationSetString.gif");
+                                        echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="'
+                                            . $generationSetString . '.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
                                         die();
                                     }
-                                    $cellCount++;
+                                    $cellCount++;*/
                                 }
                             }
                             directDrawPolyAt(-$cellXRange[0], -$cellYRange[0], $im, $movedPoly, $colors, "blk");
-                            $r = imageGif($im, "template.gif");
+                            $r = imageGif($im, "$generationSetString.gif");
                             echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="template.gif" style="image-rendering: pixelated" width="' . ($imageWidth) . '" height="' . ($imageHeight) . '"><br></div></p>';
                             die();
                         }
@@ -846,6 +847,36 @@ function getTemplateGrid($grid, $poly) {
     }
     return $r; //[$r, $sr];
 }
+function getTemplateGridExpecting($grid, $poly, $expected) {
+    $r = []; //$sr = '';
+    foreach ($grid as $ix => $column) {
+        /** @var polygon $cell */
+        foreach ($column as $iy => $cell) {
+            if ($poly->completelyContains($cell)) {
+                $intersectResult = IN;
+            } else if ($cell->completelyContains($poly)
+                || $poly->isPolyIntersect($cell)) {
+                $intersectResult = MAYBE;
+            } else {
+                $intersectResult = OUT;
+            }
+            $r[$ix][$iy] = $intersectResult;
+            if ($expected[$ix][$iy] != $intersectResult) {
+                if ($poly->completelyContains($cell)) {
+                    $intersectResult = IN;
+                } else if ($cell->completelyContains($poly)
+                    || $poly->isPolyIntersect($cell)) {
+                    $intersectResult = MAYBE;
+                } else {
+                    $intersectResult = OUT;
+                }
+            }
+            //$sr .= $intersectResult;
+        }
+        //$sr .= '|';
+    }
+    return $r; //[$r, $sr];
+}
 
 function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY) {
     //$unDecimal = 0.0000000001; /////////// para 4 dígitos
@@ -857,7 +888,7 @@ function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY) {
         $sxCell = ($sx + $x) * $gridX;
         $exCell = ($sx + $x + 1) * $gridX - $unDecimal;
         for ($y = 0; $y < $dy; $y++) {
-            $syCell = ($sy + $y) * $gridX;
+            $syCell = ($sy + $y) * $gridY;
             $eyCell = ($sy + $y + 1) * $gridY - $unDecimal;
             $grid[$x][$y] = getSquarePolyFromXYXY($sxCell, $syCell, $exCell, $eyCell);
         }

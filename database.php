@@ -78,14 +78,17 @@ class Database {
         if (!isset($parameters['password'])) {
             $parameters['password'] = @ini_get('mysqli.default_pw');
         }
+        if (!isset($parameters['persistent'])) {
+            $parameters['persistent'] = false;
+        }
         $database_connection = $parameters['persistent']
             ? new mysqli('p:' . $parameters['server'], $parameters['username'], $parameters['password'])
             : new mysqli($parameters['server'], $parameters['username'], $parameters['password']);
         if ($database_connection->connect_errno) {
             error_log($database_connection->connect_errno());
-            return false;
+            return null;
         } else {
-            return true;
+            return $database_connection;
         }
     }
 
@@ -107,7 +110,7 @@ class Database {
      * Some adaptations have been implemented by Ivan Tcholakov, 2009, 2010
      * @author Olivier Brouckaert
      * @param string $query						The SQL query
-     * @param resource $connection (optional)	The database server (MySQL) connection.
+     * @param mysqli $connection (optional)	The database server (MySQL) connection.
      * 											If it is not specified, the connection opened by mysql_connect() is assumed.
      * 											If no connection is found, the server will try to create one as if mysql_connect() was called with no arguments.
      * 											If no connection is found or established, an E_WARNING level error is generated.
@@ -126,8 +129,13 @@ class Database {
      * $result = Database::query($query, $connection, __FILE__, __LINE__);
      */
     public static function query($query, $connection = null, $file = null, $line = null) {
+        /** @var mysqli $database_connection */
         global $database_connection;
-        $result = @$database_connection->query($query);
+        if ($connection === null) {
+            $connection = $database_connection;
+        }
+        /** @var bool $result */
+        $result = @$connection->query($query);
         if ($database_connection->errno) {
             $backtrace = debug_backtrace(); // Retrieving information about the caller statement.
             if (isset($backtrace[0])) {
@@ -152,8 +160,8 @@ class Database {
             $server_type = api_get_setting('server_type');
             if (!empty($line) && !empty($server_type) && $server_type != 'production') {
                 $info = '<pre>' .
-                    '<strong>DATABASE ERROR #'.self::errno($connection).':</strong><br /> ' .
-                    self::remove_XSS(self::error($connection)) . '<br />' .
+                    '<strong>DATABASE ERROR #'.self::errorNumber($connection).':</strong><br /> ' .
+                    self::remove_XSS(self::errorText($connection)) . '<br />' .
                     '<strong>QUERY       :</strong><br /> ' .
                     self::remove_XSS($query) . '<br />' .
                     '<strong>FILE        :</strong><br /> ' .

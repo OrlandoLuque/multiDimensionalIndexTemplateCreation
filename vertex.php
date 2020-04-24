@@ -282,7 +282,12 @@ class Vertex
     }
 
     function toString() {
-        return "[{$this->x}, {$this->y}]";
+        $d = $this->d();
+        if (0 === $d) {
+            return "[{$this->x}, {$this->y}]";
+        } else {
+            return "[{$this->x}, {$this->y}] - c[{$this->Xc()}, {$this->Yc()}], {$d}";
+        }
     }
     function lineToString($v) {
         return "[{$this->x}, {$this->y} -> {$v->x}, {$v->y}]";
