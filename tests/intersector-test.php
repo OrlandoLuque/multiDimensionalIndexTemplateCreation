@@ -1,7 +1,8 @@
 <?php
 //source: https://stackoverflow.com/questions/2255842/detecting-coincident-subset-of-two-coincident-line-segments/2255848#2255848
 
-require_once(__DIR__ . DIRECTORY_SEPARATOR . 'intersector.php');
+//require_once(__DIR__ . DIRECTORY_SEPARATOR . 'intersector.php');
+require_once('../libs/intersector.php');
 
 IntersectTest::Main();
 class IntersectTest {

@@ -59,8 +59,8 @@
 **						Added new examples for scale & translate methods and
 **						new examples showing the degenerate vertex issue
 */
-require('polygon.php');         // Where all the good stuff is
-require('polygon-draw.php');    // to paint everything!
+require('../libs/polygon.php');         // Where all the good stuff is
+require('../libs/polygon-draw.php');    // to paint everything!
 
 //------------------------------------------------------------------------------
 // First example re-creates the example in Figure 5 of the paper

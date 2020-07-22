@@ -7,7 +7,7 @@ class MatrixUtil {
         //echo "------------\n";
     }
 
-
+#region basic operations
     /**
      * @param $matrix array
      */
@@ -93,7 +93,9 @@ class MatrixUtil {
         }
         return $r;
     }
+#endregion
 
+    #region serialization, toString
     /**
      * @param $matrix
      */
@@ -168,5 +170,37 @@ class MatrixUtil {
         }
         return $r;
     }
+    #endregion
+
+    #region other
+    /**
+     * @param array $m
+     */
+    public static function printOperationsExamples(array $m = null): void {
+        if (empty($m)) {
+            $m = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]];
+        }
+        echo "######### Original ###########################\n\n";
+        MatrixUtil::print($m);
+        echo "\n90 clockwise rotation:\n\n";
+        MatrixUtil::print(MatrixUtil::rotateClockwise90($m));
+        echo "\n90 counter-clockwise rotation:\n\n";
+        MatrixUtil::print(MatrixUtil::rotateCounterClockwise90($m));
+        echo "\n180 rotation:\n\n";
+        MatrixUtil::print(MatrixUtil::rotate180($m));
+        echo "\n\n######### Original ###########################\n\n";
+        MatrixUtil::print($m);
+        echo "\nflip left right:\n\n";
+        MatrixUtil::print(MatrixUtil::flipLR($m));
+        echo "\nflip top bottom:\n\n";
+        MatrixUtil::print(MatrixUtil::flipTB($m));
+        echo "\n\n######### Original ###########################\n\n";
+        MatrixUtil::print($m);
+        echo "\nflip top left bottom right:\n\n";
+        MatrixUtil::print(MatrixUtil::flipTLBR($m));
+        echo "\nflip top right bottom left:\n\n";
+        MatrixUtil::print(MatrixUtil::flipTRBL($m));
+    }
+    #endregion
 }
 

@@ -181,4 +181,21 @@ function newImage($width, $height, &$i, &$col) {
     $col["dgra"] = imagecolorallocate($i, 120, 120, 120);
 }
 
+/**
+ * @param int $cellOffsetX
+ * @param int $cellOffsetY
+ * @param Polygon $cell
+ * @param resource $im
+ * @param string $fgColor
+ * @param string $bgColor
+ * @param array $colors
+ * @return void
+ */
+function paintCell($cellOffsetX, $cellOffsetY, $cell, &$im, $fgColor, $bgColor, $colors): void {
+    directDrawPolyAt(-$cellOffsetX, -$cellOffsetY, $im, $cell, $colors, $fgColor);
+    imagefill($im, ($cell->x_max + $cell->x_min) / 2 - $cellOffsetX
+        , ($cell->y_max + $cell->y_min) / 2 - $cellOffsetY
+        , $colors[$bgColor]);
+}
+
 ?>
