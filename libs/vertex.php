@@ -64,7 +64,7 @@ class Segment
     */
     var     $xc, $yc;               // Coordinates of the center of the arc
     var $d;                         // Direction of the arc, -1 = clockwise, +1 = anti-clockwise,
-    // A 0 indicates this is a line
+                                    // A 0 indicates this is a line
     /*
     ** Construct a segment
     */
@@ -271,10 +271,21 @@ class Vertex
         /** @var Vertex $p */
         /** @var Vertex $n */
         /** @var Vertex $t */
-        $previousDirection = $this->verticalDirection($this->prevV);
+        $prev = $this->prevV;
+        $prevPost = $this;
+        while ($this->isHorizontalLine($prev)) {
+            $prevPost = $prev;
+            $prev = $prev->prevV;
+        }
+        $previousDirection = $this->verticalDirection($prev, $prevPost);
         $direction = $this->verticalDirection($this);
          return ($previousDirection == 1 && $direction == 1)
-             || ($previousDirection == -1 && $direction == -1);
+             || ($previousDirection == -1 && $direction == -1)
+             //|| ($previousDirection == 1 && $direction == 0)
+             //|| ($previousDirection == -1 && $direction == 0)
+             //|| ($previousDirection == 0 && $direction == 1)
+             //|| ($previousDirection == 0 && $direction == -1)
+             ;
     }
 
     function __toString() {
@@ -290,7 +301,7 @@ class Vertex
         }
     }
     function lineToString($v) {
-        return "[{$this->x}, {$this->y} -> {$v->x}, {$v->y}]";
+        return "[{$this->toString()} -> {$v->toString()}]";
     }
 
     function isInside(Vertex $v1, Vertex $v2) {
@@ -304,25 +315,64 @@ class Vertex
     function equals($v) {
         return $this->x == $v->x && $this->y == $v->y;
     }
+    /**
+     * @param Vertex $v
+     * @return bool
+     */
+    function roughtlyEquals($v) {
+        return abs($this->x - $v->x) < 0.001
+            && abs($this->y - $v->y) < 0.001;
+    }
+    /**
+     * @param int $x
+     * @param int $y
+     * @return bool
+     */
+    function equalsXY($x, $y) {
+        return $this->x == $x && $this->y == $y;
+    }
 
     /**
      * @param Vertex $t
      * @return int
      */
-    private function verticalDirection(Vertex $t): int {
+    private function verticalDirection(Vertex $t, Vertex $pointToUseForArc = null): int {
         $td = $t->d();
-        $direction = 0;
         if ($td == 0) {
             $n = $t->nextV;
             if ($t->y < $n->y) {
-                $direction = 1;
+                return 1;
             } else if ($t->y > $n->y) {
-                $direction = -1;
+                return -1;
             }
+            return 0;
         } else {
-            $tcx = $t->Xc();
-            $tcy = $t->Yc();
-            $a = Polygon::angle($tcx, $tcy, $t->x, $t->y);
+            if (!empty ($pointToUseForArc)) {
+                $a = Polygon::angle(
+                    $t->Xc(), $t->Yc()
+                    , $pointToUseForArc->x, $pointToUseForArc->y);
+            } else {
+                $a = Polygon::angle($t->Xc(), $t->Yc(), $t->x, $t->y);
+            }
+            $cos = cos($a);
+            if ((abs($cos) < 1e-10)) { //cos == 0
+                //$cos = 0;
+                $sin = sin($a);
+                if (!empty($pointToUseForArc)) {
+                    if ($t->nextV->equals($pointToUseForArc)) {
+                        //si el punto de corte es en el vértice final, no hay que contar
+                        // hacia donde se va, sino de donde se vino!
+                        $cos = $sin * $td;
+                    } else {
+                        $cos = + $sin * $td;
+                    }
+                } else {
+                    $cos = -$sin * $td;
+                }
+            }
+            return ($cos > 0? 1: -1) * $td;
+
+/*
             $a += ($td > 0 ? pi() / 2 : -pi() / 2);
             $sen = sin($a);
             if ($sen == 0) {
@@ -330,10 +380,25 @@ class Vertex
             }
             if ($sen > 0) {
                 $direction = 1;
-            } else /*if ($sen < 1)*/ {
+            } else / *if ($sen < 1)* / {
                 $direction = -1;
-            };
+            };*/
         }
-        return $direction;
+        //return $direction;
+    }
+
+   /**
+     * @param Vertex $t
+     * @return int
+     */
+    private function isHorizontalLine(Vertex $t): int {
+        $td = $t->d();
+        //$direction = 0;
+        if ($td == 0
+                && $t->y == $t->nextV->y) {
+            return true;
+        } else {
+            return false;
+        }
     }
 } //end of class vertex

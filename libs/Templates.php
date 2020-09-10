@@ -21,7 +21,7 @@ $matrixMethodsIndex = ['eq', 'rCC'
 class Templates {
 
 
-    
+
     function __construct() {
     }
 
@@ -188,6 +188,148 @@ class Templates {
                                 $gridYRange = [floor($boxVertex[0]['y'] / $gridY), ceil($boxVertex[1]['y'] / $gridY)];
                                 $grid = Templates::getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
                                 /*list($templateGridXY, $templateHashYX)*/
+
+                                /////////////////////////////
+
+
+
+
+
+                                $polys['mixed1'] = $polyA = new polygon();
+                                $polyA->addv(0, 0);
+                                $polyA->addv(0, 5, 0, 10, +1);
+                                $polyA->addv(0, 15);
+                                $polyA->addv(0, 20);
+                                $polyA->addv(20, 20);
+                                $polyA->addv(20, 5, 20, 0, -1);
+                                $polyA->addv(15, 0);
+
+
+                                $polys['mixed1_forzando'] = $polyA = new polygon();
+                                $polyA->addv(0, 0);
+                                $polyA->addv(0, 5, 5, 10, +1);
+                                $polyA->addv(0, 15);
+                                $polyA->addv(0, 20);
+                                $polyA->addv(20, 20);
+                                $polyA->addv(20, 5, 25, 0, -1);
+                                $polyA->addv(15, 0);
+
+                                $polys['t1'] = $polyA = new polygon();
+                                $polyA->addv(0,-2);
+                                $polyA->addv(0,80);
+                                $polyA->addv(40,80);
+                                $polyA->addv(40,0);
+                                $polyA->addv(10,0,0,20,1);
+
+
+                                $polys['t2'] = $polyA = new polygon();
+                                $polyA->addv(0,0,0,20,1);
+                                $polyA->addv(0,40,20,40,1);
+                                $polyA->addv(40,40,40,20,1);
+                                $polyA->addv(40,0,20,0,1);
+
+
+                                $polys['mixed2'] = $polyA = new polygon();        // Create a new polygon and add some vertices to it
+                                $polyA->addv(0,0);
+                                $polyA->addv(0,20,0,40,1);
+                                $polyA->addv(0,60);
+                                $polyA->addv(0,80);
+                                $polyA->addv(45,80);
+                                $polyA->addv(45,60,45,40,1);
+                                $polyA->addv(45,20);
+                                $polyA->addv(45,0);
+
+                                $polys['circle0'] = $polyA = new polygon();
+                                $polyA->addv(24, 0, 0, 0, +1);
+
+                                $polys['circle1'] = $polyA = new polygon();
+                                $polyA->addv(24, 0, 0, 0, +1);
+                                $polyA->addv(-24, 0, 0, 0, +1);
+
+                                $polys['circle2'] = $polyA = new polygon();
+                                $polyA->addv(24, 0, 0, 0, -1);
+                                $polyA->addv(-24, 0, 0, 0, -1);
+
+                                $polys['circle3'] = $polyA = new polygon();
+                                $polyA->addv(-24, 0, 0, 0, -1);
+                                $polyA->addv(24, 0, 0, 0, -1);
+
+                                $polys['circle4'] = $polyA = new polygon();
+                                $polyA->addv(-24, 0, 0, 0, +1);
+                                $polyA->addv(24, 0, 0, 0, +1);
+
+
+
+                                $polys['box16'] = $polyA = new polygon();
+                                $polyA->addv(0, 112);
+                                $polyA->addv(16, 112);
+                                $polyA->addv(16, 128);
+                                $polyA->addv(0, 128);
+                                $polys['drop128'] = $movedPoly;
+
+                                $polys['t3'] = $polyA = new polygon();        // Create a new polygon and add some vertices to it
+                                $polyA->addv(0, 0);
+                                $polyA->addv(0, 80); //-
+                                $polyA->addv(40, 0);
+                                $polyA->addv(40, 80);
+
+                                $polys['t4'] = $polyA = new polygon();
+                                $polyA->addv( 16,131);
+                                $polyA->addv( 71,166);
+                                $polyA->addv(105,138);
+                                $polyA->addv( 25, 63);
+                                $polyA->addv(118, 75);
+
+                                $polys['t5'] = $polyA = new polygon();
+                                $polyA->addv(3, 11);
+                                $polyA->addv(9, 15);
+                                $polyA->addv(12, 12);
+                                $polyA->addv(6, 3);
+                                $polyA->addv(15, 5);
+                                $polys['t6'] = $polyA = new polygon();
+                                $polyA->addv(3, 11);
+                                $polyA->addv(9, 15);
+                                $polyA->addv(11, 15);
+                                $polyA->addv(12, 12);
+                                $polyA->addv(6, 3);
+                                $polyA->addv(15, 5);
+
+                                //$p5 = new Vertex(25, 128);
+                                //$r1 = $movedPoly->isInside($p5, true);
+                                //$2 = $movedPoly->completelyContains($polyA);
+                                //$p0 = new Vertex(0, 0);
+                                //$r3 = $polys['circle1']->isInside($p0, true);
+                                $v = new Vertex(17, -4); //false??
+                                $r1 = $polys['mixed1']->isInside($v, true);
+                                $v = new Vertex(21, 0); //true
+                                //$v = new Vertex(26, 0); //true
+                                //$r1 = $polys['mixed1']->isInside($v, true);
+                                //$v = new Vertex(20, 0); //false
+                                //$v = new Vertex(20, 0); //false
+                                //$v = new Vertex(42, 40); //false
+                                //$r1 = $polys['t2']->isInside($v, true);
+                                //$v = new Vertex(1, 0);
+                                //$r1 = $polys['mixed1']->isInside($v, true);
+                                //$v = new Vertex(10, 5); //true
+                                //$v = new Vertex(10, 15); //true
+                                //$r1 = $polys['mixed1']->isInside($v, true);
+                                //$v = new Vertex(18, 112);
+                                //$r1 = $polys['box16']->isInside($v, true); //false
+                                //$v = new Vertex(25, 20);
+                                //$r1 = $polys['mixed1']->isInside($v, true); //false
+                                //$v = new Vertex(41, 0); //false
+                                //$v = new Vertex(42, 0); //false
+                                //$r1 = $polys['t1']->isInside($v, true); //false
+                                if (true) {
+                                    foreach ($polys as $name => $poly) {
+                                        echo "\n----- Probando $name -----\n";
+                                        self::polyFillTestToImage($poly, "$name-empty.gif", "$name-fillingtest.gif");
+                                        //die();
+                                    }
+                                    die();
+                                }
+                                /////////////////////////////
+
                                 $templateGridXY = Templates::getTemplateGrid($grid, $movedPoly);
                                 ///////$templateGridXY = getTemplateGridExpecting($grid, $movedPoly, $expected);
                                 ///////////////////////////
@@ -387,6 +529,120 @@ class Templates {
             $templateCount = $prevTemplateCount;
         }
     }
+
+    /**
+     * @param Polygon $polygon
+     * @param string $emptyFilename
+     * @param $filledImagefilename
+     * @param $echoHTMLOutput
+     * @return array
+     */
+    public static function polyFillTestToImage(Polygon $polygon, string $emptyFilename, $filledImagefilename): array {
+        $extraMargin = 5;
+        $box = $polygon->bRect();
+        newImage($box->x_max - $box->x_min + $extraMargin * 2
+            , $box->y_max - $box->y_min + $extraMargin * 2, $im, $colors);               // Create a new image to draw our polygons
+        directDrawPolyAt(-$box->x_min + $extraMargin
+            , -$box->y_min + $extraMargin, $im, $polygon, $colors, "red");
+        //$r = imagesetpixel($im, 17 - $box->x_min + $extraMargin
+        //    , -4 - $box->y_min + $extraMargin, $colors['red']);
+        //$r = imagesetpixel($im, 42 - $box->x_min + $extraMargin
+        //    , 0 - $box->y_min + $extraMargin, $colors['ora']);
+        $r0 = imageflip($im, IMG_FLIP_VERTICAL);
+        $r1 = imageGif($im, $emptyFilename);
+        echo '<p><div align="center"><strong>EXAMPLE 2 - poligon used on example 3</strong><br><img src="poly_ex2polygon.gif" style="image-rendering: pixelated" width="'
+            . ($polygon->x_max + $extraMargin) * 4 . '" height="' . ($polygon->y_max + $extraMargin) * 4 . '"><br></div></p>';
+
+        newImage($box->x_max - $box->x_min + $extraMargin * 2
+            , $box->y_max - $box->y_min + $extraMargin * 2, $img, $col);
+        directDrawPolyAt(-$box->x_min + $extraMargin, -$box->y_min + $extraMargin
+            , $img, $polygon, $colors, "red");
+        for ($x = floor($box->x_min) - $extraMargin
+                ; $x < $box->x_max + 1 + $extraMargin
+                ; $x++) {
+            for ($y = floor($box->y_min) - $extraMargin
+                    ; $y < $box->y_max + 1 + $extraMargin
+                    ; $y++) {
+                //echo "\n$x - $y";
+                $p5 = new Vertex($x, $y);
+                //$r1 = $polyA->isInside($p5);
+                $a = 1;
+                $r1 = $polygon->isInside($p5, true);
+                if ($r1) {
+                    $r = imagesetpixel($img, $x - $box->x_min + $extraMargin
+                        , $y - $box->y_min + $extraMargin, $col['grn']);
+                } else {
+                    $r = imagesetpixel($img, $x - $box->x_min + $extraMargin
+                        , $y - $box->y_min + $extraMargin, $col['blu']);
+                }
+            }
+        }
+        //$r = imagesetpixel($img, 42 - $box->x_min + $extraMargin
+        //    , 0 - $box->y_min + $extraMargin, $col['red']);
+        //$r = imagesetpixel($img, 17 - $box->x_min + $extraMargin
+        //    , -4 - $box->y_min + $extraMargin, $col['ora']);
+        $r3 = imageflip($img, IMG_FLIP_VERTICAL);
+        $r2 = imageGif($img, $filledImagefilename);
+        echo '<p><div align="center"><strong>EXAMPLE 3 - vertex is inside</strong><br><img src="poly_ex_vertex_inside.gif" style="image-rendering: pixelated" width="'
+            . ($polygon->x_max + $extraMargin) * 4 . '" height="' . ($polygon->y_max + $extraMargin) * 4 . '"><br></div></p>';
+        return [$r1, $r2];
+    }
+
+    /**
+     * @param Polygon $polygon
+     * @return array
+     */
+    public static function polyFillToArray(Polygon $polygon): array {
+        $extraMargin = 5;
+        $box = $polygon->bRect();
+        $width = $box->x_max - $box->x_min + $extraMargin * 2;
+        $height = $box->y_max - $box->y_min + $extraMargin * 2;
+        $result = [];
+        for ($x = floor($box->x_min) - $extraMargin
+        ; $x < $box->x_max + 1 + $extraMargin
+        ; $x++) {
+            $result[] = [];
+            for ($y = floor($box->y_min) - $extraMargin
+            ; $y < $box->y_max + 1 + $extraMargin
+            ; $y++) {
+                //echo "\n$x - $y";
+                $p5 = new Vertex($x, $y);
+                //$r1 = $polyA->isInside($p5);
+                $a = 1;
+                $result[$x][$y] = $polygon->isInside($p5, true);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @param Polygon $polygon
+     * @return array
+     */
+    public static function checkNoLinesInPolygonFilling(Polygon $polygon): array {
+        $extraMargin = 5;
+        $box = $polygon->bRect();
+        $width = $box->x_max - $box->x_min + $extraMargin * 2;
+        $height = $box->y_max - $box->y_min + $extraMargin * 2;
+        $result = [];
+        for ($x = floor($box->x_min) - $extraMargin
+                ; $x < $box->x_max + 1 + $extraMargin
+                ; $x++) {
+            $result[] = [];
+            for ($y = floor($box->y_min) - $extraMargin
+                    ; $y < $box->y_max + 1 + $extraMargin
+                    ; $y++) {
+                //echo "\n$x - $y";
+                $p5 = new Vertex($x, $y);
+                //$r1 = $polyA->isInside($p5);
+                $a = 1;
+                $result[$x][$y] = $polygon->isInside($p5, true);
+            }
+        }
+
+        return $result;
+    }
+
 
     /**
      * @param Redis $redis

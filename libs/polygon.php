@@ -451,12 +451,12 @@ class Polygon {
      * * and their associated alpha values.
      */
 
-    function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternateMode = true) {
+    function ints(&$p1, &$p2, &$q1, &$q2, &$n, &$ix, &$iy, &$alphaP, &$alphaQ, $alternateMode = true, $ignoreLineArcTouch = false) {
 
         $found = FALSE;
         $n = 0; // No intersections found yet
         $pt = $p1->d();
-        $qt = $q1->d(); // Do we have Arcs or Lines?
+        $qt = $q1->d() && !$q1->equals($q2); // Do we have Arcs or Lines?
 
         if ($pt == 0 && $qt == 0) // Is it line/Line ?
         {
@@ -486,6 +486,9 @@ class Polygon {
                 }
                 $alphaP[0] = $ua;
                 $alphaQ[0] = $ub;
+                //if (count($int) > 1) {
+                //    return [$int];
+                //}
                 return $int;
                 //$found = count($int) > 0;
             } else {
@@ -634,9 +637,9 @@ class Polygon {
              */
             if ($alternateMode) {
                 if ($pt == 0) {
-                    $int = Intersector::lineArcIntersection($p1, $p2, $q1, $q2);
+                    $int = Intersector::lineArcIntersection($p1, $p2, $q1, $q2, $ignoreLineArcTouch);
                 } else {
-                    $int = Intersector::lineArcIntersection($q1, $q2, $p1, $p2);
+                    $int = Intersector::lineArcIntersection($q1, $q2, $p1, $p2, $ignoreLineArcTouch);
                 }
                 $n = count($int);
                 $ix = [];
@@ -648,8 +651,8 @@ class Polygon {
                 return $int;
                 //$found = count($int) > 0;
             } else {
-                if ($pt == 0) // Segment p1,p2 is the line
-                { // Segment q1,q2 is the arc
+                if ($pt == 0) { // Segment p1,p2 is the line
+                    // Segment q1,q2 is the arc
                     $x1 = $p1->X();
                     $y1 = $p1->Y();
                     $x2 = $p2->X();
@@ -1031,22 +1034,46 @@ class Polygon {
         $q = $this->first; // End vertex of a line segment in polygon
         do {
             $r = $q->nextV;
-            //if it intersects with an edge, it is inside
+            //if the vertex intersects with any edge, it is inside
             if (count($this->ints($v, $v, $q, $r
                     , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0) {
                 return true;
             }
             $int = $this->ints($point_at_infinity, $v, $q, $r
-                , $n, $x, $y, $aP, $aQ, $alternateMode);
-            if (count($int) == 1) {
-                $qIntercepts = count($this->ints($point_at_infinity, $v, $q, $q
-                        , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
-                $rIntercepts = count($this->ints($point_at_infinity, $v, $r, $r
-                        , $n, $x, $y, $aP, $aQ, $alternateMode)) > 0;
-                if (!$qIntercepts && !$rIntercepts
-                    || $qIntercepts && $q->isVerticalVertex()) {
+                , $n, $x, $y, $aP, $aQ, $alternateMode, true);
+            if (count($int) == 2 && $q->d() != 0) {
+                $qIntercepts = count($this->ints($point_at_infinity, $v
+                        , $q, $q
+                        , $n, $x, $y, $aP, $aQ
+                        , $alternateMode, true)) > 0;
+                $rIntercepts = count($this->ints($point_at_infinity, $v
+                        , $r, $r
+                        , $n, $x, $y, $aP, $aQ
+                        , $alternateMode, true)) > 0;
+                //if (!$qIntercepts && $rIntercepts) {
+                if ($qIntercepts xor $rIntercepts) {
                     $winding_number++;
                 }
+            }
+            if (count($int) == 1) {
+                //$qt = $q->d();
+                //if (0 === $qt) {
+                    $qIntercepts = count($this->ints($point_at_infinity, $v
+                            , $q, $q
+                            , $n, $x, $y, $aP, $aQ
+                            , $alternateMode, true)) > 0;
+                    $rIntercepts = count($this->ints($point_at_infinity, $v
+                            , $r, $r
+                            , $n, $x, $y, $aP, $aQ
+                            , $alternateMode, true)) > 0;
+                    if (!$qIntercepts && !$rIntercepts
+                        || $qIntercepts && $q->isVerticalVertex()) {
+                        $winding_number++;
+                    }
+                //} else {
+
+                    //////////////////////////////
+                //}
             }
             /*if($this->ints($point_at_infinity, $v, $q, $r
                 , $n, $x, $y, $aP, $aQ, $alternateMode)) {

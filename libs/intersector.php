@@ -236,7 +236,7 @@ class Intersector {
             return [$intersection1, $intersection2];
         }
     }
-    public static function lineArcIntersection(Vertex $l1, Vertex $l2, Vertex $a1, Vertex $a2): array {
+    public static function lineArcIntersection(Vertex $l1, Vertex $l2, Vertex $a1, Vertex $a2, $ignoreLineArcTouch): array {
         $xc = $a1->Xc();
         $yc = $a1->Yc();
         $xs = $a1->X();
@@ -244,6 +244,13 @@ class Intersector {
         $type = $a1->d();
         $circleIntersections = Intersector::lineCircleIntersection($l1, $l2
             , new Vertex($a1->Xc(), $a1->Yc()), Intersector::dist($xc, $yc, $xs, $ys));
+        $touch = count($circleIntersections) == 1
+            && !$a1->roughtlyEquals($circleIntersections[0])
+            && !$a2->roughtlyEquals($circleIntersections[0])
+        ;
+        if ($touch && $ignoreLineArcTouch) {
+            return [];
+        }
         $arcAngle1 = Intersector::angle($xc, $yc, $a1->x, $a1->y);
         $arcAngle2 = Intersector::angle($xc, $yc, $a2->x, $a2->y);
         $result = [];
@@ -253,6 +260,12 @@ class Intersector {
             $arcAngle2 = $t;
         }
         foreach ($circleIntersections as $intersection) {
+            if ($intersection->roughtlyEquals($a1)) {
+                $intersection = $a1;
+            }
+            if ($intersection->roughtlyEquals($a2)) {
+                $intersection = $a2;
+            }
             if ($intersection->isInside($l1, $l2)) {
                 $intersectionAngle = Intersector::angle($xc, $yc, $intersection->x, $intersection->y);
                 if ($arcAngle2 >= $arcAngle1) {

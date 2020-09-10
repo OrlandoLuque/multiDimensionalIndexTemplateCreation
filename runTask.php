@@ -22,8 +22,15 @@ require_once('libs/Task.php');
 /*define("OUT", 0);
 define("IN", 2);
 define("MAYBE", 1);*/
-$polygonScales = [64, 1024, 512, 256, 128, 16];
+$polygonScales = [128, 64, 1024, 512, 256, 128, 16];
 $gridSupportedSizes = [16, 32, 64, 128, 256, 512];
+
+///////////////////////////////////////////////
+$polygonScales = [/*32, 64, */
+    128, 256, 512, 1024];
+$gridSupportedSizes = [16, 32, 64, 128, 256, 512];
+///////////////////////////////////////////////
+
 $grids = Templates::getGridsFromSupportedSizes($gridSupportedSizes);
 
 
@@ -131,7 +138,7 @@ foreach ($tasks as $task) {
     $successfulLock = $redis->eval($task->checkAndLockTastScript, [$task->taskKey]);
     if ($successfulLock) {
         Templates::generateAndPersist($task
-            , false, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */);
+            , true, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */);
     }
 }
 
