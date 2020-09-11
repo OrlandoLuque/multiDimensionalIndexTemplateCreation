@@ -166,6 +166,10 @@ class Templates {
                         $rotatedPoly = Templates::getRotatedPolygonCopy($scalatedPoly
                             , Templates::angleToRadians($angle));
                         //$rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
+                        if (!self::checkNoLinesInPolygonFilling($rotatedPoly)) {
+                            echo "Error: calculation misshap for polygon " . "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle";
+                            die();
+                        }
                         for ($x = 0; $x < $gridX; $x++) {
                             for ($y = 0; $y < $gridY; $y++) {
                                 if ($continue) {
@@ -188,147 +192,6 @@ class Templates {
                                 $gridYRange = [floor($boxVertex[0]['y'] / $gridY), ceil($boxVertex[1]['y'] / $gridY)];
                                 $grid = Templates::getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
                                 /*list($templateGridXY, $templateHashYX)*/
-
-                                /////////////////////////////
-
-
-
-
-
-                                $polys['mixed1'] = $polyA = new polygon();
-                                $polyA->addv(0, 0);
-                                $polyA->addv(0, 5, 0, 10, +1);
-                                $polyA->addv(0, 15);
-                                $polyA->addv(0, 20);
-                                $polyA->addv(20, 20);
-                                $polyA->addv(20, 5, 20, 0, -1);
-                                $polyA->addv(15, 0);
-
-
-                                $polys['mixed1_forzando'] = $polyA = new polygon();
-                                $polyA->addv(0, 0);
-                                $polyA->addv(0, 5, 5, 10, +1);
-                                $polyA->addv(0, 15);
-                                $polyA->addv(0, 20);
-                                $polyA->addv(20, 20);
-                                $polyA->addv(20, 5, 25, 0, -1);
-                                $polyA->addv(15, 0);
-
-                                $polys['t1'] = $polyA = new polygon();
-                                $polyA->addv(0,-2);
-                                $polyA->addv(0,80);
-                                $polyA->addv(40,80);
-                                $polyA->addv(40,0);
-                                $polyA->addv(10,0,0,20,1);
-
-
-                                $polys['t2'] = $polyA = new polygon();
-                                $polyA->addv(0,0,0,20,1);
-                                $polyA->addv(0,40,20,40,1);
-                                $polyA->addv(40,40,40,20,1);
-                                $polyA->addv(40,0,20,0,1);
-
-
-                                $polys['mixed2'] = $polyA = new polygon();        // Create a new polygon and add some vertices to it
-                                $polyA->addv(0,0);
-                                $polyA->addv(0,20,0,40,1);
-                                $polyA->addv(0,60);
-                                $polyA->addv(0,80);
-                                $polyA->addv(45,80);
-                                $polyA->addv(45,60,45,40,1);
-                                $polyA->addv(45,20);
-                                $polyA->addv(45,0);
-
-                                $polys['circle0'] = $polyA = new polygon();
-                                $polyA->addv(24, 0, 0, 0, +1);
-
-                                $polys['circle1'] = $polyA = new polygon();
-                                $polyA->addv(24, 0, 0, 0, +1);
-                                $polyA->addv(-24, 0, 0, 0, +1);
-
-                                $polys['circle2'] = $polyA = new polygon();
-                                $polyA->addv(24, 0, 0, 0, -1);
-                                $polyA->addv(-24, 0, 0, 0, -1);
-
-                                $polys['circle3'] = $polyA = new polygon();
-                                $polyA->addv(-24, 0, 0, 0, -1);
-                                $polyA->addv(24, 0, 0, 0, -1);
-
-                                $polys['circle4'] = $polyA = new polygon();
-                                $polyA->addv(-24, 0, 0, 0, +1);
-                                $polyA->addv(24, 0, 0, 0, +1);
-
-
-
-                                $polys['box16'] = $polyA = new polygon();
-                                $polyA->addv(0, 112);
-                                $polyA->addv(16, 112);
-                                $polyA->addv(16, 128);
-                                $polyA->addv(0, 128);
-                                $polys['drop128'] = $movedPoly;
-
-                                $polys['t3'] = $polyA = new polygon();        // Create a new polygon and add some vertices to it
-                                $polyA->addv(0, 0);
-                                $polyA->addv(0, 80); //-
-                                $polyA->addv(40, 0);
-                                $polyA->addv(40, 80);
-
-                                $polys['t4'] = $polyA = new polygon();
-                                $polyA->addv( 16,131);
-                                $polyA->addv( 71,166);
-                                $polyA->addv(105,138);
-                                $polyA->addv( 25, 63);
-                                $polyA->addv(118, 75);
-
-                                $polys['t5'] = $polyA = new polygon();
-                                $polyA->addv(3, 11);
-                                $polyA->addv(9, 15);
-                                $polyA->addv(12, 12);
-                                $polyA->addv(6, 3);
-                                $polyA->addv(15, 5);
-                                $polys['t6'] = $polyA = new polygon();
-                                $polyA->addv(3, 11);
-                                $polyA->addv(9, 15);
-                                $polyA->addv(11, 15);
-                                $polyA->addv(12, 12);
-                                $polyA->addv(6, 3);
-                                $polyA->addv(15, 5);
-
-                                //$p5 = new Vertex(25, 128);
-                                //$r1 = $movedPoly->isInside($p5, true);
-                                //$2 = $movedPoly->completelyContains($polyA);
-                                //$p0 = new Vertex(0, 0);
-                                //$r3 = $polys['circle1']->isInside($p0, true);
-                                $v = new Vertex(17, -4); //false??
-                                $r1 = $polys['mixed1']->isInside($v, true);
-                                $v = new Vertex(21, 0); //true
-                                //$v = new Vertex(26, 0); //true
-                                //$r1 = $polys['mixed1']->isInside($v, true);
-                                //$v = new Vertex(20, 0); //false
-                                //$v = new Vertex(20, 0); //false
-                                //$v = new Vertex(42, 40); //false
-                                //$r1 = $polys['t2']->isInside($v, true);
-                                //$v = new Vertex(1, 0);
-                                //$r1 = $polys['mixed1']->isInside($v, true);
-                                //$v = new Vertex(10, 5); //true
-                                //$v = new Vertex(10, 15); //true
-                                //$r1 = $polys['mixed1']->isInside($v, true);
-                                //$v = new Vertex(18, 112);
-                                //$r1 = $polys['box16']->isInside($v, true); //false
-                                //$v = new Vertex(25, 20);
-                                //$r1 = $polys['mixed1']->isInside($v, true); //false
-                                //$v = new Vertex(41, 0); //false
-                                //$v = new Vertex(42, 0); //false
-                                //$r1 = $polys['t1']->isInside($v, true); //false
-                                if (true) {
-                                    foreach ($polys as $name => $poly) {
-                                        echo "\n----- Probando $name -----\n";
-                                        self::polyFillTestToImage($poly, "$name-empty.gif", "$name-fillingtest.gif");
-                                        //die();
-                                    }
-                                    die();
-                                }
-                                /////////////////////////////
 
                                 $templateGridXY = Templates::getTemplateGrid($grid, $movedPoly);
                                 ///////$templateGridXY = getTemplateGridExpecting($grid, $movedPoly, $expected);
@@ -617,28 +480,44 @@ class Templates {
 
     /**
      * @param Polygon $polygon
-     * @return array
+     * @return bool
      */
-    public static function checkNoLinesInPolygonFilling(Polygon $polygon): array {
-        $extraMargin = 5;
+    public static function checkNoLinesInPolygonFilling(Polygon $polygon): bool {
+        $extraMargin = 3;
         $box = $polygon->bRect();
         $width = $box->x_max - $box->x_min + $extraMargin * 2;
         $height = $box->y_max - $box->y_min + $extraMargin * 2;
+        $xStart = floor($box->x_min) - $extraMargin;
+        $xEnd = $box->x_max + 1 + $extraMargin;
+        $yStart = floor($box->y_min) - $extraMargin;
+        $yEnd = $box->y_max + 1 + $extraMargin;
         $result = [];
-        for ($x = floor($box->x_min) - $extraMargin
-                ; $x < $box->x_max + 1 + $extraMargin
+        $lineDetection = [];
+        for ($x = $xStart
+                ; $x < $xEnd
                 ; $x++) {
             $result[] = [];
-            for ($y = floor($box->y_min) - $extraMargin
-                    ; $y < $box->y_max + 1 + $extraMargin
+            $previousLineDetection = $lineDetection;
+            $lineDetection = [];
+            for ($y = $yStart
+                    ; $y < $yEnd
                     ; $y++) {
                 //echo "\n$x - $y";
                 $p5 = new Vertex($x, $y);
                 //$r1 = $polyA->isInside($p5);
                 $a = 1;
                 $result[$x][$y] = $polygon->isInside($p5, true);
+                if ($y > $yStart + 2) {
+                    if ($result[$x][$y] == $result[$x][$y - 2] && $result[$x][$y] != $result[$x][$y - 1]) {
+                        if ($previousLineDetection[$y] == $result[$x][$y]) {
+                            return false;
+                        }
+                        $lineDetection[$y] = $result[$x][$y];
+                    }
+                }
             }
         }
+        return true;
 
         return $result;
     }
