@@ -62,27 +62,45 @@ class Segment
     ** referencing to it forward & backward from the two vertices it links it is
     ** easy to track in various directions through the polygon linked list.
     */
-    var     $xc, $yc;               // Coordinates of the center of the arc
-    var $d;                         // Direction of the arc, -1 = clockwise, +1 = anti-clockwise,
+    public $xc;
+    public $yc;               // Coordinates of the center of the arc
+    public $d;                         // Direction of the arc, -1 = clockwise, +1 = anti-clockwise,
                                     // A 0 indicates this is a line
     /*
     ** Construct a segment
     */
-    function __construct ($xc=0, $yc=0, $d=0)
+    public function __construct($xc=0, $yc=0, $d=0)
     {
-        $this->xc = $xc; $this->yc = $yc; $this->d = $d;
+        $this->xc = $xc;
+        $this->yc = $yc;
+        $this->d = $d;
     }
     /*
     ** Return the contents of a segment
     */
-    function Xc () { return $this->xc ;}
-    function Yc () { return $this->yc ;}
-    function d () { return $this->d ;}
+    public function Xc()
+    {
+        return $this->xc ;
+    }
+    public function Yc()
+    {
+        return $this->yc ;
+    }
+    public function d()
+    {
+        return $this->d ;
+    }
     /*
     ** Set Xc/Yc
     */
-    function setXc ($xc) { $this->xc = $xc; }
-    function setYc ($yc) { $this->yc = $yc; }
+    public function setXc($xc)
+    {
+        $this->xc = $xc;
+    }
+    public function setYc($yc)
+    {
+        $this->yc = $yc;
+    }
 } // end of class segment
 
 class Vertex
@@ -94,48 +112,84 @@ class Vertex
     ** for boolean operations. The only methods in the class are used to encapsulate
     ** the properties.
     */
-    var $x, $y;                 // Coordinates of the vertex
-    var $nextV, $prevV;         // References to the next and previous vetices in the polygon
-    var $nSeg, $pSeg;           // References to next & previous segments
-    var $nextPoly;              // Reference to another polygon in a list
-    var $intersect;             // TRUE if vertex is an intersection (with another polgon)
-    var $neighbor;              // Ref to the corresponding intersection vertex in another polygon
-    var $alpha;                 // Intersection points relative distance from previous vertex
-    var $entry;                 // TRUE if intersection is an entry point to another polygon
+    public $x;
+    public $y;                 // Coordinates of the vertex
+    public $nextV;
+    public $prevV;         // References to the next and previous vetices in the polygon
+    public $nSeg;
+    public $pSeg;           // References to next & previous segments
+    public $nextPoly;              // Reference to another polygon in a list
+    public $intersect;             // TRUE if vertex is an intersection (with another polgon)
+    public $neighbor;              // Ref to the corresponding intersection vertex in another polygon
+    public $alpha;                 // Intersection points relative distance from previous vertex
+    public $entry;                 // TRUE if intersection is an entry point to another polygon
     // FALSE if it is an exit point
-    var $checked;               // Boolean - TRUE if vertex has been checked
-    var $id;                    // A random ID assigned to make the vertex unique
+    public $checked;               // Boolean - TRUE if vertex has been checked
+    public $id;                    // A random ID assigned to make the vertex unique
 
     /*
     ** Construct a vertex
     */
-    function __construct ($x, $y, $xc=0, $yc=0, $d=0,
-                          $nextV=NULL, $prevV=NULL, $nextPoly=NULL,
-                          $intersect = FALSE, $neighbor=NULL, $alpha=0, $entry=TRUE, $checked=FALSE)
+    public function __construct(
+        $x,
+        $y,
+        $xc=0,
+        $yc=0,
+        $d=0,
+        $nextV=null,
+        $prevV=null,
+        $nextPoly=null,
+        $intersect = false,
+        $neighbor=null,
+        $alpha=0,
+        $entry=true,
+        $checked=false
+    )
     {
-        $this->x = $x; $this->y = $y;
-        $this->nextV = $nextV; $this->prevV = $prevV; $this->nextPoly = $nextPoly;
-        $this->intersect = $intersect; $this->neighbor = $neighbor; $this->alpha = $alpha;
-        $this->entry = $entry; $this->checked = $checked;
-        $this->id = mt_rand(0,1000000);
+        $this->x = $x;
+        $this->y = $y;
+        $this->nextV = $nextV;
+        $this->prevV = $prevV;
+        $this->nextPoly = $nextPoly;
+        $this->intersect = $intersect;
+        $this->neighbor = $neighbor;
+        $this->alpha = $alpha;
+        $this->entry = $entry;
+        $this->checked = $checked;
+        $this->id = mt_rand(0, 1000000);
         /*
         ** Create a new Segment and set a reference to it. Segments are always
         ** placed after the vertex
         */
-        $this->nSeg = new Segment ($xc, $yc, $d);
-        $this->pSeg = NULL;
+        $this->nSeg = new Segment($xc, $yc, $d);
+        $this->pSeg = null;
     }
     /*
     ** Get id
     */
-    function id() { return $this->id; }
+    public function id()
+    {
+        return $this->id;
+    }
     /*
     ** Get/Set x/y
     */
-    function X() { return $this->x; }
-    function setX($x) { $this->x = $x; }
-    function Y() { return $this->y; }
-    function setY($y) { $this->y = $y; }
+    public function X()
+    {
+        return $this->x;
+    }
+    public function setX($x)
+    {
+        $this->x = $x;
+    }
+    public function Y()
+    {
+        return $this->y;
+    }
+    public function setY($y)
+    {
+        $this->y = $y;
+    }
     /*
     ** Return contents of a segment. Default is to always return the next
     ** segment, unless previous is specified. The special case is where
@@ -147,127 +201,197 @@ class Vertex
     **
     ** For $g Next == TRUE and Prev == FALSE
     */
-    function Xc ($g = TRUE)
+    public function Xc($g = true)
     {
-        if ($this->isIntersect())
-        {
-            if ($this->neighbor->isEntry())
+        if ($this->isIntersect()) {
+            if ($this->neighbor->isEntry()) {
                 return $this->neighbor->nSeg->Xc();
-            else
+            } else {
                 return $this->neighbor->pSeg->Xc();
+            }
+        } elseif ($g) {
+            return $this->nSeg->Xc();
+        } else {
+            return $this->pSeg->Xc();
         }
-        else
-            if ($g) return $this->nSeg->Xc(); else return $this->pSeg->Xc();
     }
-    function Yc ($g = TRUE)
+    public function Yc($g = true)
     {
-        if ($this->isIntersect())
-        {
-            if ($this->neighbor->isEntry())
+        if ($this->isIntersect()) {
+            if ($this->neighbor->isEntry()) {
                 return $this->neighbor->nSeg->Yc();
-            else
+            } else {
                 return $this->neighbor->pSeg->Yc();
+            }
+        } elseif ($g) {
+            return $this->nSeg->Yc();
+        } else {
+            return $this->pSeg->Yc();
         }
-        else
-            if ($g) return $this->nSeg->Yc(); else return $this->pSeg->Yc();
     }
 
-    function d ($g = TRUE)
+    public function d($g = true)
     {
-        if ($this->isIntersect())
-        {
-            if ($this->neighbor->isEntry())
+        if ($this->isIntersect()) {
+            if ($this->neighbor->isEntry()) {
                 return $this->neighbor->nSeg->d();
-            else
+            } else {
                 return (-1*$this->neighbor->pSeg->d());
+            }
+        } elseif ($g) {
+            return $this->nSeg->d();
+        } else {
+            return (-1*$this->pSeg->d());
         }
-        else
-            if ($g) return $this->nSeg->d(); else return (-1*$this->pSeg->d());
     }
     /*
     ** Set Xc/Yc (Only for segment pointed to by Nseg)
     */
-    function setXc ($xc) { $this->nSeg->setXc($xc); }
-    function setYc ($yc) { $this->nSeg->setYc($yc); }
+    public function setXc($xc)
+    {
+        $this->nSeg->setXc($xc);
+    }
+    public function setYc($yc)
+    {
+        $this->nSeg->setYc($yc);
+    }
     /*
     ** Set/Get the reference to the next vertex
     */
-    function setNext ($nextV) { $this->nextV = $nextV; }
-    function &Next ():Vertex { return $this->nextV; }
+    public function setNext($nextV)
+    {
+        $this->nextV = $nextV;
+    }
+    public function &Next(): Vertex
+    {
+        return $this->nextV;
+    }
     /*
     ** Set/Get the reference to the previous vertex
     */
-    function setPrev ($prevV){  $this->prevV = $prevV; }
-    function &Prev ():Vertex { return $this->prevV; }
+    public function setPrev($prevV)
+    {
+        $this->prevV = $prevV;
+    }
+    public function &Prev(): Vertex
+    {
+        return $this->prevV;
+    }
     /*
     ** Set/Get the reference to the next segment
     */
-    function setNseg ($nSeg) { $this->nSeg = $nSeg; }
-    function &Nseg (){ return $this->nSeg; }
+    public function setNseg($nSeg)
+    {
+        $this->nSeg = $nSeg;
+    }
+    public function &Nseg()
+    {
+        return $this->nSeg;
+    }
     /*
     ** Set/Get the reference to the previous segment
     */
-    function setPseg ($pSeg){ $this->pSeg = $pSeg; }
-    function &Pseg (){ return $this->pSeg; }
+    public function setPseg($pSeg)
+    {
+        $this->pSeg = $pSeg;
+    }
+    public function &Pseg()
+    {
+        return $this->pSeg;
+    }
     /*
     ** Set/Get reference to the next Polygon
     */
-    function setNextPoly ($nextPoly){ $this->nextPoly = $nextPoly; }
-    function &NextPoly (){ return $this->nextPoly; }
+    public function setNextPoly($nextPoly)
+    {
+        $this->nextPoly = $nextPoly;
+    }
+    public function &NextPoly()
+    {
+        return $this->nextPoly;
+    }
     /*
     ** Set/Get reference to neighbor polygon
     */
-    function setNeighbor ($neighbor){ $this->neighbor = $neighbor; }
-    function &Neighbor (){ return $this->neighbor; }
+    public function setNeighbor($neighbor)
+    {
+        $this->neighbor = $neighbor;
+    }
+    public function &Neighbor()
+    {
+        return $this->neighbor;
+    }
     /*
     ** Get alpha
     */
-    function Alpha (){ return $this->alpha; }
+    public function Alpha()
+    {
+        return $this->alpha;
+    }
     /*
     ** Test for intersection
     */
-    function isIntersect (){ return $this->intersect; }
+    public function isIntersect()
+    {
+        return $this->intersect;
+    }
     /*
     ** Set/Test for checked flag
     */
-    function setChecked($check = TRUE)
+    public function setChecked($check = true)
     {
         $this->checked = $check;
-        if ($this->neighbor && !$this->neighbor->isChecked())
+        if ($this->neighbor && !$this->neighbor->isChecked()) {
             $this->neighbor->setChecked();
+        }
     }
-    function isChecked () { return $this->checked; }
+    public function isChecked()
+    {
+        return $this->checked;
+    }
     /*
     ** Set/Test entry
     */
-    function setEntry ($entry = TRUE){ $this->entry = $entry; }
-    function isEntry (){ return $this->entry; }
+    public function setEntry($entry = true)
+    {
+        $this->entry = $entry;
+    }
+    public function isEntry()
+    {
+        return $this->entry;
+    }
     /*
     ** Print Vertex used for debugging
     */
-    function print_vertex()
+    public function print_vertex()
     {
         print("(".$this->x.")(".$this->y.") ");
-        if ($this->nSeg->d() != 0)
+        if ($this->nSeg->d() != 0) {
             print(" c(".$this->nSeg->Xc().")(".$this->nSeg->Yc().")(".$this->nSeg->d().") ");
+        }
         if ($this->intersect) {
             print("Intersection with alpha=".$this->alpha." ");
-            if ($this->entry)
+            if ($this->entry) {
                 print(" Entry");
-            else
-                print(" Exit");}
-        if ($this->checked)
+            } else {
+                print(" Exit");
+            }
+        }
+        if ($this->checked) {
             print(" Checked");
-        else
+        } else {
             print(" Unchecked");
+        }
         print("<br>");
     }
 
-    function intersectVertex($v) {
+    public function intersectVertex($v)
+    {
         return ($this->x == $v->x && $this->y == $v->y);
     }
 
-    function isVerticalVertex() {
+    public function isVerticalVertex()
+    {
         /** @var Vertex $p */
         /** @var Vertex $n */
         /** @var Vertex $t */
@@ -279,7 +403,7 @@ class Vertex
         }
         $previousDirection = $this->verticalDirection($prev, $prevPost);
         $direction = $this->verticalDirection($this);
-         return ($previousDirection == 1 && $direction == 1)
+        return ($previousDirection == 1 && $direction == 1)
              || ($previousDirection == -1 && $direction == -1)
              //|| ($previousDirection == 1 && $direction == 0)
              //|| ($previousDirection == -1 && $direction == 0)
@@ -288,11 +412,13 @@ class Vertex
              ;
     }
 
-    function __toString() {
+    public function __toString()
+    {
         return $this->toString();
     }
 
-    function toString() {
+    public function toString()
+    {
         $d = $this->d();
         if (0 === $d) {
             return "[{$this->x}, {$this->y}]";
@@ -300,11 +426,13 @@ class Vertex
             return "[{$this->x}, {$this->y}] - c[{$this->Xc()}, {$this->Yc()}], {$d}";
         }
     }
-    function lineToString($v) {
+    public function lineToString($v)
+    {
         return "[{$this->toString()} -> {$v->toString()}]";
     }
 
-    function isInside(Vertex $v1, Vertex $v2) {
+    public function isInside(Vertex $v1, Vertex $v2)
+    {
         return ($v1->x >= $this->x && $this->x >= $v2->x || $v1->x <= $this->x && $this->x <= $v2->x)
             && ($v1->y >= $this->y && $this->y >= $v2->y || $v1->y <= $this->y && $this->y <= $v2->y);
     }
@@ -312,14 +440,16 @@ class Vertex
      * @param Vertex $v
      * @return bool
      */
-    function equals($v) {
+    public function equals($v)
+    {
         return $this->x == $v->x && $this->y == $v->y;
     }
     /**
      * @param Vertex $v
      * @return bool
      */
-    function roughtlyEquals($v) {
+    public function roughtlyEquals($v)
+    {
         return abs($this->x - $v->x) < 0.001
             && abs($this->y - $v->y) < 0.001;
     }
@@ -328,7 +458,8 @@ class Vertex
      * @param int $y
      * @return bool
      */
-    function equalsXY($x, $y) {
+    public function equalsXY($x, $y)
+    {
         return $this->x == $x && $this->y == $y;
     }
 
@@ -336,21 +467,25 @@ class Vertex
      * @param Vertex $t
      * @return int
      */
-    private function verticalDirection(Vertex $t, Vertex $pointToUseForArc = null): int {
+    private function verticalDirection(Vertex $t, Vertex $pointToUseForArc = null): int
+    {
         $td = $t->d();
         if ($td == 0) {
             $n = $t->nextV;
             if ($t->y < $n->y) {
                 return 1;
-            } else if ($t->y > $n->y) {
+            } elseif ($t->y > $n->y) {
                 return -1;
             }
             return 0;
         } else {
-            if (!empty ($pointToUseForArc)) {
+            if (!empty($pointToUseForArc)) {
                 $a = Polygon::angle(
-                    $t->Xc(), $t->Yc()
-                    , $pointToUseForArc->x, $pointToUseForArc->y);
+                    $t->Xc(),
+                    $t->Yc(),
+                    $pointToUseForArc->x,
+                    $pointToUseForArc->y
+                );
             } else {
                 $a = Polygon::angle($t->Xc(), $t->Yc(), $t->x, $t->y);
             }
@@ -370,28 +505,29 @@ class Vertex
                     $cos = -$sin * $td;
                 }
             }
-            return ($cos > 0? 1: -1) * $td;
+            return ($cos > 0 ? 1 : -1) * $td;
 
-/*
-            $a += ($td > 0 ? pi() / 2 : -pi() / 2);
-            $sen = sin($a);
-            if ($sen == 0) {
-                $sen = sin($a + ($td > 0 ? 0.001 : -0.001));
-            }
-            if ($sen > 0) {
-                $direction = 1;
-            } else / *if ($sen < 1)* / {
-                $direction = -1;
-            };*/
+            /*
+                        $a += ($td > 0 ? pi() / 2 : -pi() / 2);
+                        $sen = sin($a);
+                        if ($sen == 0) {
+                            $sen = sin($a + ($td > 0 ? 0.001 : -0.001));
+                        }
+                        if ($sen > 0) {
+                            $direction = 1;
+                        } else / *if ($sen < 1)* / {
+                            $direction = -1;
+                        };*/
         }
         //return $direction;
     }
 
-   /**
-     * @param Vertex $t
-     * @return int
-     */
-    private function isHorizontalLine(Vertex $t): int {
+    /**
+      * @param Vertex $t
+      * @return int
+      */
+    private function isHorizontalLine(Vertex $t): int
+    {
         $td = $t->d();
         //$direction = 0;
         if ($td == 0

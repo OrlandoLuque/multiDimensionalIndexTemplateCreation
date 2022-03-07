@@ -1,4 +1,5 @@
 <?php
+
 //sources:
 //  https://stackoverflow.com/questions/2255842/detecting-coincident-subset-of-two-coincident-line-segments/2255848#2255848
 //https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
@@ -9,20 +10,24 @@
 //   http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/563240#563240
 
 //require_once('vertex.php');
+use JetBrains\PhpStorm\Pure;
+
 require_once(__DIR__ . DIRECTORY_SEPARATOR . 'vertex.php');
 
-class Intersector {
+class Intersector
+{
     /** @var float */
-    static $MyEpsilon = 0.00001;
+    public static float $MyEpsilon = 0.00001;
 
-    private static function OverlapIntervals($ub1, $ub2): array {
+    private static function OverlapIntervals($ub1, $ub2): array
+    {
         $l = min($ub1, $ub2);
         $r = max($ub1, $ub2);
         $A = max(0, $l);
         $B = min(1, $r);
         if ($A > $B) {// no intersection
             return [];
-        } else if ($A == $B) {
+        } elseif ($A == $B) {
             return [$A];
         } else { // if (A < B)
             return [$A, $B];
@@ -38,7 +43,8 @@ class Intersector {
      * @param Vertex $b2
      * @return array
      */
-    private static function oneD_Intersection(Vertex $a1, Vertex $a2, Vertex $b1, Vertex $b2): array {
+    private static function oneD_Intersection(Vertex $a1, Vertex $a2, Vertex $b1, Vertex $b2): array
+    {
         //float ua1 = 0.0f; // by definition
         //float ua2 = 1.0f; // by definition
         /** @var float $ub1 */
@@ -60,7 +66,6 @@ class Intersector {
 
         $ret = [];//new List<Vertex>();
 
-        /** @var array $interval */
         $interval = Intersector::OverlapIntervals($ub1, $ub2);
         /** @var float $f */
         foreach ($interval as $f) {
@@ -68,7 +73,6 @@ class Intersector {
             /** @var float $y */
             $x = $a2->X() * $f + $a1->X() * (1.0 - $f);
             $y = $a2->Y() * $f + $a1->Y() * (1.0 - $f);
-            /** @var Vertex $p */
             $p = new Vertex($x, $y);
             $ret[] = $p;
         }
@@ -82,8 +86,8 @@ class Intersector {
      * @return bool
      * @throws Exception
      */
-    private static function pointOnLine(Vertex $p, Vertex $a1, Vertex $a2): bool {
-        /** @var float $dummyU */
+    private static function pointOnLine(Vertex $p, Vertex $a1, Vertex $a2): bool
+    {
         $dummyU = 0.0;
         $d = Intersector::distFromSeg($p, $a1, $a2, Intersector::$MyEpsilon, $dummyU);
         return $d < Intersector::$MyEpsilon
@@ -100,7 +104,8 @@ class Intersector {
      * @return double
      * @throws Exception
      */
-    private static function distFromSeg(Vertex $p, Vertex $q0, Vertex $q1, float $radius, float &$u): float {
+    private static function distFromSeg(Vertex $p, Vertex $q0, Vertex $q1, float $radius, float &$u): float
+    {
         // formula here:
         //http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
         // where x0,y0 = $p
@@ -122,8 +127,7 @@ class Intersector {
         /** @var double $num */
         $num = abs($dx21 * $dy10 - $dx10 * $dy21);
         /** @var double $d */
-        $d = $num / $segLength;
-        return $d;
+        return $num / $segLength;
     }
 
     /** this is the general case. Really really general
@@ -134,24 +138,22 @@ class Intersector {
      * @return array
      * @throws Exception
      */
-    public static function intersection(Vertex $a1, Vertex $a2, Vertex $b1, Vertex $b2): array {
+    public static function intersection(Vertex $a1, Vertex $a2, Vertex $b1, Vertex $b2): array
+    {
         if ($a1->equals($a2) && $b1->equals($b2)) {
             // both "segments" are points, return either point
             if ($a1->equals($b1)) {
                 return [$a1];
-            } else // both "segments" are different points, return empty set
-            {
+            } else { // both "segments" are different points, return empty set
                 return [];
             }
-        } else if ($b1->equals($b2)) // b is a point, a is a segment
-        {
+        } elseif ($b1->equals($b2)) { // b is a point, a is a segment
             if (Intersector::pointOnLine($b1, $a1, $a2)) {
                 return [$b1];
             } else {
                 return [];
             }
-        } else if ($a1->equals($a2)) // a is a point, b is a segment
-        {
+        } elseif ($a1->equals($a2)) { // a is a point, b is a segment
             if (Intersector::pointOnLine($a1, $b1, $b2)) {
                 return [$a1];
             } else {
@@ -177,8 +179,10 @@ class Intersector {
             if (0.0 <= $ua && $ua <= 1.0 && 0.0 <= $ub && $ub <= 1.0) {
                 // Intersection
                 return [
-                    new Vertex($a1->X() + $ua * ($a2->X() - $a1->X()),
-                        $a1->Y() + $ua * ($a2->Y() - $a1->Y()))
+                    new Vertex(
+                        $a1->X() + $ua * ($a2->X() - $a1->X()),
+                        $a1->Y() + $ua * ($a2->Y() - $a1->Y())
+                    )
                 ];
             } else {
                 // No Intersection
@@ -190,7 +194,7 @@ class Intersector {
             // first find the distance (squared) from one point ($a1) to each point
             if ((-Intersector::$MyEpsilon < $ua_t && $ua_t < Intersector::$MyEpsilon)
                 || (-Intersector::$MyEpsilon < $ub_t && $ub_t < Intersector::$MyEpsilon)) {
-                if ($a1->equals($a2)) { // danger!
+                if ($a1->equals($a2)) { // danger! // this won't happen...
                     return Intersector::oneD_Intersection($b1, $b2, $a1, $a2);
                 } else { // safe
                     return Intersector::oneD_Intersection($a1, $a2, $b1, $b2);
@@ -202,7 +206,8 @@ class Intersector {
         }
     }
 
-    public static function lineCircleIntersection(Vertex $l1, Vertex $l2, Vertex $c, float $radius) {
+    public static function lineCircleIntersection(Vertex $l1, Vertex $l2, Vertex $c, float $radius): array
+    {
         // Find the points of intersection.)
         //float $dx, $dy, $A, $B, $C, $det, $t;
 
@@ -219,7 +224,7 @@ class Intersector {
         if (($A <= 0.0000001) || ($det < 0)) {
             // No real solutions.
             return [];
-        } else if ($det == 0) {
+        } elseif ($det == 0) {
             // One solution.
             $t = -$B / (2 * $A);
             $intersection1 =
@@ -236,14 +241,14 @@ class Intersector {
             return [$intersection1, $intersection2];
         }
     }
-    public static function lineArcIntersection(Vertex $l1, Vertex $l2, Vertex $a1, Vertex $a2, $ignoreLineArcTouch): array {
+    public static function lineArcIntersection(Vertex $l1, Vertex $l2, Vertex $a1, Vertex $a2, $ignoreLineArcTouch = false): array
+    {
         $xc = $a1->Xc();
         $yc = $a1->Yc();
         $xs = $a1->X();
         $ys = $a1->Y();
         $type = $a1->d();
-        $circleIntersections = Intersector::lineCircleIntersection($l1, $l2
-            , new Vertex($a1->Xc(), $a1->Yc()), Intersector::dist($xc, $yc, $xs, $ys));
+        $circleIntersections = Intersector::lineCircleIntersection($l1, $l2, new Vertex($a1->Xc(), $a1->Yc()), Intersector::dist($xc, $yc, $xs, $ys));
         $touch = count($circleIntersections) == 1
             && !$a1->roughtlyEquals($circleIntersections[0])
             && !$a2->roughtlyEquals($circleIntersections[0])
@@ -285,16 +290,18 @@ class Intersector {
     /*
      * * Return the distance between two points
      */
-    public static function dist($x1, $y1, $x2, $y2) {
+    public static function dist($x1, $y1, $x2, $y2): float
+    {
         return sqrt(($x1 - $x2) * ($x1 - $x2) + ($y1 - $y2) * ($y1 - $y2));
     }
+
     /*
      * * Calculate the angle between 2 points, where Xc,Yc is the center of a circle
      * * and x,y is a point on its circumference. All angles are relative to
      * * the 3 O'Clock position. Result returned in radians
      */
-
-    public static function angle($xc, $yc, $x1, $y1) {
+    #[Pure] public static function angle($xc, $yc, $x1, $y1): float|int
+    {
         $d = Intersector::dist($xc, $yc, $x1, $y1); // calc distance between two points
         if ($d != 0) {
             if (asin(($y1 - $yc) / $d) >= 0) {

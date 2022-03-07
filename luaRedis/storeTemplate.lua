@@ -48,7 +48,7 @@ r3 = redis.call("rPush", generationSetKey, generationProcessData)
 -- to continue later if the process stops
 r4 = redis.call("set", LastTemplateKey, generationSetString)
 
-return { generationProcessData, foundIndex, templateCount, r1, r2, r3, r4}
+return {generationProcessData, foundIndex, templateCount, r1, r2, r3, r4}
 
 --[[
 

@@ -1,26 +1,31 @@
 <?php
 
-class MatrixUtil {
-    public static function print($matrix) {
+class MatrixUtil
+{
+    public static function print($matrix)
+    {
         //echo "------------\n";
         echo self::toString($matrix);
         //echo "------------\n";
     }
 
-#region basic operations
+    #region basic operations
     /**
      * @param $matrix array
      */
-    public static function getDimensionsXY($matrix) {
+    public static function getDimensionsXY($matrix)
+    {
         return [count($matrix), count($matrix[0])];
     }
 
-    public static function equal($matrix) {
+    public static function equal($matrix)
+    {
         return $matrix;
     }
 
-    public static function rotateClockwise90($matrix) {
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+    public static function rotateClockwise90($matrix)
+    {
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
@@ -29,8 +34,9 @@ class MatrixUtil {
         }
         return $r;
     }
-    public static function rotate180($matrix) {
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+    public static function rotate180($matrix)
+    {
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
@@ -39,8 +45,9 @@ class MatrixUtil {
         }
         return $r;
     }
-    public static function rotateCounterClockwise90($matrix) {
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+    public static function rotateCounterClockwise90($matrix)
+    {
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
@@ -50,8 +57,9 @@ class MatrixUtil {
         return $r;
     }
 
-    public static function flipTB($matrix) {
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+    public static function flipTB($matrix)
+    {
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
@@ -61,8 +69,9 @@ class MatrixUtil {
         return $r;
     }
 
-    public static function flipLR($matrix) {
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+    public static function flipLR($matrix)
+    {
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
@@ -72,8 +81,9 @@ class MatrixUtil {
         return $r;
     }
 
-    public static function flipTRBL($matrix) {
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+    public static function flipTRBL($matrix)
+    {
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
@@ -83,8 +93,9 @@ class MatrixUtil {
         return $r;
     }
 
-    public static function flipTLBR($matrix) {
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+    public static function flipTLBR($matrix)
+    {
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r = [];
         for ($x = 0; $x < $tx; $x++) {
             for ($y = 0; $y < $ty; $y++) {
@@ -93,15 +104,16 @@ class MatrixUtil {
         }
         return $r;
     }
-#endregion
+    #endregion
 
     #region serialization, toString
     /**
      * @param $matrix
      */
-    public static function toString($matrix): string {
+    public static function toString($matrix): string
+    {
         $r = '';
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         for ($y = 0; $y < $ty; $y++) {
             for ($x = 0; $x < $tx; $x++) {
                 $r .= "\t" . $matrix[$x][$y];
@@ -110,9 +122,10 @@ class MatrixUtil {
         }
         return $r;
     }
-    public static function toStringYX($matrix): string {
+    public static function toStringYX($matrix): string
+    {
         $r = '';
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         for ($y = 0; $y < $ty; $y++) {
             for ($x = 0; $x < $tx; $x++) {
                 $r .= "\t" . $matrix[$y][$x];
@@ -122,9 +135,10 @@ class MatrixUtil {
         return $r;
     }
 
-    public static function binCode($matrix): string {
+    public static function binCode($matrix): string
+    {
         $r = '';
-        List($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
+        list($tx, $ty) = MatrixUtil::getDimensionsXY($matrix);
         $r[0] = chr($tx);
         $r[1] = chr($ty);
         $currentPair = 0;
@@ -148,11 +162,13 @@ class MatrixUtil {
         return $r;
     }
 
-    private static function getPairFromByte($n, $byte) {
+    private static function getPairFromByte($n, $byte)
+    {
         $selector = (3 << ((3 - $n) * 2));
         return ($selector & $byte) >> ((3 - $n) * 2);
     }
-    public static function binDecode($string): array {
+    public static function binDecode($string): array
+    {
         $tx = ord($string[0]);
         $ty = ord($string[1]);
         $r = [];
@@ -176,7 +192,8 @@ class MatrixUtil {
     /**
      * @param array $m
      */
-    public static function printOperationsExamples(array $m = null): void {
+    public static function printOperationsExamples(array $m = null): void
+    {
         if (empty($m)) {
             $m = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]];
         }
@@ -203,4 +220,3 @@ class MatrixUtil {
     }
     #endregion
 }
-

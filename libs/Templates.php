@@ -18,11 +18,10 @@ $matrixMethodsIndex = ['eq', 'rCC'
     , 'fLR', 'fTB'
     , 'fTLBR', 'fTRBL'];
 
-class Templates {
-
-
-
-    function __construct() {
+class Templates
+{
+    public function __construct()
+    {
     }
 
     #region Generating
@@ -33,8 +32,8 @@ class Templates {
      * @param string|null $forceLast
      * @return void
      */
-    static function generateAndPersist(Task $task
-            , bool $printNextAndDie = false, string  $forceLast = null): void {
+    public static function generateAndPersist(Task $task, bool $printNextAndDie = false, string  $forceLast = null): void
+    {
         $inicio = date("Y-m-d H:i:s");
 
         $lastTime = null;
@@ -136,7 +135,6 @@ class Templates {
             $disp = explode(',', $data[4]);
             $last[5] = ltrim($disp[0], 'dx');
             $last[6] = ltrim($disp[1], 'dy');
-
         }
 
         //$redis->set($templateCountKey, -1); comentado al hacer transacciones <-- deprecated
@@ -163,8 +161,7 @@ class Templates {
                         if ($continue && $angle != $last[4]) {
                             continue;
                         }
-                        $rotatedPoly = Templates::getRotatedPolygonCopy($scalatedPoly
-                            , Templates::angleToRadians($angle));
+                        $rotatedPoly = Templates::getRotatedPolygonCopy($scalatedPoly, Templates::angleToRadians($angle));
                         //$rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
                         if (!self::checkNoLinesInPolygonFilling($rotatedPoly)) {
                             echo "Error: calculation misshap for polygon " . "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle";
@@ -234,8 +231,15 @@ class Templates {
                                     $imageFilename = "examples/generated/$generationSetString.gif";
 
                                     list($imageWidth, $imageHeight, $isOk) = Templates::templateToImage(
-                                        $gridXRange, $gridX, $gridYRange, $gridY, $grid, $templateGridXY, $movedPoly,
-                                        $imageFilename);
+                                        $gridXRange,
+                                        $gridX,
+                                        $gridYRange,
+                                        $gridY,
+                                        $grid,
+                                        $templateGridXY,
+                                        $movedPoly,
+                                        $imageFilename
+                                    );
                                     if ($isOk) {
                                         echo '<p><div align="center"><strong>EXAMPLE template</strong><br><img src="'
                                             . $imageFilename . '" style="image-rendering: pixelated" width="'
@@ -261,14 +265,15 @@ class Templates {
      * @param polygon $poly
      * @return array
      */
-    public static function getTemplateGrid($grid, $poly) {
+    public static function getTemplateGrid($grid, $poly)
+    {
         $r = []; //$sr = '';
         foreach ($grid as $ix => $column) {
             /** @var polygon $cell */
             foreach ($column as $iy => $cell) {
                 if ($poly->completelyContains($cell)) {
                     $intersectResult = IN;
-                } else if ($cell->completelyContains($poly)
+                } elseif ($cell->completelyContains($poly)
                     || $poly->isPolyIntersect($cell)) {
                     $intersectResult = MAYBE;
                 } else {
@@ -281,14 +286,15 @@ class Templates {
         }
         return $r; //[$r, $sr];
     }
-    public static function getTemplateGridExpecting($grid, $poly, $expected) {
+    public static function getTemplateGridExpecting($grid, $poly, $expected)
+    {
         $r = []; //$sr = '';
         foreach ($grid as $ix => $column) {
             /** @var polygon $cell */
             foreach ($column as $iy => $cell) {
                 if ($poly->completelyContains($cell)) {
                     $intersectResult = IN;
-                } else if ($cell->completelyContains($poly)
+                } elseif ($cell->completelyContains($poly)
                     || $poly->isPolyIntersect($cell)) {
                     $intersectResult = MAYBE;
                 } else {
@@ -298,7 +304,7 @@ class Templates {
                 if ($expected[$ix][$iy] != $intersectResult) {
                     if ($poly->completelyContains($cell)) {
                         $intersectResult = IN;
-                    } else if ($cell->completelyContains($poly)
+                    } elseif ($cell->completelyContains($poly)
                         || $poly->isPolyIntersect($cell)) {
                         $intersectResult = MAYBE;
                     } else {
@@ -312,7 +318,8 @@ class Templates {
         return $r; //[$r, $sr];
     }
 
-    private static function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY) {
+    private static function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY)
+    {
         //$unDecimal = 0.0000000001; /////////// para 4 dígitos
         $unDecimal = 0.0;
         $dx = $ex - $sx;
@@ -341,9 +348,8 @@ class Templates {
      * @param int $templateCount
      */
     private static function redisStoreOnlyNewTemplatesLUA(Redis $redis, string $generationSetString
-        /*, string $templateHash*/, array $templateGridXY
-        , $task
-        , int &$templateCount) {
+        /*, string $templateHash*/, array $templateGridXY, $task, int &$templateCount)
+    {
         global $matrixClass, $matrixMethods, $matrixMethodsIndex;
         $foundKeys = [];
         foreach ($matrixMethods as $method => $operation) {
@@ -356,10 +362,10 @@ class Templates {
 
         //global $script;
         //if (empty($script)) {
-        //    $script = file_get_contents('../lua/storeTemplate.lua');
+        //    $script = file_get_contents('../luaRedis/storeTemplate.luaRedis');
         //}
         //if ($templateCount >= 2) {
-            //$script = file_get_contents('storeTemplateTests.lua' );
+        //$script = file_get_contents('storeTemplateTests.luaRedis' );
         //}
         //$test = $redis->eval("return 1");
         //List($generationProcessData, $foundIndex, $templateCount, $r1, $r2, $r3, $r4)
@@ -376,8 +382,8 @@ class Templates {
             $task->generationSetKey
         ]);
         $error = $redis->getLastError();
-        List($generationProcessData, $foundIndex, $templateCount, $r1, $r2, $r3, $r4) = $result;
-            //public function evalSha($scriptSha, $args = array(), $numKeys = 0)
+        list($generationProcessData, $foundIndex, $templateCount, $r1, $r2, $r3, $r4) = $result;
+        //public function evalSha($scriptSha, $args = array(), $numKeys = 0)
         //* $sha = $redis->script('load', $script);
         //* $redis->evalSha($sha); // Returns 1
         //die();
@@ -400,13 +406,12 @@ class Templates {
      * @param $echoHTMLOutput
      * @return array
      */
-    public static function polyFillTestToImage(Polygon $polygon, string $emptyFilename, $filledImagefilename): array {
+    public static function polyFillTestToImage(Polygon $polygon, string $emptyFilename, $filledImagefilename): array
+    {
         $extraMargin = 5;
         $box = $polygon->bRect();
-        newImage($box->x_max - $box->x_min + $extraMargin * 2
-            , $box->y_max - $box->y_min + $extraMargin * 2, $im, $colors);               // Create a new image to draw our polygons
-        directDrawPolyAt(-$box->x_min + $extraMargin
-            , -$box->y_min + $extraMargin, $im, $polygon, $colors, "red");
+        newImage($box->x_max - $box->x_min + $extraMargin * 2, $box->y_max - $box->y_min + $extraMargin * 2, $im, $colors);               // Create a new image to draw our polygons
+        directDrawPolyAt(-$box->x_min + $extraMargin, -$box->y_min + $extraMargin, $im, $polygon, $colors, "red");
         //$r = imagesetpixel($im, 17 - $box->x_min + $extraMargin
         //    , -4 - $box->y_min + $extraMargin, $colors['red']);
         //$r = imagesetpixel($im, 42 - $box->x_min + $extraMargin
@@ -416,10 +421,8 @@ class Templates {
         echo '<p><div align="center"><strong>EXAMPLE 2 - poligon used on example 3</strong><br><img src="poly_ex2polygon.gif" style="image-rendering: pixelated" width="'
             . ($polygon->x_max + $extraMargin) * 4 . '" height="' . ($polygon->y_max + $extraMargin) * 4 . '"><br></div></p>';
 
-        newImage($box->x_max - $box->x_min + $extraMargin * 2
-            , $box->y_max - $box->y_min + $extraMargin * 2, $img, $col);
-        directDrawPolyAt(-$box->x_min + $extraMargin, -$box->y_min + $extraMargin
-            , $img, $polygon, $colors, "red");
+        newImage($box->x_max - $box->x_min + $extraMargin * 2, $box->y_max - $box->y_min + $extraMargin * 2, $img, $col);
+        directDrawPolyAt(-$box->x_min + $extraMargin, -$box->y_min + $extraMargin, $img, $polygon, $colors, "red");
         for ($x = floor($box->x_min) - $extraMargin
                 ; $x < $box->x_max + 1 + $extraMargin
                 ; $x++) {
@@ -432,11 +435,9 @@ class Templates {
                 $a = 1;
                 $r1 = $polygon->isInside($p5, true);
                 if ($r1) {
-                    $r = imagesetpixel($img, $x - $box->x_min + $extraMargin
-                        , $y - $box->y_min + $extraMargin, $col['grn']);
+                    $r = imagesetpixel($img, $x - $box->x_min + $extraMargin, $y - $box->y_min + $extraMargin, $col['grn']);
                 } else {
-                    $r = imagesetpixel($img, $x - $box->x_min + $extraMargin
-                        , $y - $box->y_min + $extraMargin, $col['blu']);
+                    $r = imagesetpixel($img, $x - $box->x_min + $extraMargin, $y - $box->y_min + $extraMargin, $col['blu']);
                 }
             }
         }
@@ -455,7 +456,8 @@ class Templates {
      * @param Polygon $polygon
      * @return array
      */
-    public static function polyFillToArray(Polygon $polygon): array {
+    public static function polyFillToArray(Polygon $polygon): array
+    {
         $extraMargin = 5;
         $box = $polygon->bRect();
         $width = $box->x_max - $box->x_min + $extraMargin * 2;
@@ -482,7 +484,8 @@ class Templates {
      * @param Polygon $polygon
      * @return bool
      */
-    public static function checkNoLinesInPolygonFilling(Polygon $polygon): bool {
+    public static function checkNoLinesInPolygonFilling(Polygon $polygon): bool
+    {
         $extraMargin = 3;
         $box = $polygon->bRect();
         $width = $box->x_max - $box->x_min + $extraMargin * 2;
@@ -534,10 +537,8 @@ class Templates {
      * @param int $templateCount
      */
     private static function redisStoreOnlyNewTemplates(Redis $redis, string $generationSetString
-        /*, string $templateHash*/, array $templateGridXY
-        , string $templateCountKey, string $LastTemplateKey
-        , string $templateListKey, string $generationSetKey
-        , int &$templateCount) {
+        /*, string $templateHash*/, array $templateGridXY, string $templateCountKey, string $LastTemplateKey, string $templateListKey, string $generationSetKey, int &$templateCount)
+    {
         global $matrixClass, $matrixMethods, $matrixMethodsIndex;
         $keys = [];
         foreach ($matrixMethods as $method => $operation) {
@@ -601,9 +602,8 @@ class Templates {
      * @param array $idToTemplatesDictionary
      * @deprecated
      */
-    function storeOnlyNewTemplatesInMemory(string $sourceHash, string $hashXY
-        , array &$hashToTemplatesIdDictionary, array $templateGridXY
-        , int &$templateCount, array $idToTemplatesDictionary) {
+    public function storeOnlyNewTemplatesInMemory(string $sourceHash, string $hashXY, array &$hashToTemplatesIdDictionary, array $templateGridXY, int &$templateCount, array $idToTemplatesDictionary)
+    {
         global $matrixClass, $matrixMethods;
 
         //$found = false;
@@ -612,7 +612,7 @@ class Templates {
             //$nHash = MatrixUtil::toString($matrix);
             $nHash = MatrixUtil::binCode($matrix);
             if (!empty($hashToTemplatesIdDictionary[$nHash])) {
-                echo 'repeated! ' . (count($operation) > 0? " doing a $operation": '');
+                echo 'repeated! ' . (count($operation) > 0 ? " doing a $operation" : '');
                 $hashToTemplatesIdDictionary[$hashXY] = [$hashToTemplatesIdDictionary[$nHash][0], $operation];
                 //return $templateCount;
                 return;
@@ -631,7 +631,8 @@ class Templates {
     #endregion
 
     #region Utility
-    static function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $vertical = true) {
+    public static function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $vertical = true)
+    {
         $r = [];
         foreach ($gridSupportedSizes as $val) {
             $r[] = [$val, $val];
@@ -644,7 +645,8 @@ class Templates {
         }
         return $r;
     }
-    static function getDropPolygonWithDimensions($radius, $length) {
+    public static function getDropPolygonWithDimensions($radius, $length)
+    {
         $dropPoly = new polygon();        // Create a new polygon and add some vertices to it
         $dropPoly->addv(-$radius, $length, 0, $length, -1);        // Arc with center 60,90 Clockwise
         $dropPoly->addv($radius, $length);
@@ -652,14 +654,16 @@ class Templates {
         return $dropPoly;
     }
 
-    static function getCircleWithRadius($radius) {
+    public static function getCircleWithRadius($radius)
+    {
         $circlePoly = new polygon();        // Create a new polygon and add some vertices to it
         $circlePoly->addv(0, -$radius, 0, 0, -$radius);        // Arc with center 60,90 Clockwise
         $circlePoly->addv(0, $radius, 0, 0, -$radius);
         return $circlePoly;
     }
 
-    static function getSquarePolygonWithDimensions($sideLength) {
+    public static function getSquarePolygonWithDimensions($sideLength)
+    {
         $sideLength /= 2;
         /*$boxPoly = new polygon();
         $boxPoly->addv(-$sideLength, -$sideLength);
@@ -669,7 +673,8 @@ class Templates {
         return self::getSquarePolyFromXYXY(-$sideLength, -$sideLength, $sideLength, $sideLength);
     }
 
-    static function getSquarePolyFromXYXY($sx, $sy, $ex, $ey) {
+    public static function getSquarePolyFromXYXY($sx, $sy, $ex, $ey)
+    {
         $boxPoly = new polygon();
         $boxPoly->addv($sx, $sy);
         $boxPoly->addv($ex, $sy);
@@ -678,14 +683,16 @@ class Templates {
         return $boxPoly;
     }
 
-    function angleToRadians($angle): float {
+    public function angleToRadians($angle): float
+    {
         return $angle * pi() / 180;
     }
 
-    function getAnglesToTest($step) {
+    public static function getAnglesToTest($step): array
+    {
         $r = [];
         for ($i = 0; $i < 360; $i += $step) {
-            $r[] = $i;//angleToRadians($i);
+            $r[] = $i; //angleToRadians($i);
         }
         return $r;
     }
@@ -694,8 +701,8 @@ class Templates {
      * @param polygon $polygon
      * @param $angle
      */
-    function getRotatedPolygonCopy($polygon, $angle) {
-        /** @var polygon $r */
+    public static function getRotatedPolygonCopy(polygon $polygon, $angle): polygon
+    {
         $r = $polygon->copy_poly();
         $r->rotate(0, 0, $angle);
         return $r;
@@ -705,8 +712,8 @@ class Templates {
      * @param polygon $polygon
      * @param $angle
      */
-    function getScalatedPolygonCopy($polygon, $xScale, $yScale) {
-        /** @var polygon $r */
+    public static function getScalatedPolygonCopy($polygon, $xScale, $yScale): polygon
+    {
         $r = $polygon->copy_poly();
         $r->scale($xScale, $yScale);
         return $r;
@@ -727,7 +734,8 @@ class Templates {
      * @param string $imageFilename
      * @return array
      */
-    public static function templateToImage(array $gridXRange, $gridX, array $gridYRange, $gridY, array $grid, array $templateGridXY, $movedPoly, string $imageFilename): array {
+    public static function templateToImage(array $gridXRange, $gridX, array $gridYRange, $gridY, array $grid, array $templateGridXY, $movedPoly, string $imageFilename): array
+    {
         $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
         $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
 
@@ -741,17 +749,14 @@ class Templates {
             foreach ($column as $y => $cell) {
                 switch ($templateGridXY[$x][$y]) {
                     case 0:
-                        paintCell($cellXRange[0], $cellYRange[0], $cell
-                            , $im, 'blk', 'dgra', $colors);
+                        paintCell($cellXRange[0], $cellYRange[0], $cell, $im, 'blk', 'dgra', $colors);
                         break;
                     case 1:
-                        paintCell($cellXRange[0], $cellYRange[0], $cell
-                            , $im, 'yel', 'ora', $colors);
+                        paintCell($cellXRange[0], $cellYRange[0], $cell, $im, 'yel', 'ora', $colors);
                         //drawPolyAt(- $cellXRange[0], - $cellYRange[0], $im, $cell, $colors, "blu");
                         break;
                     case 2:
-                        paintCell($cellXRange[0], $cellYRange[0], $cell
-                            , $im, 'blu', 'grn', $colors);
+                        paintCell($cellXRange[0], $cellYRange[0], $cell, $im, 'blu', 'grn', $colors);
                         //drawPolyAt(- $gridXRange[0], - $gridYRange[0], $im, $cell, $colors, "grn");
                         break;
                 }
@@ -772,7 +777,8 @@ class Templates {
     #endregion
 
     #region Others
-    public static function recursiveMatrixOperationsCheck(&$resultListOfOperationsCache, $previousOperations, $currentMatrix) {
+    public static function recursiveMatrixOperationsCheck(&$resultListOfOperationsCache, $previousOperations, $currentMatrix)
+    {
         $hash = MatrixUtil::toString($currentMatrix);
         //if (array_key_exists($$hash, $resultListOfOperationsCache)) {
         //if (!empty($resultListOfOperationsCache[$hash])) {
@@ -788,30 +794,17 @@ class Templates {
         }
         echo "- $hash\n";
         $resultListOfOperationsCache[$hash] = $previousOperations;
-        MatrixUtil::recursiveMatrixOperationsCheck($resultListOfOperationsCache
-            , MatrixUtil::arrayPush($previousOperations, 'tc90')
-            , MatrixUtil::rotateClockwise90($currentMatrix));
-        MatrixUtil::recursiveMatrixOperationsCheck($resultListOfOperationsCache
-            , MatrixUtil::arrayPush($previousOperations, 'tcc90')
-            , MatrixUtil::rotateCounterClockwise90($currentMatrix));
-        MatrixUtil::recursiveMatrixOperationsCheck($resultListOfOperationsCache
-            , MatrixUtil::arrayPush($previousOperations, 'tr180')
-            , MatrixUtil::rotate180($currentMatrix));
-        MatrixUtil::recursiveMatrixOperationsCheck($resultListOfOperationsCache
-            , MatrixUtil::arrayPush($previousOperations, 'flr')
-            , MatrixUtil::flipLR($currentMatrix));
-        MatrixUtil::recursiveMatrixOperationsCheck($resultListOfOperationsCache
-            , MatrixUtil::arrayPush($previousOperations, 'ftb')
-            , MatrixUtil::flipTB($currentMatrix));
-        MatrixUtil::recursiveMatrixOperationsCheck($resultListOfOperationsCache
-            , MatrixUtil::arrayPush($previousOperations, 'ftlbr')
-            , MatrixUtil::flipTLBR($currentMatrix));
-        MatrixUtil::recursiveMatrixOperationsCheck($resultListOfOperationsCache
-            , MatrixUtil::arrayPush($previousOperations, 'ftrbl')
-            , MatrixUtil::flipTRBL($currentMatrix));
+        Templates::recursiveMatrixOperationsCheck($resultListOfOperationsCache, Templates::arrayPush($previousOperations, 'tc90'), MatrixUtil::rotateClockwise90($currentMatrix));
+        Templates::recursiveMatrixOperationsCheck($resultListOfOperationsCache, Templates::arrayPush($previousOperations, 'tcc90'), MatrixUtil::rotateCounterClockwise90($currentMatrix));
+        Templates::recursiveMatrixOperationsCheck($resultListOfOperationsCache, Templates::arrayPush($previousOperations, 'tr180'), MatrixUtil::rotate180($currentMatrix));
+        Templates::recursiveMatrixOperationsCheck($resultListOfOperationsCache, Templates::arrayPush($previousOperations, 'flr'), MatrixUtil::flipLR($currentMatrix));
+        Templates::recursiveMatrixOperationsCheck($resultListOfOperationsCache, Templates::arrayPush($previousOperations, 'ftb'), MatrixUtil::flipTB($currentMatrix));
+        Templates::recursiveMatrixOperationsCheck($resultListOfOperationsCache, Templates::arrayPush($previousOperations, 'ftlbr'), MatrixUtil::flipTLBR($currentMatrix));
+        Templates::recursiveMatrixOperationsCheck($resultListOfOperationsCache, Templates::arrayPush($previousOperations, 'ftrbl'), MatrixUtil::flipTRBL($currentMatrix));
     }
 
-    public static function arrayPush($array, $item) {
+    public static function arrayPush($array, $item)
+    {
         $array[] = $item;
         return $array;
     }
@@ -825,7 +818,8 @@ class Templates {
      * @param $col
      * @return array
      */
-    public static function checkIsInsidePolygon($movedPoly2, $im, $colors, $img, $col): array {
+    public static function checkIsInsidePolygon($movedPoly2, $im, $colors, $img, $col): array
+    {
         $bb = $movedPoly2->bRect();
         /** @var Polygon $polyA */
         $polyA = $movedPoly2->copy_poly();

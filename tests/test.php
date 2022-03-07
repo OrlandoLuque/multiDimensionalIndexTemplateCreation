@@ -1,4 +1,5 @@
 <?php
+
 // https://www.php.net/manual/en/intro.bc.php
 $num1 = 0; // (string) 0 => '0'
 $num2 = -0.000005; // (string) -0.000005 => '-5.05E-6'
@@ -10,7 +11,7 @@ $num2 = 1.2; // (string) 1.2 => '1,2'
 //echo '\n/n ------- ' . bcdiv(1, 3, 100);
 
 require_once('../libs/polygon.php');
-require_once('../libs/database.php');
+//require_once('../libs/database.php');
 require_once('../libs/Redis.lib.php');
 require_once('../libs/polygon-draw.php');
 require_once('../libs/matrix-utils.php');
@@ -85,7 +86,7 @@ if (false) {
     die();
 }
 
-if(false) {
+if (false) {
     $h1 = new Vertex(-1, 0);
     $h2 = new Vertex(1, 0);
     $v1 = new Vertex(0, -1);
@@ -109,19 +110,19 @@ if(false) {
             $rHorizontal = Polygon::vertexIntsLine($p5, $h1, $h2); // -
             if ($rVertical && $rHorizontal) {
                 $r = imagesetpixel($img, $x, $y, $col['red']);
-            } else if ($rVertical || $rHorizontal) {
+            } elseif ($rVertical || $rHorizontal) {
                 $r = imagesetpixel($img, $x, $y, $col['blu']);
             }
         }
     }
-    $r = imageGif($img,"poly_exi.gif");
+    $r = imageGif($img, "poly_exi.gif");
     echo '<p><div align="center"><strong>EXAMPLE 1 - intersections</strong><br><img src="poly_exi.gif" width="600" height="200"><br></div></p>';
     die();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-if(false) {
+if (false) {
     $a1 = new Vertex(9, 4, 9, 9, -1);
     $a2 = new Vertex(9, 14);
     $a1 = new Vertex(9, 4, 9, 9, -1);
@@ -145,7 +146,8 @@ if(false) {
  * @param $img
  * @param $col
  */
-function checkingLineArcIntersection(int $x, int $y, Vertex $c, Vertex $a1, Vertex $a2, $img, $col): bool {
+function checkingLineArcIntersection(int $x, int $y, Vertex $c, Vertex $a1, Vertex $a2, $img, $col): bool
+{
     $target = new Vertex($x, $y);
     $r = Intersector::lineArcIntersection($c, $target, $a1, $a2);
     if (count($r) > 0) {
@@ -180,7 +182,7 @@ $polyA->addv(0, 1);
 $polyA->addv(1, 1);
 $polyA->addv(1, 0);
 
-$polyB = new polygon;          // Create a second polygon with some more points
+$polyB = new polygon();          // Create a second polygon with some more points
 $polyB->addv(0, 0);
 $polyB->addv(0, 2);
 $polyB->addv(2, 2);
@@ -333,9 +335,9 @@ $angles = Templates::getAnglesToTest(0.5);
 $inicio = date("Y-m-d H:i:s");
 
 
-$expected = array (
+$expected = array(
     0 =>
-        array (
+        array(
             0 => 0,
             1 => 0,
             2 => 1,
@@ -345,7 +347,7 @@ $expected = array (
             6 => 0,
         ),
     1 =>
-        array (
+        array(
             0 => 0,
             1 => 0,
             2 => 1,
@@ -355,7 +357,7 @@ $expected = array (
             6 => -1,
         ),
     2 =>
-        array (
+        array(
             0 => 0,
             1 => 1,
             2 => 1,
@@ -365,7 +367,7 @@ $expected = array (
             6 => 0,
         ),
     3 =>
-        array (
+        array(
             0 => 1,
             1 => 1,
             2 => 1,
@@ -375,7 +377,7 @@ $expected = array (
             6 => 0,
         ),
     4 =>
-        array (
+        array(
             0 => 1,
             1 => 1,
             2 => 0,
@@ -391,8 +393,5 @@ $generationSetKey = 'gs';
 $templateCountKey = 'tc';
 $LastTemplateKey = 'lt';
 
-list($im, $colors, $img) = Templates::generateAndPersist($polys, $polygonScales, $grids, $angles
-    , false, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */
+list($im, $colors, $img) = Templates::generateAndPersist($polys, $polygonScales, $grids, $angles, false, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */
     , $templateListKey, $generationSetKey, $templateCountKey, $LastTemplateKey);
-
-

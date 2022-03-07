@@ -1,6 +1,7 @@
 <?php
+
 require_once('../libs/polygon.php');
-require_once('../libs/database.php');
+//require_once('../libs/database.php');
 require_once('../libs/Redis.lib.php');
 require_once('../libs/polygon-draw.php');
 require_once('../libs/matrix-utils.php');
@@ -27,29 +28,29 @@ $polyA->addv(20, 5, 25, 0, -1);
 $polyA->addv(15, 0);
 
 $polys['t1'] = $polyA = new polygon();
-$polyA->addv(0,-2);
-$polyA->addv(0,80);
-$polyA->addv(40,80);
-$polyA->addv(40,0);
-$polyA->addv(10,0,0,20,1);
+$polyA->addv(0, -2);
+$polyA->addv(0, 80);
+$polyA->addv(40, 80);
+$polyA->addv(40, 0);
+$polyA->addv(10, 0, 0, 20, 1);
 
 
 $polys['t2'] = $polyA = new polygon();
-$polyA->addv(0,0,0,20,1);
-$polyA->addv(0,40,20,40,1);
-$polyA->addv(40,40,40,20,1);
-$polyA->addv(40,0,20,0,1);
+$polyA->addv(0, 0, 0, 20, 1);
+$polyA->addv(0, 40, 20, 40, 1);
+$polyA->addv(40, 40, 40, 20, 1);
+$polyA->addv(40, 0, 20, 0, 1);
 
 
 $polys['mixed2'] = $polyA = new polygon();        // Create a new polygon and add some vertices to it
-$polyA->addv(0,0);
-$polyA->addv(0,20,0,40,1);
-$polyA->addv(0,60);
-$polyA->addv(0,80);
-$polyA->addv(45,80);
-$polyA->addv(45,60,45,40,1);
-$polyA->addv(45,20);
-$polyA->addv(45,0);
+$polyA->addv(0, 0);
+$polyA->addv(0, 20, 0, 40, 1);
+$polyA->addv(0, 60);
+$polyA->addv(0, 80);
+$polyA->addv(45, 80);
+$polyA->addv(45, 60, 45, 40, 1);
+$polyA->addv(45, 20);
+$polyA->addv(45, 0);
 
 $polys['circle0'] = $polyA = new polygon();
 $polyA->addv(24, 0, 0, 0, +1);
@@ -91,10 +92,10 @@ $polyA->addv(40, 0);
 $polyA->addv(40, 80);
 
 $polys['t4'] = $polyA = new polygon();
-$polyA->addv( 16,131);
-$polyA->addv( 71,166);
-$polyA->addv(105,138);
-$polyA->addv( 25, 63);
+$polyA->addv(16, 131);
+$polyA->addv(71, 166);
+$polyA->addv(105, 138);
+$polyA->addv(25, 63);
 $polyA->addv(118, 75);
 
 $polys['t5'] = $polyA = new polygon();

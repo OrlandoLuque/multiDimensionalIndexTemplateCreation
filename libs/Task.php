@@ -5,99 +5,101 @@
 
 require_once('libs/polygon.php');
 
-class Task {
+class Task
+{
     /**
      * @var Redis
      */
-    var $redis;
+    public Redis $redis;
 
     /** polygon list to process
      * @var array
      */
-    var $polygons;
+    public array $polygons;
 
     /** polygon scales list to process
      * @var array
      */
-    var $polygonScales;
+    public array $polygonScales;
 
     /** grids dimensions list to process
      * @var array
      */
-    var $gridsDimensions;
+    public array $gridsDimensions;
 
     /** angles list to process
      * @var array
      */
-    var $angles;
+    public array $angles;
 
     /** Redis key to mark the task as working (set with timeout) or finished (permanent value)
      * @var string
      */
-    var $taskKey;
+    public string $taskKey;
 
     /** Redis key to store the list of templates
      * @var string
      */
-    var $templateListKey;
+    public string $templateListKey;
 
-    /** Redis key to store to store the list of generations and the id of the template
+    /** Redis key to store the list of generations and the id of the template
      * @var string
      */
-    var $generationSetKey;
+    public string $generationSetKey;
 
     /** Redis key to store the count of created templates. Used to generate new IDs
      * @var string
      */
-    var $templateCountKey;
+    public string $templateCountKey;
 
     /** Redis key to store the last template generated. Example drop-s128-x16,y16-a60-dx15,dy9
      * @var string
      */
-    var $lastTemplateKey;
+    public string $lastTemplateKey;
 
 
     /** Filepath for the script used to store new templates (and annotate reused ones
      * @var string
      */
-    const storeTemplateLUAScriptSourceFile = 'lua/storeTemplate.lua';
+    public const storeTemplateLUAScriptSourceFile = 'luaRedis/storeTemplate.lua';
 
     /** Cache of the template process script
-     * @var string
+     * @var ?string
      */
-    var $storeTemplateLUAScript = null;
+    public ?string $storeTemplateLUAScript = null;
 
     /** Filepath for the script used to try to lock a task to the current process.
      * @var string
      */
-    const checkAndLockTastScriptSourceFile = 'lua/checkAndLockTask.lua';
+    public const checkAndLockTastScriptSourceFile = 'luaRedis/checkAndLockTask.lua';
 
     /** Cache of the task lock script
-     * @var string
+     * @var ?string
      */
-    var $checkAndLockTastScript = null;
+    public ?string $checkAndLockTastScript = null;
 
     /** Filepath for the script used to keep your current task locked
      * @var string
      */
-    const keepTaskLockedScriptSourceFile = 'lua/keepTaskLocked.lua';
+    public const keepTaskLockedScriptSourceFile = 'luaRedis/keepTaskLocked.lua';
 
     /** Cache of the keep task locked script
-     * @var string
+     * @var ?string
      */
-    var $keepTaskLockedScript = null;
+    public ?string $keepTaskLockedScript = null;
 
     /** Filepath for the script used to keep your current task locked
      * @var string
      */
-    const lockTaskAsCompletedScriptSourceFile = 'lua/lockTaskAsCompleted.lua';
+    public const lockTaskAsCompletedScriptSourceFile = 'luaRedis/lockTaskAsCompleted.lua';
 
     /** Cache of the keep task locked script
-     * @var string
+     * @var ?string
      */
-    var $lockTaskAsCompletedScript = null;
+    public ?string $lockTaskAsCompletedScript = null;
 
-    public function loadScripts() {
+    public function loadScripts():self
+    {
         $this->storeTemplateLUAScript = file_get_contents(self::storeTemplateLUAScriptSourceFile);
         $this->checkAndLockTastScript = file_get_contents(self::checkAndLockTastScriptSourceFile);
         $this->keepTaskLockedScript = file_get_contents(self::keepTaskLockedScriptSourceFile);
@@ -109,15 +111,17 @@ class Task {
     /**
      * @return Redis
      */
-    public function getRedis(): Redis {
+    public function getRedis(): Redis
+    {
         return $this->redis;
     }
 
     /**
-     * @param Redis $redis
+     * @param Redis|null $redis
      * @return Task
      */
-    public function setRedis(?Redis $redis): Task {
+    public function setRedis(?Redis $redis): Task
+    {
         $this->redis = $redis;
         return $this;
     }
@@ -125,7 +129,8 @@ class Task {
     /**
      * @return array
      */
-    public function getPolygons(): array {
+    public function getPolygons(): array
+    {
         return $this->polygons;
     }
 
@@ -133,7 +138,8 @@ class Task {
      * @param array $polygons
      * @return Task
      */
-    public function setPolygons(array $polygons): Task {
+    public function setPolygons(array $polygons): Task
+    {
         $this->polygons = $polygons;
         return $this;
     }
@@ -141,7 +147,8 @@ class Task {
     /**
      * @return array
      */
-    public function getPolygonScales(): array {
+    public function getPolygonScales(): array
+    {
         return $this->polygonScales;
     }
 
@@ -149,7 +156,8 @@ class Task {
      * @param array $polygonScales
      * @return Task
      */
-    public function setPolygonScales(array $polygonScales): Task {
+    public function setPolygonScales(array $polygonScales): Task
+    {
         $this->polygonScales = $polygonScales;
         return $this;
     }
@@ -157,7 +165,8 @@ class Task {
     /**
      * @return array
      */
-    public function getGridsDimensions(): array {
+    public function getGridsDimensions(): array
+    {
         return $this->gridsDimensions;
     }
 
@@ -165,7 +174,8 @@ class Task {
      * @param array $gridsDimensions
      * @return Task
      */
-    public function setGridsDimensions(array $gridsDimensions): Task {
+    public function setGridsDimensions(array $gridsDimensions): Task
+    {
         $this->gridsDimensions = $gridsDimensions;
         return $this;
     }
@@ -173,7 +183,8 @@ class Task {
     /**
      * @return array
      */
-    public function getAngles(): array {
+    public function getAngles(): array
+    {
         return $this->angles;
     }
 
@@ -181,7 +192,8 @@ class Task {
      * @param array $angles
      * @return Task
      */
-    public function setAngles(array $angles): Task {
+    public function setAngles(array $angles): Task
+    {
         $this->angles = $angles;
         return $this;
     }
@@ -189,7 +201,8 @@ class Task {
     /**
      * @return string
      */
-    public function getTaskKey(): string {
+    public function getTaskKey(): string
+    {
         return $this->taskKey;
     }
 
@@ -197,7 +210,8 @@ class Task {
      * @param string $taskKey
      * @return Task
      */
-    public function setTaskKey(string $taskKey): Task {
+    public function setTaskKey(string $taskKey): Task
+    {
         $this->taskKey = $taskKey;
         return $this;
     }
@@ -205,7 +219,8 @@ class Task {
     /**
      * @return string
      */
-    public function getTemplateListKey(): string {
+    public function getTemplateListKey(): string
+    {
         return $this->templateListKey;
     }
 
@@ -213,7 +228,8 @@ class Task {
      * @param string $templateListKey
      * @return Task
      */
-    public function setTemplateListKey(string $templateListKey): Task {
+    public function setTemplateListKey(string $templateListKey): Task
+    {
         $this->templateListKey = $templateListKey;
         return $this;
     }
@@ -221,7 +237,8 @@ class Task {
     /**
      * @return string
      */
-    public function getGenerationSetKey(): string {
+    public function getGenerationSetKey(): string
+    {
         return $this->generationSetKey;
     }
 
@@ -229,7 +246,8 @@ class Task {
      * @param string $generationSetKey
      * @return Task
      */
-    public function setGenerationSetKey(string $generationSetKey): Task {
+    public function setGenerationSetKey(string $generationSetKey): Task
+    {
         $this->generationSetKey = $generationSetKey;
         return $this;
     }
@@ -237,7 +255,8 @@ class Task {
     /**
      * @return string
      */
-    public function getTemplateCountKey(): string {
+    public function getTemplateCountKey(): string
+    {
         return $this->templateCountKey;
     }
 
@@ -245,7 +264,8 @@ class Task {
      * @param string $templateCountKey
      * @return Task
      */
-    public function setTemplateCountKey(string $templateCountKey): Task {
+    public function setTemplateCountKey(string $templateCountKey): Task
+    {
         $this->templateCountKey = $templateCountKey;
         return $this;
     }
@@ -253,7 +273,8 @@ class Task {
     /**
      * @return string
      */
-    public function getLastTemplateKey(): string {
+    public function getLastTemplateKey(): string
+    {
         return $this->lastTemplateKey;
     }
 
@@ -261,7 +282,8 @@ class Task {
      * @param string $lastTemplateKey
      * @return Task
      */
-    public function setLastTemplateKey(string $lastTemplateKey): Task {
+    public function setLastTemplateKey(string $lastTemplateKey): Task
+    {
         $this->lastTemplateKey = $lastTemplateKey;
         return $this;
     }
@@ -269,7 +291,8 @@ class Task {
     /**
      * @return string
      */
-    public function getStoreTemplateLUAScript(): string {
+    public function getStoreTemplateLUAScript(): string
+    {
         if (null === $this->storeTemplateLUAScript) {
             $this->storeTemplateLUAScript = file_get_contents(self::storeTemplateLUAScriptSourceFile);
         }
@@ -280,7 +303,8 @@ class Task {
      * @param string $storeTemplateLUAScript
      * @return Task
      */
-    public function setStoreTemplateLUAScript(string $storeTemplateLUAScript): Task {
+    public function setStoreTemplateLUAScript(string $storeTemplateLUAScript): Task
+    {
         $this->storeTemplateLUAScript = $storeTemplateLUAScript;
         return $this;
     }
@@ -288,7 +312,8 @@ class Task {
     /**
      * @return string
      */
-    public function getCheckAndLockTastScript(): string {
+    public function getCheckAndLockTastScript(): string
+    {
         if (null === $this->checkAndLockTastScript) {
             $this->checkAndLockTastScript = file_get_contents(self::checkAndLockTastScriptSourceFile);
         }
@@ -299,7 +324,8 @@ class Task {
      * @param string $checkAndLockTastScript
      * @return Task
      */
-    public function setCheckAndLockTastScript(string $checkAndLockTastScript): Task {
+    public function setCheckAndLockTastScript(string $checkAndLockTastScript): Task
+    {
         $this->checkAndLockTastScript = $checkAndLockTastScript;
         return $this;
     }
@@ -307,7 +333,8 @@ class Task {
     /**
      * @return string
      */
-    public function getKeepTaskLockedScript(): string {
+    public function getKeepTaskLockedScript(): string
+    {
         if (null === $this->keepTaskLockedScript) {
             $this->keepTaskLockedScript = file_get_contents(self::keepTaskLockedScriptSourceFile);
         }
@@ -318,7 +345,8 @@ class Task {
      * @param string $keepTaskLockedScript
      * @return Task
      */
-    public function setKeepTaskLockedScript(string $keepTaskLockedScript): Task {
+    public function setKeepTaskLockedScript(string $keepTaskLockedScript): Task
+    {
         $this->keepTaskLockedScript = $keepTaskLockedScript;
         return $this;
     }
@@ -326,7 +354,8 @@ class Task {
     /**
      * @return string
      */
-    public function getLockTaskAsCompletedScript(): string {
+    public function getLockTaskAsCompletedScript(): string
+    {
         if (null === $this->lockTaskAsCompletedScript) {
             $this->lockTaskAsCompletedScript
                 = file_get_contents(self::lockTaskAsCompletedScriptSourceFile);
@@ -338,10 +367,9 @@ class Task {
      * @param string $lockTaskAsCompletedScript
      * @return Task
      */
-    public function setLockTaskAsCompletedScript(string $lockTaskAsCompletedScript): Task {
+    public function setLockTaskAsCompletedScript(string $lockTaskAsCompletedScript): Task
+    {
         $this->lockTaskAsCompletedScript = $lockTaskAsCompletedScript;
         return $this;
     }
-
-
 }

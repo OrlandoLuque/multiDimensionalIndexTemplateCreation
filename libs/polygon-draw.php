@@ -86,35 +86,29 @@
 ** the polygon are assumed to exist in real world coordinates. Thus they
 ** are 'inverted' in the y-axis to plot them on the image.
 */
-function drawPolyAt($x, $y, &$i, $p, &$col, $c) {
+function drawPolyAt($x, $y, &$i, $p, &$col, $c)
+{
     if ($i) {
         $sy = imagesy($i);
     }      // Determine the height of the image in pixels
     // All $y coords will be subtracted from this
-    if ($p) // If a polygon exists
-    {
-        do              // For all polygons in the list
-        {
+    if ($p) { // If a polygon exists
+        do {              // For all polygons in the list
             /** @var Vertex $v */
             /** @var Vertex $n */
             $v = $p->getFirst();           // get the first vertex of the first polygon
-            do                                                      // For all vertices in this polygon
-            {
+            do {                                                      // For all vertices in this polygon
                 $n =& $v->Next();               // Get the next vertex
-                if ($v->d() == 0)               // Check is this is an ARc segment
-                { // It is a line
-                    imageLine($i, round($x + $v->X()), round($sy - ($y + $v->Y()))
-                                , round($x + $n->X()), round($sy - ($y + $n->Y()))
-                                , $col[$c]);        // Draw a line vertex to vertex
+                if ($v->d() == 0) {               // Check is this is an ARc segment
+                 // It is a line
+                    imageLine($i, round($x + $v->X()), round($sy - ($y + $v->Y())), round($x + $n->X()), round($sy - ($y + $n->Y())), $col[$c]);        // Draw a line vertex to vertex
                 } else { // It is an Arc
                     $s = 360 - rad2deg($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
                     $e = 360 - rad2deg($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
                     $dia = round(2 * $p->dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()));
-                    if ($v->d() == -1)      // Clockwise
-                    {
+                    if ($v->d() == -1) {      // Clockwise
                         imagearc($i, round($x + $v->Xc()), round($sy - ($y + $v->Yc())), $dia, $dia, $s, $e, $col[$c]);
-                    } else                    // Anti-Clockwise
-                    {
+                    } else {                    // Anti-Clockwise
                         imagearc($i, round($x + $v->Xc()), round($sy - ($y + $v->Yc())), $dia, $dia, $e, $s, $col[$c]);
                     }
                 }
@@ -125,31 +119,27 @@ function drawPolyAt($x, $y, &$i, $p, &$col, $c) {
     }     // Keep drawing polygons as long as they exist
 }
 
-function directDrawPolyAt($x, $y, &$i, $p, &$col, $c) {
+function directDrawPolyAt($x, $y, &$i, $p, &$col, $c)
+{
     if ($i) {
         $sy = imagesy($i);
     }      // Determine the height of the image in pixels
     // All $y coords will be subtracted from this
-    if ($p) // If a polygon exists
-    {
-        do              // For all polygons in the list
-        {
+    if ($p) { // If a polygon exists
+        do {              // For all polygons in the list
             $v = $p->getFirst();           // get the first vertex of the first polygon
-            do                                                      // For all vertices in this polygon
-            {
+            do {                                                      // For all vertices in this polygon
                 $n =& $v->Next();               // Get the next vertex
-                if ($v->d() == 0)               // Check is this is an ARc segment
-                { // It is a line
+                if ($v->d() == 0) {               // Check is this is an ARc segment
+                 // It is a line
                     $r = imageLine($i, $x + $v->X(), $y + $v->Y(), $x + $n->X(), $y + $n->Y(), $col[$c]);        // Draw a line vertex to vertex
                 } else { // It is an Arc
                     $s = rad2deg($p->angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));   // Calc start angle
                     $e = rad2deg($p->angle($v->Xc(), $v->Yc(), $n->X(), $n->Y()));   // Calc end angle
                     $dia = round(2 * $p->dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()));
-                    if ($v->d() == -1)      // Clockwise
-                    {
+                    if ($v->d() == -1) {      // Clockwise
                         $r = imagearc($i, $x + $v->Xc(), $y + $v->Yc(), $dia, $dia, $e, $s, $col[$c]);
-                    } else                    // Anti-Clockwise
-                    {
+                    } else {                    // Anti-Clockwise
                         $r = imagearc($i, $x + $v->Xc(), $y + $v->Yc(), $dia, $dia, $s, $e, $col[$c]);
                     }
                 }
@@ -164,7 +154,8 @@ function directDrawPolyAt($x, $y, &$i, $p, &$col, $c) {
 ** Function to create an image and allocate a color table to it
 */
 /** @var resource $i */
-function newImage($width, $height, &$i, &$col) {
+function newImage($width, $height, &$i, &$col)
+{
     if ($i) {
         imagedestroy($i);
     }                               // Delete any old image
@@ -191,11 +182,8 @@ function newImage($width, $height, &$i, &$col) {
  * @param array $colors
  * @return void
  */
-function paintCell($cellOffsetX, $cellOffsetY, $cell, &$im, $fgColor, $bgColor, $colors): void {
+function paintCell($cellOffsetX, $cellOffsetY, $cell, &$im, $fgColor, $bgColor, $colors): void
+{
     directDrawPolyAt(-$cellOffsetX, -$cellOffsetY, $im, $cell, $colors, $fgColor);
-    imagefill($im, ($cell->x_max + $cell->x_min) / 2 - $cellOffsetX
-        , ($cell->y_max + $cell->y_min) / 2 - $cellOffsetY
-        , $colors[$bgColor]);
+    imagefill($im, ($cell->x_max + $cell->x_min) / 2 - $cellOffsetX, ($cell->y_max + $cell->y_min) / 2 - $cellOffsetY, $colors[$bgColor]);
 }
-
-?>
