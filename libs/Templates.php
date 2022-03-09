@@ -683,7 +683,7 @@ class Templates
         return $boxPoly;
     }
 
-    public function angleToRadians($angle): float
+    public static function angleToRadians($angle): float
     {
         return $angle * pi() / 180;
     }
