@@ -406,7 +406,7 @@ class Templates
      * @param $echoHTMLOutput
      * @return array
      */
-    public static function polyFillTestToImage(Polygon $polygon, string $emptyFilename, $filledImagefilename): array
+    public static function polyFillTestToImage(Polygon $polygon, string $emptyFilename, $filledImagefilename, $recommendedOverScaledCalculation = 1): array
     {
         $extraMargin = 5;
         $box = $polygon->bRect();
@@ -423,6 +423,12 @@ class Templates
 
         newImage($box->x_max - $box->x_min + $extraMargin * 2, $box->y_max - $box->y_min + $extraMargin * 2, $img, $col);
         directDrawPolyAt(-$box->x_min + $extraMargin, -$box->y_min + $extraMargin, $img, $polygon, $colors, "red");
+        if (1 === $recommendedOverScaledCalculation) {
+            $scaledPolygon = $polygon;
+        } else {
+            $scaledPolygon = $polygon->copy_poly();
+            $scaledPolygon->scale($recommendedOverScaledCalculation, $recommendedOverScaledCalculation);
+        }
         for ($x = floor($box->x_min) - $extraMargin
                 ; $x < $box->x_max + 1 + $extraMargin
                 ; $x++) {
@@ -430,10 +436,14 @@ class Templates
                     ; $y < $box->y_max + 1 + $extraMargin
                     ; $y++) {
                 //echo "\n$x - $y";
-                $p5 = new Vertex($x, $y);
+                if (1 === $recommendedOverScaledCalculation) {
+                    $p5 = new Vertex($x + 0.5, $y + 0.5);
+                } else {
+                    $p5 = new Vertex(($x + 0.5) * $recommendedOverScaledCalculation, ($y + 0.5) * $recommendedOverScaledCalculation);
+                }
                 //$r1 = $polyA->isInside($p5);
                 $a = 1;
-                $r1 = $polygon->isInside($p5, true);
+                $r1 = $scaledPolygon->isInside($p5, true);
                 if ($r1) {
                     $r = imagesetpixel($img, $x - $box->x_min + $extraMargin, $y - $box->y_min + $extraMargin, $col['grn']);
                 } else {
@@ -683,7 +693,7 @@ class Templates
         return $boxPoly;
     }
 
-    public function angleToRadians($angle): float
+    public static function angleToRadians($angle): float
     {
         return $angle * pi() / 180;
     }

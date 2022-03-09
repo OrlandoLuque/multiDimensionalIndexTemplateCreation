@@ -141,5 +141,5 @@ $v = new Vertex(21, 0); //true
 foreach ($polys as $name => $poly) {
     echo "\n----- Probando $name -----\n";
     $filepath = '../examples/testBatteries/' . $name;
-    Templates::polyFillTestToImage($poly, "$filepath-empty.gif", "$filepath-fillingtest.gif");
+    Templates::polyFillTestToImage($poly, "$filepath-empty.gif", "$filepath-fillingtest.gif", 1);
 }
