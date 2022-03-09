@@ -372,4 +372,60 @@ class Task
         $this->lockTaskAsCompletedScript = $lockTaskAsCompletedScript;
         return $this;
     }
+
+    /**
+     * @param array $polys
+     * @param array $polygonScales
+     * @param array $gridSupportedSizes
+     * @param array $angles
+     * @param Redis $redis
+     * @param string $taskRedisKey
+     * @param string $templateListRedisKey
+     * @param string $generationSetRedisKey
+     * @param string $templateCountRedisKey
+     * @param string $lastTemplateRedisKey
+     * @return Task[]
+     */
+    public static function createTaskSubtasks(
+        array  $polys,
+        array $polygonScales,
+        array  $gridSupportedSizes,
+        array $angles,
+        Redis  $redis,
+        string $taskRedisKey,
+        string $templateListRedisKey,
+        string $generationSetRedisKey,
+        string $templateCountRedisKey,
+        string $lastTemplateRedisKey
+    ): array
+    {
+        /** @var Task[] $tasks */
+        $tasks = [];
+        $taskCount = 1;
+
+        foreach ($polys as $title => $polygon) {
+            foreach ($polygonScales as $polygonScale) {
+                foreach ($gridSupportedSizes as $gridPixelDensity) {
+                    $taskPrefix = "T$taskCount-";
+                    $gridDimensions = Templates::getGridsFromSupportedSizes([$gridPixelDensity]);
+                    $task = new Task();
+                    $task = $task
+                        ->setRedis($redis)
+                        ->setPolygons([$polygon])
+                        ->setPolygonScales([$polygonScale])
+                        ->setGridsDimensions($gridDimensions)
+                        ->setAngles($angles)
+                        ->setTaskKey($taskPrefix . $taskRedisKey)
+                        ->setTemplateListKey($taskPrefix . $templateListRedisKey)
+                        ->setGenerationSetKey($taskPrefix . $generationSetRedisKey)
+                        ->setTemplateCountKey($templateCountRedisKey)
+                        ->setLastTemplateKey($taskPrefix . $lastTemplateRedisKey)
+                        ->loadScripts();
+                    $tasks[] = $task;
+                    $taskCount++;
+                }
+            }
+        }
+        return $tasks;
+    }
 }
