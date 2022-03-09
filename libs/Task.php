@@ -98,7 +98,7 @@ class Task
      */
     public ?string $lockTaskAsCompletedScript = null;
 
-    public function loadScripts():self
+    public function loadScripts(): self
     {
         $this->storeTemplateLUAScript = file_get_contents(self::storeTemplateLUAScriptSourceFile);
         $this->checkAndLockTastScript = file_get_contents(self::checkAndLockTastScriptSourceFile);

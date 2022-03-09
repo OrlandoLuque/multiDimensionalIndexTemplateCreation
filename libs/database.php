@@ -1,7 +1,8 @@
 <?php
+
 ///**
 // * Evily robbed from Chamilo 1.8.8.4 mysqli database library
-// * Further modifications by @OrlandoLuque since today (2020/04/01)
+// * Further modifications by @OrlandoLuque up to today (2020/04/01)
 // */
 //
 //class Database

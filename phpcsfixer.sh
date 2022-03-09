@@ -1,1 +1,2 @@
-php tools/php-cs-fixer/php-cs-fixer fix ./ --using-cache=yes
+php tools/php-cs-fixer/vendor/bin/php-cs-fixer fix ./ --using-cache=yes
+
