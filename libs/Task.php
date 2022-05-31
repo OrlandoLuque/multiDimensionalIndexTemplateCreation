@@ -397,8 +397,7 @@ class Task
         string $generationSetRedisKey,
         string $templateCountRedisKey,
         string $lastTemplateRedisKey
-    ): array
-    {
+    ): array {
         /** @var Task[] $tasks */
         $tasks = [];
         $taskCount = 1;

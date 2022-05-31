@@ -144,8 +144,7 @@ class Vertex
         $alpha=0,
         $entry=true,
         $checked=false
-    )
-    {
+    ) {
         $this->x = $x;
         $this->y = $y;
         $this->nextV = $nextV;

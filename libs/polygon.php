@@ -584,10 +584,10 @@ class Polygon
             $d = sqrt(($dy * $dy) + ($dx * $dx)); // Distance between the centers.
 
             if ($d == 0) { // Don't try an find intersection if centers are the same.
-             // Added in Rev 1.2
+                // Added in Rev 1.2
                 $found = false;
             } elseif ($d > ($r0 + $r1)) { // Check for solvability.
-             // no solution. circles do not intersect.
+                // no solution. circles do not intersect.
                 $found = false;
             } elseif ($d < abs($r0 - $r1)) { // no solution. one circle inside the other
                 $found = false;
@@ -839,10 +839,10 @@ class Polygon
             $d = sqrt(($dy * $dy) + ($dx * $dx)); // Distance between the centers.
 
             if ($d == 0) { // Don't try an find intersection if centers are the same.
-             // Added in Rev 1.2
+                // Added in Rev 1.2
                 $found = false;
             } elseif ($d > ($r0 + $r1)) { // Check for solvability.
-             // no solution. circles do not intersect.
+                // no solution. circles do not intersect.
                 $found = false;
             } elseif ($d < abs($r0 - $r1)) { // no solution. one circle inside the other
                 $found = false;
@@ -894,7 +894,7 @@ class Polygon
              * * Algorithm from: http://astronomy.swin.edu.au/~pbourke/geometry/sphereline/
              */
             if ($pt == 0) { // Segment p1,p2 is the line
-             // Segment q1,q2 is the arc
+                // Segment q1,q2 is the arc
                 $x1 = $p1->X();
                 $y1 = $p1->Y();
                 $x2 = $p2->X();
@@ -907,7 +907,7 @@ class Polygon
                 $ye = $q2->Y();
                 $d = $qt;
             } else { // Segment q1,q2 is the line
-             // Segment p1,p2 is the arc
+                // Segment p1,p2 is the arc
                 $x1 = $q1->X();
                 $y1 = $q1->Y();
                 $x2 = $q2->X();
