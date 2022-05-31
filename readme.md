@@ -15,19 +15,21 @@ The process will
   * the resulting "template" is stored in a Redis database
 
 <h3>Why</h3>
-I am developing an evolved version of the quadtrees and octrees algorithm. The algorithm can use the resultset of this process to speed up the culling process.
+I am developing an evolved version of the quadtrees and octrees algorithm. You can use the resultset of this process to speed up the culling process of any one of those algorithms.
 
 <h3>Extra features</h3>
 * it divides the workload into several smaller tasks
 * can be executed several times in parallel. Each instance will do a different set of those smaller tasks
-* it detects repeated results, and even if the current result, rotated or flipped, have been generated before
-* if interrupted, you can just restart it and it will continue where it was
+* it detects repeated results, and even if the current result, rotated or flipped, has been generated before
+* if interrupted, you can restart it. It will continue where it was
 
 <h2>Requirements</h2>
+PHP 8.1
 A Redis service where we will keep the resultset.
 
 <h3>Recommended Redis settings</h3>
-appendonly yes
-appendfilename dump.rdb.appendonly.aof
-appendfsync always
+Set the next options to maximize the integrity of the results.
+* appendonly yes
+* appendfilename dump.rdb.appendonly.aof
+* appendfsync always
 

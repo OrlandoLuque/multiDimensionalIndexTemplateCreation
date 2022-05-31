@@ -641,7 +641,7 @@ class Templates
     #endregion
 
     #region Utility
-    public static function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = true, $vertical = true)
+    public static function getGridsFromSupportedSizes($gridSupportedSizes, $horizontal = false, $vertical = false)
     {
         $r = [];
         foreach ($gridSupportedSizes as $val) {

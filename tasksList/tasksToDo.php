@@ -9,7 +9,7 @@ $gridSupportedSizes = [16, 32, 64, 128, 256, 512];
 //$gridSupportedSizes = [16, 32, 64, 128, 256, 512];
 ///////////////////////////////////////////////
 
-$grids = Templates::getGridsFromSupportedSizes($gridSupportedSizes);
+$grids = Templates::getGridsFromSupportedSizes($gridSupportedSizes, true, true);
 
 
 $circlePoly = Templates::getCircleWithRadius(1);
