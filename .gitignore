@@ -1,2 +1,12 @@
 /vendor/
 /tools/php-cs-fixer/vendor/
+.env
+/build/
+/dist/
+*.zip
+*.phar
+*.exe
+appendonly.aof
+dump.rdb
+.idea/
+.claude/

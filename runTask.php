@@ -103,6 +103,6 @@ $taskNumber = 1;
 foreach ($tasks as $task) {
     $successfulLock = $redis->eval($task->checkAndLockTastScript, [$task->taskKey]);
     if ($successfulLock) {
-        Templates::generateAndPersist($task, true, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */);
+        Templates::generateAndPersist($task, false, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */);
     }
 }

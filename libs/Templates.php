@@ -228,7 +228,8 @@ class Templates
                                 echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
                                 flush();
                                 if ($printNextAndDie) {
-                                    $imageFilename = "examples/generated/$generationSetString.gif";
+                                    $outputDir = getenv('MDIC_OUTPUT_DIR') ?: '.';
+                                    $imageFilename = "$outputDir/examples/generated/$generationSetString.gif";
 
                                     list($imageWidth, $imageHeight, $isOk) = Templates::templateToImage(
                                         $gridXRange,
