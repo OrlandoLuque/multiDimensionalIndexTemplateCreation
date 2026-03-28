@@ -26,6 +26,8 @@
 
     "angleStep": 0.5,
 
+    "fillCheckPolicy": "stop",
+
     "redisKeys": {
         "lock":          "lock",
         "templateList":  "templateList",

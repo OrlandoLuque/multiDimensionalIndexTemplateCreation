@@ -144,6 +144,16 @@ Step in degrees for rotation angles. The process tests every angle from 0 to 359
 * `1.0` → 360 angles (faster)
 * `5.0` → 72 angles (quick test)
 
+<h4>fillCheckPolicy</h4>
+
+Controls what happens when the polygon fill validation detects an anomaly (a potential rasterization artifact in `isInside()`). This check runs for each polygon/scale/grid/angle combination before generating templates.
+
+| Value      | Behavior                                                        |
+|------------|-----------------------------------------------------------------|
+| `"stop"`   | **(default)** Abort the process. Use during development/debugging to investigate the anomaly. |
+| `"skip"`   | Log a warning and skip that angle. The templates for that angle are not generated or stored. |
+| `"ignore"` | Log a notice and continue processing normally. The templates are generated and stored despite the anomaly. |
+
 <h4>redisKeys</h4>
 
 Prefix/names for Redis keys. Only change these if you need to run multiple independent datasets in the same Redis instance. Each task automatically gets a `T1-`, `T2-`, ... prefix on top of these.

@@ -174,8 +174,19 @@ class Templates
                         $rotatedPoly = Templates::getRotatedPolygonCopy($scalatedPoly, Templates::angleToRadians($angle));
                         //$rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
                         if (!self::checkNoLinesInPolygonFilling($rotatedPoly)) {
-                            echo "Error: calculation misshap for polygon " . "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle";
-                            die();
+                            $fillCheckMode = getenv('MDIC_FILL_CHECK') ?: 'stop';
+                            $msg = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle";
+                            if ($fillCheckMode === 'stop') {
+                                echo "\nERROR: fill check anomaly for $msg\n";
+                                echo "  Configure fillCheckPolicy in config.json: \"stop\" (default), \"skip\", or \"ignore\"\n";
+                                die();
+                            } elseif ($fillCheckMode === 'skip') {
+                                echo "\nWARNING: fill check anomaly for $msg (skipping angle)\n";
+                                $calculatedTemplates += $gridX * $gridY;
+                                continue;
+                            }
+                            // 'ignore': continue processing normally
+                            echo "\nNOTICE: fill check anomaly for $msg (storing anyway)\n";
                         }
                         for ($x = 0; $x < $gridX; $x++) {
                             for ($y = 0; $y < $gridY; $y++) {
