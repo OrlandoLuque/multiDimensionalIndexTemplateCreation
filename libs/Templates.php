@@ -140,6 +140,16 @@ class Templates
         //$redis->set($templateCountKey, -1); comentado al hacer transacciones <-- deprecated
 
 
+        // Calculate total combinations for progress display
+        $totalCombinations = 0;
+        foreach ($task->polygons as $poly) {
+            foreach ($task->polygonScales as $polygonScale) {
+                foreach ($task->gridsDimensions as $gridDimensions) {
+                    $totalCombinations += count($task->angles) * $gridDimensions[0] * $gridDimensions[1];
+                }
+            }
+        }
+
         foreach ($task->polygons as $indexPoly => $poly) {
             if ($continue && $indexPoly != $last[0]) {
                 continue;
@@ -225,7 +235,8 @@ class Templates
                                         , $templateGridXY, $task, $templateCount);
                                 }
                                 $calculatedTemplates++;
-                                echo " $templateCount plantillas para $calculatedTemplates combinaciones ";
+                                $pct = round($calculatedTemplates / $totalCombinations * 100, 1);
+                                echo " $templateCount plantillas para $calculatedTemplates / $totalCombinations combinaciones ({$pct}%) ";
                                 flush();
                                 if ($printNextAndDie) {
                                     $outputDir = getenv('MDIC_OUTPUT_DIR') ?: '.';
