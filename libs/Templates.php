@@ -523,7 +523,7 @@ class Templates
                 $result[$x][$y] = $polygon->isInside($p5, true);
                 if ($y > $yStart + 2) {
                     if ($result[$x][$y] == $result[$x][$y - 2] && $result[$x][$y] != $result[$x][$y - 1]) {
-                        if ($previousLineDetection[$y] == $result[$x][$y]) {
+                        if (isset($previousLineDetection[$y]) && $previousLineDetection[$y] == $result[$x][$y]) {
                             return false;
                         }
                         $lineDetection[$y] = $result[$x][$y];
