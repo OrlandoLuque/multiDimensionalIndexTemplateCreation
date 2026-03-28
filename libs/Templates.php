@@ -317,8 +317,15 @@ class Templates
                                         , $templateGridXY, $task, $templateCount);
                                 }
                                 $calculatedTemplates++;
+                                // Sync template count from Redis every 100 iterations
+                                if ($calculatedTemplates % 100 === 0) {
+                                    $globalCount = $redis->get($task->templateCountKey);
+                                    if ($globalCount !== false) {
+                                        $templateCount = (int)$globalCount;
+                                    }
+                                }
                                 $pct = round($calculatedTemplates / $totalCombinations * 100, 1);
-                                echo " $templateCount plantillas para $calculatedTemplates / $totalCombinations combinaciones ({$pct}%) ";
+                                echo " {$task->taskKey} $templateCount plantillas | $calculatedTemplates / $totalCombinations ({$pct}%) ";
                                 flush();
                                 if ($printNextAndDie) {
                                     $outputDir = getenv('MDIC_OUTPUT_DIR') ?: '.';
@@ -349,7 +356,9 @@ class Templates
             }
         }
         $redis->eval($task->lockTaskAsCompletedScript, [$task->taskKey]);
-        echo "Calculated templates: $calculatedTemplates - unique ones: $templateCount - desde $inicio a " . date("Y-m-d H:i:s");
+        $globalCount = $redis->get($task->templateCountKey);
+        if ($globalCount !== false) $templateCount = (int)$globalCount;
+        echo "\n{$task->taskKey} completed: $calculatedTemplates combinations - $templateCount unique templates (global) - $inicio to " . date("Y-m-d H:i:s") . "\n";
 
         return; // array($im, $colors, $img);
     }
