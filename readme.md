@@ -151,8 +151,9 @@ Controls what happens when the polygon fill validation detects an anomaly (a pot
 | Value      | Behavior                                                        |
 |------------|-----------------------------------------------------------------|
 | `"stop"`   | **(default)** Abort the process. Use during development/debugging to investigate the anomaly. |
+| `"log"`    | Generate debug images (PNG + SVG), write details to `fill_check_debug/anomalies.log`, and continue storing templates normally. Best for production runs where you want to review anomalies after completion. |
 | `"skip"`   | Log a warning and skip that angle. The templates for that angle are not generated or stored. |
-| `"ignore"` | Log a notice and continue processing normally. The templates are generated and stored despite the anomaly. |
+| `"ignore"` | Log a notice and continue processing normally. No debug images or log file. |
 
 <h4>redisKeys</h4>
 

@@ -184,12 +184,17 @@ class Templates
                                 $fillCheckResult['anomalies'], $indexPoly, $polygonScale, $gridX, $gridY, $angle
                             );
 
+                            if ($fillCheckMode === 'log') {
+                                // Log mode: always generate debug images + write to log file + continue storing
+                                $fillCheckDebug = true;
+                            }
+
                             if (!$fillCheckDebug) {
                                 // No debug images: apply policy immediately
                                 if ($fillCheckMode === 'stop') {
                                     echo "\nERROR: fill check anomaly for $fillCheckMsg ($anomalyCount points)\n";
                                     echo $anomalyLog;
-                                    echo "  Configure fillCheckPolicy in config.json: \"stop\" (default), \"skip\", or \"ignore\"\n";
+                                    echo "  Configure fillCheckPolicy in config.json: \"stop\", \"log\", \"skip\", or \"ignore\"\n";
                                     die();
                                 } elseif ($fillCheckMode === 'skip') {
                                     echo "\nWARNING: fill check anomaly for $fillCheckMsg ($anomalyCount points, skipping angle)\n";
@@ -200,7 +205,7 @@ class Templates
                                 echo "\nNOTICE: fill check anomaly for $fillCheckMsg ($anomalyCount points, storing anyway)\n";
                                 echo $anomalyLog;
                             }
-                            // With debug images: continue to first position to generate template image, then apply policy
+                            // With debug images (or log mode): continue to first position to generate template image
                         }
                         for ($x = 0; $x < $gridX; $x++) {
                             for ($y = 0; $y < $gridY; $y++) {
@@ -254,15 +259,23 @@ class Templates
                                     echo "\n    Fill SVG:     $debugFillSVG\n";
                                     echo $anomalyLog;
 
+                                    // Write to log file
+                                    $logFile = "$debugDir/anomalies.log";
+                                    $logEntry = "[" . date('Y-m-d H:i:s') . "] $fillCheckMsg ($anomalyCount points)\n";
+                                    $logEntry .= "  Images: $debugTemplatePNG | $debugFillSVG\n";
+                                    $logEntry .= $anomalyLog . "\n";
+                                    file_put_contents($logFile, $logEntry, FILE_APPEND);
+
                                     if ($fillCheckMode === 'stop') {
                                         echo "\nERROR: fill check anomaly for $fillCheckMsg ($anomalyCount points)\n";
-                                        echo "  Configure fillCheckPolicy in config.json: \"stop\" (default), \"skip\", or \"ignore\"\n";
+                                        echo "  Configure fillCheckPolicy in config.json: \"stop\", \"log\", \"skip\", or \"ignore\"\n";
                                         die();
                                     } elseif ($fillCheckMode === 'skip') {
                                         echo "\nWARNING: fill check anomaly for $fillCheckMsg ($anomalyCount points, skipping angle)\n";
                                         $calculatedTemplates += $gridX * $gridY;
                                         continue 3; // break out of x, y loops and continue angle loop
                                     }
+                                    // 'log' or 'ignore': continue storing
                                     echo "\nNOTICE: fill check anomaly for $fillCheckMsg ($anomalyCount points, storing anyway)\n";
                                     $fillCheckAnomaly = false; // don't trigger again for other positions of this angle
                                 }
