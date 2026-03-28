@@ -410,7 +410,7 @@ class Task
                     $task = new Task();
                     $task = $task
                         ->setRedis($redis)
-                        ->setPolygons([$polygon])
+                        ->setPolygons([$title => $polygon])
                         ->setPolygonScales([$polygonScale])
                         ->setGridsDimensions($gridDimensions)
                         ->setAngles($angles)

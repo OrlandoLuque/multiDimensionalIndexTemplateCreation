@@ -99,10 +99,12 @@ declare(ticks=1);
 //    $a = 1;
 //    Templates::generateAndPersist($task, false, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */);
 //}
-$taskNumber = 1;
+$totalTasks = count($tasks);
+$taskNumber = 0;
 foreach ($tasks as $task) {
+    $taskNumber++;
     $successfulLock = $redis->eval($task->checkAndLockTastScript, [$task->taskKey]);
     if ($successfulLock) {
-        Templates::generateAndPersist($task, false, null /*, 'drop-s128-x32,y16-a54-dx2,dy4' */);
+        Templates::generateAndPersist($task, false, null, $taskNumber, $totalTasks);
     }
 }

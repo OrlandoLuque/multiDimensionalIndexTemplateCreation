@@ -32,7 +32,7 @@ class Templates
      * @param string|null $forceLast
      * @return void
      */
-    public static function generateAndPersist(Task $task, bool $printNextAndDie = false, string  $forceLast = null): void
+    public static function generateAndPersist(Task $task, bool $printNextAndDie = false, string $forceLast = null, int $taskNumber = 0, int $totalTasks = 0): void
     {
         $inicio = date("Y-m-d H:i:s");
 
@@ -119,8 +119,27 @@ class Templates
             $last = $forceLast;
         }
 
-        echo "\n\nIniciando con $templateCount plantillas para $calculatedTemplates combinaciones\n";
-        echo "Última en base de datos: $last\n\n";
+        // Calculate total combinations for progress display
+        $totalCombinations = 0;
+        foreach ($task->polygons as $poly) {
+            foreach ($task->polygonScales as $polygonScale) {
+                foreach ($task->gridsDimensions as $gridDimensions) {
+                    $totalCombinations += count($task->angles) * $gridDimensions[0] * $gridDimensions[1];
+                }
+            }
+        }
+
+        // Describe task contents
+        $polyNames = array_keys($task->polygons);
+        $scaleList = implode(', ', $task->polygonScales);
+        $gridList = implode(', ', array_map(fn($g) => "{$g[0]}x{$g[1]}", $task->gridsDimensions));
+        $taskLabel = $totalTasks > 0 ? " (task $taskNumber / $totalTasks)" : '';
+
+        echo "\n\n=== {$task->taskKey}$taskLabel ===\n";
+        echo "  Polygons: " . implode(', ', $polyNames) . " | Scales: $scaleList | Grids: $gridList | Angles: " . count($task->angles) . "\n";
+        echo "  $totalCombinations combinations | $templateCount templates so far | $calculatedTemplates already processed\n";
+        if ($last) echo "  Resuming from: $last\n";
+        echo "\n";
         $continue = false;
         if (false !== $last && strlen($last) > 0) {
             $continue = true;
@@ -135,19 +154,6 @@ class Templates
             $disp = explode(',', $data[4]);
             $last[5] = ltrim($disp[0], 'dx');
             $last[6] = ltrim($disp[1], 'dy');
-        }
-
-        //$redis->set($templateCountKey, -1); comentado al hacer transacciones <-- deprecated
-
-
-        // Calculate total combinations for progress display
-        $totalCombinations = 0;
-        foreach ($task->polygons as $poly) {
-            foreach ($task->polygonScales as $polygonScale) {
-                foreach ($task->gridsDimensions as $gridDimensions) {
-                    $totalCombinations += count($task->angles) * $gridDimensions[0] * $gridDimensions[1];
-                }
-            }
         }
 
         foreach ($task->polygons as $indexPoly => $poly) {
