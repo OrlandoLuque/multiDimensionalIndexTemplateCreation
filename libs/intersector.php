@@ -19,6 +19,21 @@ class Intersector
     /** @var float */
     public static float $MyEpsilon = 0.00001;
 
+    /** When true, use epsilon-based comparisons instead of exact == 0 */
+    public static bool $epsilonMode = false;
+
+    /** Helper: compare float to zero with optional epsilon */
+    public static function isZero(float $v): bool
+    {
+        return self::$epsilonMode ? abs($v) < self::$MyEpsilon : $v == 0;
+    }
+
+    /** Helper: compare two floats with optional epsilon */
+    public static function isEqual(float $a, float $b): bool
+    {
+        return self::$epsilonMode ? abs($a - $b) < self::$MyEpsilon : $a == $b;
+    }
+
     private static function OverlapIntervals($ub1, $ub2): array
     {
         $l = min($ub1, $ub2);
@@ -224,7 +239,7 @@ class Intersector
         if (($A <= 0.0000001) || ($det < 0)) {
             // No real solutions.
             return [];
-        } elseif ($det == 0) {
+        } elseif (self::isZero($det)) {
             // One solution.
             $t = -$B / (2 * $A);
             $intersection1 =

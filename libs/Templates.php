@@ -376,24 +376,29 @@ class Templates
      */
     public static function getTemplateGrid($grid, $poly)
     {
-        $r = []; //$sr = '';
+        $r = [];
+        // Cache polygon bounding box for fast rejection
+        $pxMin = $poly->x_min; $pxMax = $poly->x_max;
+        $pyMin = $poly->y_min; $pyMax = $poly->y_max;
+
         foreach ($grid as $ix => $column) {
             /** @var polygon $cell */
             foreach ($column as $iy => $cell) {
-                if ($poly->completelyContains($cell)) {
-                    $intersectResult = IN;
+                // Fast bounding box rejection: if no overlap, cell is OUT
+                if ($cell->x_min > $pxMax || $cell->x_max < $pxMin
+                    || $cell->y_min > $pyMax || $cell->y_max < $pyMin) {
+                    $r[$ix][$iy] = OUT;
+                } elseif ($poly->completelyContains($cell)) {
+                    $r[$ix][$iy] = IN;
                 } elseif ($cell->completelyContains($poly)
                     || $poly->isPolyIntersect($cell)) {
-                    $intersectResult = MAYBE;
+                    $r[$ix][$iy] = MAYBE;
                 } else {
-                    $intersectResult = OUT;
+                    $r[$ix][$iy] = OUT;
                 }
-                $r[$ix][$iy] = $intersectResult;
-                //$sr .= $intersectResult;
             }
-            //$sr .= '|';
         }
-        return $r; //[$r, $sr];
+        return $r;
     }
     public static function getTemplateGridExpecting($grid, $poly, $expected)
     {
@@ -427,7 +432,7 @@ class Templates
         return $r; //[$r, $sr];
     }
 
-    private static function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY)
+    public static function getGrid($sx, $sy, $ex, $ey, $gridX, $gridY)
     {
         //$unDecimal = 0.0000000001; /////////// para 4 dígitos
         $unDecimal = 0.0;

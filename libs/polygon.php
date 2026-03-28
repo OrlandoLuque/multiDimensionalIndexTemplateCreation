@@ -368,7 +368,7 @@ class Polygon
     public static function angle($xc, $yc, $x1, $y1)
     {
         $d = Polygon::dist($xc, $yc, $x1, $y1); // calc distance between two points
-        if ($d != 0) {
+        if (!Intersector::isZero($d)) {
             if (asin(($y1 - $yc) / $d) >= 0) {
                 $a1 = acos(($x1 - $xc) / $d);
             } else {
@@ -492,7 +492,7 @@ class Polygon
                 $x4 = $q2->X();
                 $y4 = $q2->Y();
                 $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
-                if ($d == 0) {
+                if (Intersector::isZero($d)) {
                     $ua = $ub = INF;
                 } else {
                     $ua = (($x4 - $x3) * ($y1 - $y3) - ($y4 - $y3) * ($x1 - $x3)) / $d;
@@ -532,7 +532,7 @@ class Polygon
                     return ($y == $yv);
                  */
                 $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
-                if ($d == 0) {
+                if (Intersector::isZero($d)) {
                     if ($y4 == $y3 && $y2 == $y1 && $y1 == $y3) {
                     }
                 } else { //$d != 0) { // The lines intersect at a point somewhere
@@ -583,7 +583,7 @@ class Polygon
             $dy = $y1 - $y0; // distances between the circle centers.
             $d = sqrt(($dy * $dy) + ($dx * $dx)); // Distance between the centers.
 
-            if ($d == 0) { // Don't try an find intersection if centers are the same.
+            if (Intersector::isZero($d)) { // Don't try an find intersection if centers are the same.
                 // Added in Rev 1.2
                 $found = false;
             } elseif ($d > ($r0 + $r1)) { // Check for solvability.
@@ -599,7 +599,7 @@ class Polygon
                 $a = (($r0 * $r0) - ($r1 * $r1) + ($d * $d)) / (2.0 * $d); // Calc the distance from xy0 to xy2.
                 $x2 = $x0 + ($dx * $a / $d); // Determine the coordinates of xy2.
                 $y2 = $y0 + ($dy * $a / $d);
-                if ($d == ($r0 + $r1)) { // Arcs touch at xy2 exactly (unlikely)
+                if (Intersector::isEqual($d, $r0 + $r1)) { // Arcs touch at xy2 exactly (unlikely)
                     $alphaP[0] = $this->aAlpha($p1->X(), $p1->Y(), $p2->X(), $p2->Y(), $x0, $y0, $x2, $y2, $pt);
                     $alphaQ[0] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x2, $y2, $qt);
                     if (($alphaP[0] > 0 && $alphaP[0] < 1) && ($alphaQ[0] > 0 && $alphaQ[0] < 1)) {
@@ -697,7 +697,7 @@ class Polygon
                 $i = $b * $b - 4 * $a * $c;
                 if ($i < 0.0) { // no intersection
                     $found = false;
-                } elseif ($i == 0.0) { // one intersection
+                } elseif (Intersector::isZero($i)) { // one intersection
                     if ($a != 0) {
                         $mu = -$b / (2 * $a);
                     }
@@ -788,7 +788,7 @@ class Polygon
                 return ($y == $yv);
              */
             $d = (($y4 - $y3) * ($x2 - $x1) - ($x4 - $x3) * ($y2 - $y1));
-            if ($d == 0) {
+            if (Intersector::isZero($d)) {
                 if ($y4 == $y3 && $y2 == $y1 && $y1 == $y3) {
                 }
             } else { //$d != 0) { // The lines intersect at a point somewhere
@@ -838,7 +838,7 @@ class Polygon
             $dy = $y1 - $y0; // distances between the circle centers.
             $d = sqrt(($dy * $dy) + ($dx * $dx)); // Distance between the centers.
 
-            if ($d == 0) { // Don't try an find intersection if centers are the same.
+            if (Intersector::isZero($d)) { // Don't try an find intersection if centers are the same.
                 // Added in Rev 1.2
                 $found = false;
             } elseif ($d > ($r0 + $r1)) { // Check for solvability.
@@ -854,7 +854,7 @@ class Polygon
                 $a = (($r0 * $r0) - ($r1 * $r1) + ($d * $d)) / (2.0 * $d); // Calc the distance from xy0 to xy2.
                 $x2 = $x0 + ($dx * $a / $d); // Determine the coordinates of xy2.
                 $y2 = $y0 + ($dy * $a / $d);
-                if ($d == ($r0 + $r1)) { // Arcs touch at xy2 exactly (unlikely)
+                if (Intersector::isEqual($d, $r0 + $r1)) { // Arcs touch at xy2 exactly (unlikely)
                     $alphaP[0] = $this->aAlpha($p1->X(), $p1->Y(), $p2->X(), $p2->Y(), $x0, $y0, $x2, $y2, $pt);
                     $alphaQ[0] = $this->aAlpha($q1->X(), $q1->Y(), $q2->X(), $q2->Y(), $x1, $y1, $x2, $y2, $qt);
                     if (($alphaP[0] > 0 && $alphaP[0] < 1) && ($alphaQ[0] > 0 && $alphaQ[0] < 1)) {
@@ -930,7 +930,7 @@ class Polygon
             $i = $b * $b - 4 * $a * $c;
             if ($i < 0.0) { // no intersection
                 $found = false;
-            } elseif ($i == 0.0) { // one intersection
+            } elseif (Intersector::isZero($i)) { // one intersection
                 if ($a != 0) {
                     $mu = -$b / (2 * $a);
                 }
@@ -1350,42 +1350,38 @@ class Polygon
 
     public function completelyContains(&$p)
     {
-        $inside = true;
-        $c = $p->getFirst(); // Get the first vertex in polygon $p
+        $c = $p->getFirst();
         do {
-            if (!$this->isInside($c)) { // If vertex is NOT inside this polygon
-                $inside = false;
-            } // then set flag to false
-            $c = $c->Next(); // Get the next vertex in polygon $p
+            if (!$this->isInside($c)) {
+                return false;
+            }
+            $c = $c->Next();
         } while ($c->id() != $p->first->id());
-        if ($inside) {
-            $c = $p->getFirst(); // Get the first vertex in polygon $p
-            $s = $this->getFirst(); // Get the first vertex in this polygon
+        // All vertices inside — check no edge crossings
+        $c = $p->getFirst();
+        $s = $this->getFirst();
+        do {
             do {
-                do {
-                    $int = $this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC);
-                    if (count($int) == 1) {
-                        /** @var Vertex $int */
-                        $int = $int[0];
-
-                        if ($s->d() == 0 && $c->d() == 0
-                            && !($int->equals($s)
-                                || $int->equals($s->Next())
-                                || $int->equals($c)
-                                || $int->equals($c->Next()))) {
-                            $inside = false;
-                        }
-                    } elseif (count($int) == 2) {
-                        if ($s->d() != 0 || $c->d() != 0) {
-                            $inside = false;
-                        }
+                $int = $this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC);
+                if (count($int) == 1) {
+                    $int = $int[0];
+                    if ($s->d() == 0 && $c->d() == 0
+                        && !($int->equals($s)
+                            || $int->equals($s->Next())
+                            || $int->equals($c)
+                            || $int->equals($c->Next()))) {
+                        return false;
                     }
-                    $c = $c->Next();
-                } while ($c->id() != $p->first->id());
-                $s = $s->Next();
-            } while ($s->id() != $this->first->id());
-        }
-        return $inside;
+                } elseif (count($int) == 2) {
+                    if ($s->d() != 0 || $c->d() != 0) {
+                        return false;
+                    }
+                }
+                $c = $c->Next();
+            } while ($c->id() != $p->first->id());
+            $s = $s->Next();
+        } while ($s->id() != $this->first->id());
+        return true;
     }
 
     // end of isPolyInside
@@ -1436,19 +1432,18 @@ class Polygon
 
     public function isPolyIntersect(&$p)
     {
-        $intersect = false;
-        $c = $p->getFirst(); // Get the first vertex in polygon $p
-        $s = $this->getFirst(); // Get the first vertex in this polygon
+        $c = $p->getFirst();
+        $s = $this->getFirst();
         do {
             do {
                 if (count($this->ints($s, $s->Next(), $c, $c->Next(), $n, $x, $y, $aS, $aC)) > 0) {
-                    $intersect = true;
+                    return true;
                 }
                 $c = $c->Next();
             } while ($c->id() != $p->first->id());
             $s = $s->Next();
         } while ($s->id() != $this->first->id());
-        return $intersect;
+        return false;
     }
 
     // end of isPolyIntersect
