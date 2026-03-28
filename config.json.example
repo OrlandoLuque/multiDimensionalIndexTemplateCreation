@@ -28,6 +28,7 @@
 
     "fillCheckPolicy": "stop",
     "fillCheckDebugImages": false,
+    "templateValidation": false,
 
     "redisKeys": {
         "lock":          "lock",

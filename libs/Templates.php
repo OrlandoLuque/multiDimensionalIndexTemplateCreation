@@ -173,30 +173,34 @@ class Templates
                         }
                         $rotatedPoly = Templates::getRotatedPolygonCopy($scalatedPoly, Templates::angleToRadians($angle));
                         //$rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
-                        if (!self::checkNoLinesInPolygonFilling($rotatedPoly)) {
+                        $fillCheckResult = self::checkNoLinesInPolygonFilling($rotatedPoly);
+                        $fillCheckAnomaly = ($fillCheckResult !== true);
+                        if ($fillCheckAnomaly) {
                             $fillCheckMode = getenv('MDIC_FILL_CHECK') ?: 'stop';
                             $fillCheckDebug = getenv('MDIC_FILL_CHECK_DEBUG') === '1';
-                            $msg = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle";
+                            $fillCheckMsg = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle";
+                            $anomalyCount = count($fillCheckResult['anomalies']);
+                            $anomalyLog = self::formatFillCheckAnomalyLog(
+                                $fillCheckResult['anomalies'], $indexPoly, $polygonScale, $gridX, $gridY, $angle
+                            );
 
-                            if ($fillCheckDebug) {
-                                $debugDir = (getenv('MDIC_OUTPUT_DIR') ?: '.') . '/fill_check_debug';
-                                @mkdir($debugDir, 0755, true);
-                                $debugFile = "$debugDir/$msg.gif";
-                                self::polyFillTestToImage($rotatedPoly, "$debugDir/{$msg}_outline.gif", $debugFile);
-                                echo "\n  Debug image: $debugFile\n";
+                            if (!$fillCheckDebug) {
+                                // No debug images: apply policy immediately
+                                if ($fillCheckMode === 'stop') {
+                                    echo "\nERROR: fill check anomaly for $fillCheckMsg ($anomalyCount points)\n";
+                                    echo $anomalyLog;
+                                    echo "  Configure fillCheckPolicy in config.json: \"stop\" (default), \"skip\", or \"ignore\"\n";
+                                    die();
+                                } elseif ($fillCheckMode === 'skip') {
+                                    echo "\nWARNING: fill check anomaly for $fillCheckMsg ($anomalyCount points, skipping angle)\n";
+                                    echo $anomalyLog;
+                                    $calculatedTemplates += $gridX * $gridY;
+                                    continue;
+                                }
+                                echo "\nNOTICE: fill check anomaly for $fillCheckMsg ($anomalyCount points, storing anyway)\n";
+                                echo $anomalyLog;
                             }
-
-                            if ($fillCheckMode === 'stop') {
-                                echo "\nERROR: fill check anomaly for $msg\n";
-                                echo "  Configure fillCheckPolicy in config.json: \"stop\" (default), \"skip\", or \"ignore\"\n";
-                                die();
-                            } elseif ($fillCheckMode === 'skip') {
-                                echo "\nWARNING: fill check anomaly for $msg (skipping angle)\n";
-                                $calculatedTemplates += $gridX * $gridY;
-                                continue;
-                            }
-                            // 'ignore': continue processing normally
-                            echo "\nNOTICE: fill check anomaly for $msg (storing anyway)\n";
+                            // With debug images: continue to first position to generate template image, then apply policy
                         }
                         for ($x = 0; $x < $gridX; $x++) {
                             for ($y = 0; $y < $gridY; $y++) {
@@ -222,7 +226,46 @@ class Templates
                                 /*list($templateGridXY, $templateHashYX)*/
 
                                 $templateGridXY = Templates::getTemplateGrid($grid, $movedPoly);
-                                ///////$templateGridXY = getTemplateGridExpecting($grid, $movedPoly, $expected);
+
+                                // Generate debug image on first position of an anomalous angle
+                                if ($fillCheckAnomaly && $fillCheckDebug && $x === 0 && $y === 0) {
+                                    $debugDir = (getenv('MDIC_OUTPUT_DIR') ?: '.') . '/fill_check_debug';
+                                    @mkdir($debugDir, 0755, true);
+                                    // Template images (IN/MAYBE/OUT grid)
+                                    $debugTemplatePNG = "$debugDir/$fillCheckMsg.png";
+                                    $debugTemplateSVG = "$debugDir/$fillCheckMsg.svg";
+                                    Templates::templateToImage(
+                                        $gridXRange, $gridX, $gridYRange, $gridY,
+                                        $grid, $templateGridXY, $movedPoly, $debugTemplatePNG
+                                    );
+                                    Templates::templateToSVG(
+                                        $gridXRange, $gridX, $gridYRange, $gridY,
+                                        $grid, $templateGridXY, $movedPoly, $debugTemplateSVG
+                                    );
+                                    // Fill check images (isInside pixel-level)
+                                    $debugFillPNG = "$debugDir/{$fillCheckMsg}_fill.png";
+                                    $debugFillSVG = "$debugDir/{$fillCheckMsg}_fill.svg";
+                                    self::fillCheckDebugImage($rotatedPoly, $fillCheckResult, $debugFillPNG);
+                                    self::fillCheckDebugSVG($rotatedPoly, $fillCheckResult, $debugFillSVG);
+                                    echo "\n  Debug images ($anomalyCount anomalies):";
+                                    echo "\n    Template PNG: $debugTemplatePNG";
+                                    echo "\n    Template SVG: $debugTemplateSVG";
+                                    echo "\n    Fill PNG:     $debugFillPNG";
+                                    echo "\n    Fill SVG:     $debugFillSVG\n";
+                                    echo $anomalyLog;
+
+                                    if ($fillCheckMode === 'stop') {
+                                        echo "\nERROR: fill check anomaly for $fillCheckMsg ($anomalyCount points)\n";
+                                        echo "  Configure fillCheckPolicy in config.json: \"stop\" (default), \"skip\", or \"ignore\"\n";
+                                        die();
+                                    } elseif ($fillCheckMode === 'skip') {
+                                        echo "\nWARNING: fill check anomaly for $fillCheckMsg ($anomalyCount points, skipping angle)\n";
+                                        $calculatedTemplates += $gridX * $gridY;
+                                        continue 3; // break out of x, y loops and continue angle loop
+                                    }
+                                    echo "\nNOTICE: fill check anomaly for $fillCheckMsg ($anomalyCount points, storing anyway)\n";
+                                    $fillCheckAnomaly = false; // don't trigger again for other positions of this angle
+                                }
                                 ///////////////////////////
                                 if (false) {
                                     $imageFilename = 'gen_poly_ex_fill_figure.gif';
@@ -245,6 +288,11 @@ class Templates
                                 //$test = MatrixUtil::binCode($templateGridXY);
                                 //$decodedTemplateGrid = MatrixUtil::binDecode($test);
                                 //echo MatrixUtil::toString($decodedTemplateGrid);
+
+                                // Optional template validation: cross-check IN/OUT cells with isInside()
+                                if (getenv('MDIC_TEMPLATE_VALIDATION') === '1') {
+                                    self::validateTemplateGrid($grid, $templateGridXY, $movedPoly, $generationSetString);
+                                }
 
                                 echo "\n{$task->taskKey} $generationSetString -->\n" . MatrixUtil::toString($templateGridXY);
                                 $templateHash = MatrixUtil::binCode($templateGridXY);
@@ -527,45 +575,295 @@ class Templates
      * @param Polygon $polygon
      * @return bool
      */
-    public static function checkNoLinesInPolygonFilling(Polygon $polygon): bool
+    /**
+     * Returns true if fill is clean, or an array with anomaly details if not.
+     * @return true|array{result: array, anomalies: array, xStart: int, yStart: int, xEnd: float, yEnd: float}
+     */
+    public static function checkNoLinesInPolygonFilling(Polygon $polygon)
     {
         $extraMargin = 3;
         $box = $polygon->bRect();
-        $width = $box->x_max - $box->x_min + $extraMargin * 2;
-        $height = $box->y_max - $box->y_min + $extraMargin * 2;
         $xStart = floor($box->x_min) - $extraMargin;
         $xEnd = $box->x_max + 1 + $extraMargin;
         $yStart = floor($box->y_min) - $extraMargin;
         $yEnd = $box->y_max + 1 + $extraMargin;
         $result = [];
         $lineDetection = [];
-        for ($x = $xStart
-                ; $x < $xEnd
-                ; $x++) {
-            $result[] = [];
+        $anomalies = [];
+        for ($x = $xStart; $x < $xEnd; $x++) {
+            $result[$x] = [];
             $previousLineDetection = $lineDetection;
             $lineDetection = [];
-            for ($y = $yStart
-                    ; $y < $yEnd
-                    ; $y++) {
-                //echo "\n$x - $y";
+            for ($y = $yStart; $y < $yEnd; $y++) {
                 $p5 = new Vertex($x, $y);
-                //$r1 = $polyA->isInside($p5);
-                $a = 1;
                 $result[$x][$y] = $polygon->isInside($p5, true);
                 if ($y > $yStart + 2) {
                     if ($result[$x][$y] == $result[$x][$y - 2] && $result[$x][$y] != $result[$x][$y - 1]) {
                         if (isset($previousLineDetection[$y]) && $previousLineDetection[$y] == $result[$x][$y]) {
-                            return false;
+                            $anomalies[] = [
+                                'x' => $x, 'y' => $y,
+                                'val' => $result[$x][$y],
+                                // ABA pattern: y-2 and y match, y-1 differs
+                                'y_minus_2' => $result[$x][$y - 2],
+                                'y_minus_1' => $result[$x][$y - 1],
+                                // Previous column had same pattern
+                                'prev_x' => $x - 1,
+                            ];
                         }
                         $lineDetection[$y] = $result[$x][$y];
                     }
                 }
             }
         }
+        if (!empty($anomalies)) {
+            return ['result' => $result, 'anomalies' => $anomalies,
+                'xStart' => $xStart, 'yStart' => $yStart, 'xEnd' => $xEnd, 'yEnd' => $yEnd];
+        }
         return true;
+    }
 
-        return $result;
+    /**
+     * Generates a debug PNG for a fill check anomaly (GD library).
+     */
+    public static function fillCheckDebugImage(Polygon $polygon, array $checkData, string $filename): void
+    {
+        $cellSize = 6;
+        $result = $checkData['result'];
+        $anomalies = $checkData['anomalies'];
+        $xStart = $checkData['xStart'];
+        $yStart = $checkData['yStart'];
+        $xEnd = $checkData['xEnd'];
+        $yEnd = $checkData['yEnd'];
+
+        $cols = (int)($xEnd - $xStart);
+        $rows = (int)($yEnd - $yStart);
+        $imgW = $cols * $cellSize + 1;
+        $imgH = $rows * $cellSize + 1;
+
+        $im = imagecreatetruecolor($imgW, $imgH);
+        $cWhite = imagecolorallocate($im, 255, 255, 255);
+        $cGreen = imagecolorallocate($im, 60, 180, 75);
+        $cBlue  = imagecolorallocate($im, 70, 130, 200);
+        $cGrid  = imagecolorallocate($im, 200, 200, 200);
+        $cPoly  = imagecolorallocate($im, 0, 0, 0);
+        $cAnomalyBorder = imagecolorallocate($im, 220, 50, 50);
+        $cMidBorder     = imagecolorallocate($im, 255, 140, 0);
+
+        imagefill($im, 0, 0, $cWhite);
+
+        $anomalyMap = [];
+        foreach ($anomalies as $a) {
+            $anomalyMap[$a['x'] . ',' . $a['y']] = 'confirmed';
+            $anomalyMap[$a['x'] . ',' . ($a['y'] - 1)] = 'mid';
+        }
+
+        for ($x = $xStart; $x < $xEnd; $x++) {
+            for ($y = $yStart; $y < $yEnd; $y++) {
+                $px = (int)(($x - $xStart) * $cellSize);
+                $py = (int)(($rows - 1 - ($y - $yStart)) * $cellSize);
+                $color = (isset($result[$x][$y]) && $result[$x][$y]) ? $cGreen : $cBlue;
+                imagefilledrectangle($im, $px + 1, $py + 1, $px + $cellSize - 1, $py + $cellSize - 1, $color);
+                $key = $x . ',' . $y;
+                if (isset($anomalyMap[$key])) {
+                    $bc = ($anomalyMap[$key] === 'confirmed') ? $cAnomalyBorder : $cMidBorder;
+                    imagerectangle($im, $px, $py, $px + $cellSize, $py + $cellSize, $bc);
+                    imagerectangle($im, $px + 1, $py + 1, $px + $cellSize - 1, $py + $cellSize - 1, $bc);
+                }
+            }
+        }
+        for ($i = 0; $i <= $cols; $i++) imageline($im, $i * $cellSize, 0, $i * $cellSize, $imgH - 1, $cGrid);
+        for ($i = 0; $i <= $rows; $i++) imageline($im, 0, $i * $cellSize, $imgW - 1, $i * $cellSize, $cGrid);
+
+        $half = $cellSize / 2;
+        $v = $polygon->first;
+        do {
+            $next = $v->nextV;
+            $px1 = (int)(($v->x - $xStart) * $cellSize + $half);
+            $py1 = (int)(($rows - ($v->y - $yStart)) * $cellSize - $half);
+            $px2 = (int)(($next->x - $xStart) * $cellSize + $half);
+            $py2 = (int)(($rows - ($next->y - $yStart)) * $cellSize - $half);
+            if ($v->d() == 0) {
+                imageline($im, $px1, $py1, $px2, $py2, $cPoly);
+            } else {
+                $cx = (int)(($v->Xc() - $xStart) * $cellSize + $half);
+                $cy = (int)(($rows - ($v->Yc() - $yStart)) * $cellSize - $half);
+                $dia = (int)(2 * Polygon::dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()) * $cellSize);
+                $s = 360 - rad2deg(Polygon::angle($v->Xc(), $v->Yc(), $v->X(), $v->Y()));
+                $e = 360 - rad2deg(Polygon::angle($v->Xc(), $v->Yc(), $next->X(), $next->Y()));
+                if ($v->d() == -1) {
+                    imagearc($im, $cx, $cy, $dia, $dia, (int)$s, (int)$e, $cPoly);
+                } else {
+                    imagearc($im, $cx, $cy, $dia, $dia, (int)$e, (int)$s, $cPoly);
+                }
+            }
+            $v = $next;
+        } while ($v !== $polygon->first);
+
+        imagepng($im, $filename);
+        imagedestroy($im);
+    }
+
+    /**
+     * Generates a debug SVG for a fill check anomaly.
+     * Precise arcs, zoomable, no GD dependency.
+     */
+    public static function fillCheckDebugSVG(Polygon $polygon, array $checkData, string $filename): void
+    {
+        $cs = 10; // cell size in SVG units
+        $result = $checkData['result'];
+        $anomalies = $checkData['anomalies'];
+        $xStart = $checkData['xStart'];
+        $yStart = $checkData['yStart'];
+        $xEnd = $checkData['xEnd'];
+        $yEnd = $checkData['yEnd'];
+
+        $cols = (int)($xEnd - $xStart);
+        $rows = (int)($yEnd - $yStart);
+        $w = $cols * $cs;
+        $h = $rows * $cs;
+
+        // Build anomaly lookup
+        $anomalyMap = [];
+        foreach ($anomalies as $a) {
+            $anomalyMap[$a['x'] . ',' . $a['y']] = 'confirmed';
+            $anomalyMap[$a['x'] . ',' . ($a['y'] - 1)] = 'mid';
+        }
+
+        $svg = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $svg .= "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"$w\" height=\"$h\" viewBox=\"0 0 $w $h\">\n";
+        $svg .= "<rect width=\"$w\" height=\"$h\" fill=\"white\"/>\n";
+
+        // Cells
+        for ($x = $xStart; $x < $xEnd; $x++) {
+            for ($y = $yStart; $y < $yEnd; $y++) {
+                $px = ($x - $xStart) * $cs;
+                $py = ($rows - 1 - ($y - $yStart)) * $cs; // flip Y
+                $fill = (isset($result[$x][$y]) && $result[$x][$y]) ? '#3cb44b' : '#4682c8';
+
+                $key = $x . ',' . $y;
+                $stroke = '#c8c8c8';
+                $strokeWidth = '0.3';
+                if (isset($anomalyMap[$key])) {
+                    $stroke = ($anomalyMap[$key] === 'confirmed') ? '#dc3232' : '#ff8c00';
+                    $strokeWidth = '2';
+                }
+                $svg .= "<rect x=\"$px\" y=\"$py\" width=\"$cs\" height=\"$cs\" fill=\"$fill\" stroke=\"$stroke\" stroke-width=\"$strokeWidth\"/>\n";
+            }
+        }
+
+        // Polygon outline — vertices offset by half cell to align with cell centers
+        $half = $cs / 2;
+        $pathD = '';
+        $v = $polygon->first;
+        $first = true;
+        do {
+            $next = $v->nextV;
+            $sx = ($v->x - $xStart) * $cs + $half;
+            $sy = ($rows - ($v->y - $yStart)) * $cs - $half;
+            $ex = ($next->x - $xStart) * $cs + $half;
+            $ey = ($rows - ($next->y - $yStart)) * $cs - $half;
+
+            if ($first) {
+                $pathD .= "M $sx $sy ";
+                $first = false;
+            }
+
+            if ($v->d() == 0) {
+                $pathD .= "L $ex $ey ";
+            } else {
+                // SVG arc: A rx ry x-rotation large-arc-flag sweep-flag x y
+                $r = Polygon::dist($v->X(), $v->Y(), $v->Xc(), $v->Yc()) * $cs;
+                // sweep-flag: SVG 1 = clockwise in screen coords (Y-down)
+                // d=-1 is clockwise in math coords (Y-up) = clockwise in screen (Y flipped) = sweep 1
+                $sweep = ($v->d() == -1) ? 1 : 0;
+                // large-arc: use angle span to determine
+                $arcAngle = abs(rad2deg(
+                    Polygon::angle($v->Xc(), $v->Yc(), $next->X(), $next->Y())
+                    - Polygon::angle($v->Xc(), $v->Yc(), $v->X(), $v->Y())
+                ));
+                if ($arcAngle > 180) $arcAngle = 360 - $arcAngle;
+                $largeArc = ($arcAngle > 180) ? 1 : 0;
+                $pathD .= "A $r $r 0 $largeArc $sweep $ex $ey ";
+            }
+            $v = $next;
+        } while ($v !== $polygon->first);
+        $pathD .= 'Z';
+
+        $svg .= "<path d=\"$pathD\" fill=\"none\" stroke=\"black\" stroke-width=\"1.5\"/>\n";
+        $svg .= "</svg>\n";
+
+        // Change extension to .svg
+        $filename = preg_replace('/\.png$/i', '.svg', $filename);
+        file_put_contents($filename, $svg);
+    }
+
+    /**
+     * Validates a template grid by sampling points inside each cell and cross-checking
+     * with isInside(). Logs errors when IN/OUT classifications disagree with point sampling.
+     */
+    public static function validateTemplateGrid(array $grid, array $templateGridXY, Polygon $poly, string $label): void
+    {
+        $errors = [];
+        foreach ($grid as $ix => $column) {
+            /** @var Polygon $cell */
+            foreach ($column as $iy => $cell) {
+                $val = $templateGridXY[$ix][$iy];
+                if ($val === MAYBE) continue; // partial is expected to have mixed results
+
+                // Sample 5 points: center + 4 midpoints of edges
+                $cx = ($cell->x_min + $cell->x_max) / 2;
+                $cy = ($cell->y_min + $cell->y_max) / 2;
+                $samples = [
+                    [$cx, $cy],
+                    [($cell->x_min + $cx) / 2, $cy],
+                    [($cell->x_max + $cx) / 2, $cy],
+                    [$cx, ($cell->y_min + $cy) / 2],
+                    [$cx, ($cell->y_max + $cy) / 2],
+                ];
+
+                foreach ($samples as $s) {
+                    $inside = $poly->isInside(new Vertex($s[0], $s[1]), true);
+                    if ($val === IN && !$inside) {
+                        $errors[] = "  IN cell [$ix][$iy] has point ({$s[0]},{$s[1]}) OUTSIDE polygon";
+                        break;
+                    }
+                    if ($val === OUT && $inside) {
+                        $errors[] = "  OUT cell [$ix][$iy] has point ({$s[0]},{$s[1]}) INSIDE polygon";
+                        break;
+                    }
+                }
+            }
+        }
+        if (!empty($errors)) {
+            echo "\nTEMPLATE VALIDATION ERRORS for $label:\n";
+            foreach ($errors as $e) echo "$e\n";
+            echo "  Total: " . count($errors) . " cell(s) with mismatched classification\n\n";
+        }
+    }
+
+    /**
+     * Formats a reproducible log for fill check anomalies.
+     * Outputs polygon params, angle, and exact coordinates + isInside results
+     * for each anomaly so the ray-casting call can be replicated for debugging.
+     */
+    private static function formatFillCheckAnomalyLog(
+        array $anomalies, $polyIndex, $scale, $gridX, $gridY, $angle
+    ): string {
+        $log = "  --- Fill check anomaly debug data ---\n";
+        $log .= "  Polygon index: $polyIndex | Scale: $scale | Grid: {$gridX}x{$gridY} | Angle: {$angle}°\n";
+        $log .= "  To reproduce: rotate polygon $polyIndex by " . $angle . " degrees, scale by $scale, then call isInside() on the coordinates below.\n\n";
+
+        foreach ($anomalies as $i => $a) {
+            $inside = $a['val'] ? 'true' : 'false';
+            $mid = $a['y_minus_1'] ? 'true' : 'false';
+            $log .= "  Anomaly #$i at ({$a['x']}, {$a['y']}):\n";
+            $log .= "    isInside({$a['x']}, " . ($a['y'] - 2) . ") = {$inside}  (y-2)\n";
+            $log .= "    isInside({$a['x']}, " . ($a['y'] - 1) . ") = {$mid}     (y-1, suspected wrong)\n";
+            $log .= "    isInside({$a['x']}, {$a['y']})   = {$inside}  (y)\n";
+            $log .= "    Same ABA pattern confirmed in column x=" . ($a['prev_x']) . "\n\n";
+        }
+
+        return $log;
     }
 
 
@@ -816,6 +1114,80 @@ class Templates
         directDrawPolyAt(-$cellXRange[0], -$cellYRange[0], $im, $movedPoly, $colors, "blk");
         $isOk = imageGif($im, $imageFilename);
         return array($imageWidth, $imageHeight, $isOk);
+    }
+
+    /**
+     * Generates an SVG version of the template grid (IN/MAYBE/OUT) with polygon overlay.
+     */
+    public static function templateToSVG(array $gridXRange, $gridX, array $gridYRange, $gridY, array $grid, array $templateGridXY, $movedPoly, string $filename): void
+    {
+        $cellXRange = [$gridXRange[0] * $gridX, $gridXRange[1] * $gridX];
+        $cellYRange = [$gridYRange[0] * $gridY, $gridYRange[1] * $gridY];
+        $offsetX = $cellXRange[0];
+        $offsetY = $cellYRange[0];
+        $w = $cellXRange[1] - $cellXRange[0];
+        $h = $cellYRange[1] - $cellYRange[0];
+
+        $colors = [
+            0 => ['fill' => '#787878', 'stroke' => '#000000'],  // OUT: dark gray + black
+            1 => ['fill' => '#f0ad00', 'stroke' => '#e6c800'],  // MAYBE: orange + yellow
+            2 => ['fill' => '#00c000', 'stroke' => '#4466dd'],  // IN: green + blue
+        ];
+
+        $svg = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $svg .= "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"$w\" height=\"$h\" viewBox=\"0 0 $w $h\">\n";
+        $svg .= "<rect width=\"$w\" height=\"$h\" fill=\"white\"/>\n";
+
+        // Draw cells
+        foreach ($grid as $ix => $column) {
+            foreach ($column as $iy => $cell) {
+                $val = $templateGridXY[$ix][$iy];
+                $c = $colors[$val];
+                $cx = $cell->x_min - $offsetX;
+                $cy = $h - ($cell->y_max - $offsetY); // flip Y
+                $cw = $cell->x_max - $cell->x_min;
+                $ch = $cell->y_max - $cell->y_min;
+                $svg .= "<rect x=\"$cx\" y=\"$cy\" width=\"$cw\" height=\"$ch\" fill=\"{$c['fill']}\" stroke=\"{$c['stroke']}\" stroke-width=\"0.5\"/>\n";
+            }
+        }
+
+        // Draw polygon outline
+        $pathD = '';
+        $v = $movedPoly->first;
+        $first = true;
+        do {
+            $next = $v->nextV;
+            $sx = $v->x - $offsetX;
+            $sy = $h - ($v->y - $offsetY);
+            $ex = $next->x - $offsetX;
+            $ey = $h - ($next->y - $offsetY);
+
+            if ($first) {
+                $pathD .= "M $sx $sy ";
+                $first = false;
+            }
+
+            if ($v->d() == 0) {
+                $pathD .= "L $ex $ey ";
+            } else {
+                $r = Polygon::dist($v->X(), $v->Y(), $v->Xc(), $v->Yc());
+                $sweep = ($v->d() == -1) ? 1 : 0;
+                $arcAngle = abs(rad2deg(
+                    Polygon::angle($v->Xc(), $v->Yc(), $next->X(), $next->Y())
+                    - Polygon::angle($v->Xc(), $v->Yc(), $v->X(), $v->Y())
+                ));
+                if ($arcAngle > 180) $arcAngle = 360 - $arcAngle;
+                $largeArc = ($arcAngle > 180) ? 1 : 0;
+                $pathD .= "A $r $r 0 $largeArc $sweep $ex $ey ";
+            }
+            $v = $next;
+        } while ($v !== $movedPoly->first);
+        $pathD .= 'Z';
+
+        $svg .= "<path d=\"$pathD\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n";
+        $svg .= "</svg>\n";
+
+        file_put_contents($filename, $svg);
     }
     #endregion
 
