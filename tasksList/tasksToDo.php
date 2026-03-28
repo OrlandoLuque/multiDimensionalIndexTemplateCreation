@@ -13,6 +13,7 @@ $defaultConfig = [
     'gridVariants'       => ['horizontal' => true, 'vertical' => true],
     'angleStep'          => 0.5,
     'fillCheckPolicy'    => 'stop',
+    'fillCheckDebugImages' => false,
     'redisKeys'          => [
         'lock'          => 'lock',
         'templateList'  => 'templateList',
@@ -92,6 +93,7 @@ $grids = Templates::getGridsFromSupportedSizes(
 );
 
 putenv('MDIC_FILL_CHECK=' . ($config['fillCheckPolicy'] ?? 'stop'));
+putenv('MDIC_FILL_CHECK_DEBUG=' . (($config['fillCheckDebugImages'] ?? false) ? '1' : '0'));
 
 $rk = $config['redisKeys'];
 $taskRedisKey          = $rk['lock'];

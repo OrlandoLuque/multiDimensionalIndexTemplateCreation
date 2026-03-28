@@ -175,7 +175,17 @@ class Templates
                         //$rotatedPoly2 = getRotatedPolygonCopy($scalatedPoly2, angleToRadians($angle)); /////////////////
                         if (!self::checkNoLinesInPolygonFilling($rotatedPoly)) {
                             $fillCheckMode = getenv('MDIC_FILL_CHECK') ?: 'stop';
+                            $fillCheckDebug = getenv('MDIC_FILL_CHECK_DEBUG') === '1';
                             $msg = "$indexPoly-s$polygonScale-x$gridX,y$gridY-a$angle";
+
+                            if ($fillCheckDebug) {
+                                $debugDir = (getenv('MDIC_OUTPUT_DIR') ?: '.') . '/fill_check_debug';
+                                @mkdir($debugDir, 0755, true);
+                                $debugFile = "$debugDir/$msg.gif";
+                                self::polyFillTestToImage($rotatedPoly, "$debugDir/{$msg}_outline.gif", $debugFile);
+                                echo "\n  Debug image: $debugFile\n";
+                            }
+
                             if ($fillCheckMode === 'stop') {
                                 echo "\nERROR: fill check anomaly for $msg\n";
                                 echo "  Configure fillCheckPolicy in config.json: \"stop\" (default), \"skip\", or \"ignore\"\n";

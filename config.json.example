@@ -27,6 +27,7 @@
     "angleStep": 0.5,
 
     "fillCheckPolicy": "stop",
+    "fillCheckDebugImages": false,
 
     "redisKeys": {
         "lock":          "lock",
