@@ -144,6 +144,7 @@ impl Polygon {
         self.recalc_bounds();
     }
 
+
     /// Bounding rectangle as a Polygon
     pub fn brect(&self) -> Polygon {
         let mut p = Polygon::new();

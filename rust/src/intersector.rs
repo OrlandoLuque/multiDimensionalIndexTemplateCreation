@@ -156,7 +156,7 @@ pub fn line_circle_intersection(l1: &Vertex, l2: &Vertex, c: &Vertex, radius: f6
     }
 }
 
-/// Line-arc intersection
+/// Line-arc intersection (uses cached radius and angles from Segment)
 pub fn line_arc_intersection(
     l1: &Vertex, l2: &Vertex,
     a1: &Vertex, a2: &Vertex,
@@ -189,6 +189,7 @@ pub fn line_arc_intersection(
             int = a2.clone();
         }
         if int.is_inside(l1, l2) {
+            // Only this angle() call can't be cached (intersection point varies)
             let int_angle = angle(xc, yc, int.x, int.y);
             let in_arc = if arc_angle2 >= arc_angle1 {
                 int_angle >= arc_angle1 && int_angle <= arc_angle2
