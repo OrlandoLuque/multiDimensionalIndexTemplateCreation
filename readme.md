@@ -367,11 +367,27 @@ Results verified: 100% hash match between PHP and Rust for box (2,816 templates 
 | Template store | Redis (network roundtrip per op) | In-memory HashMap (sub-microsecond) |
 | Polygon copy | N heap allocations per copy | Single memcpy |
 
-<h3>Running a comparison test</h3>
+<h3>Task subdivision</h3>
+
+Tasks are automatically subdivided by angle ranges to balance workload across threads. The target is ~500K combinations per subtask.
+
+Without subdivision, the largest task (grid 512) has **1024x** more work than the smallest (grid 16). After subdivision:
+
+| Grid | Positions | Subtasks | Per subtask | Ratio |
+|------|-----------|----------|-------------|-------|
+| 16 | 256 | 1 | 184K | 1x |
+| 32 | 1,024 | 2 | 500K | 2.7x |
+| 64 | 4,096 | 6 | 500K | 2.7x |
+| 128 | 16,384 | 24 | 492K | 2.7x |
+| 256 | 65,536 | 103 | 459K | 2.5x |
+| 512 | 262,144 | 720 | 262K | 1.4x |
+
+Max/min ratio drops from **1024x to 2.7x**.
+
+<h3>Running</h3>
 
 ```bash
 cd rust
-cargo run --release -- --compare
+cargo run --release               # full processing with rayon
+cargo run --release -- --compare   # benchmark comparison
 ```
-
-This runs the full benchmark and reports template counts and timing for each polygon.
