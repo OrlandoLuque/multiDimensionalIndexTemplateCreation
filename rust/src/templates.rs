@@ -61,13 +61,60 @@ impl TemplateStore {
     }
 }
 
-/// Classify each grid cell against the polygon
+/// Lightweight cell: just 4 coordinates, no Polygon object overhead
+#[derive(Clone, Copy)]
+pub struct Cell {
+    pub x_min: f64,
+    pub y_min: f64,
+    pub x_max: f64,
+    pub y_max: f64,
+}
+
+/// Classify each grid cell against the polygon using lightweight cells
+pub fn get_template_grid_fast(
+    sx: i64, sy: i64, ex: i64, ey: i64,
+    grid_x: i64, grid_y: i64,
+    poly: &Polygon,
+) -> Matrix {
+    let dx = (ex - sx) as usize;
+    let dy = (ey - sy) as usize;
+    let mut r: Matrix = vec![vec![OUT; dy]; dx];
+
+    for x in 0..dx {
+        let cx_min = (sx + x as i64) as f64 * grid_x as f64;
+        let cx_max = (sx + x as i64 + 1) as f64 * grid_x as f64;
+        for y in 0..dy {
+            let cy_min = (sy + y as i64) as f64 * grid_y as f64;
+            let cy_max = (sy + y as i64 + 1) as f64 * grid_y as f64;
+
+            // Bbox rejection
+            if cx_min > poly.x_max || cx_max < poly.x_min
+                || cy_min > poly.y_max || cy_max < poly.y_min
+            {
+                continue; // already OUT
+            }
+
+            // Build cell polygon only when needed
+            let cell = polygon::create_square(cx_min, cy_min, cx_max, cy_max);
+
+            r[x][y] = if poly.completely_contains(&cell) {
+                IN
+            } else if cell.completely_contains(poly) || poly.is_poly_intersect(&cell) {
+                MAYBE
+            } else {
+                OUT
+            };
+        }
+    }
+    r
+}
+
+/// Original version using pre-built grid (kept for compatibility)
 pub fn get_template_grid(grid: &[Vec<Polygon>], poly: &Polygon) -> Matrix {
     let mut r: Matrix = Vec::new();
     for (ix, column) in grid.iter().enumerate() {
         r.push(Vec::new());
         for cell in column.iter() {
-            // Fast bounding box rejection
             let val = if cell.x_min > poly.x_max || cell.x_max < poly.x_min
                 || cell.y_min > poly.y_max || cell.y_max < poly.y_min
             {
@@ -85,7 +132,7 @@ pub fn get_template_grid(grid: &[Vec<Polygon>], poly: &Polygon) -> Matrix {
     r
 }
 
-/// Generate the grid of square cells
+/// Generate the grid of square cells (original, kept for compatibility)
 pub fn get_grid(sx: i64, sy: i64, ex: i64, ey: i64, grid_x: i64, grid_y: i64) -> Vec<Vec<Polygon>> {
     let dx = ex - sx;
     let dy = ey - sy;

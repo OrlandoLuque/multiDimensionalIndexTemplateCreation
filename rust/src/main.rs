@@ -88,19 +88,18 @@ fn main() {
                     let mut moved = rotated.clone();
                     moved.move_by(x as f64, y as f64);
 
-                    let grid_x_range = [
+                    let gxr = [
                         (moved.x_min / grid_x as f64).floor() as i64,
                         (moved.x_max / grid_x as f64).ceil() as i64,
                     ];
-                    let grid_y_range = [
+                    let gyr = [
                         (moved.y_min / grid_y as f64).floor() as i64,
                         (moved.y_max / grid_y as f64).ceil() as i64,
                     ];
 
-                    let grid = get_grid(grid_x_range[0], grid_y_range[0],
-                                       grid_x_range[1], grid_y_range[1],
-                                       grid_x, grid_y);
-                    let template_grid = get_template_grid(&grid, &moved);
+                    let template_grid = templates::get_template_grid_fast(
+                        gxr[0], gyr[0], gxr[1], gyr[1], grid_x, grid_y, &moved,
+                    );
 
                     let gen_string = format!("{}-s{}-x{},y{}-a{}-dx{},dy{}",
                         task.poly_name, task.scale as i64, grid_x, grid_y, angle, x, y);

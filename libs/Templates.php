@@ -230,18 +230,22 @@ class Templates
                                 $box = $movedPoly->bRect();
                                 $boxVertex = [0 => ['x' => $box->first->x, 'y' => $box->first->y]
                                     , 1 => ['x' => $box->first->nextV->nextV->x, 'y' => $box->first->nextV->nextV->y]];
-                                $template = [];
                                 $gridXRange = [floor($boxVertex[0]['x'] / $gridX), ceil($boxVertex[1]['x'] / $gridX)];
                                 $gridYRange = [floor($boxVertex[0]['y'] / $gridY), ceil($boxVertex[1]['y'] / $gridY)];
-                                $grid = Templates::getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
-                                /*list($templateGridXY, $templateHashYX)*/
 
-                                $templateGridXY = Templates::getTemplateGrid($grid, $movedPoly);
+                                $templateGridXY = Templates::getTemplateGridFast(
+                                    $gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1],
+                                    $gridX, $gridY, $movedPoly
+                                );
+                                // Keep $grid for debug images (generated lazily only on anomaly)
+                                $grid = null;
 
                                 // Generate debug image on first position of an anomalous angle
                                 if ($fillCheckAnomaly && $fillCheckDebug && $x === 0 && $y === 0) {
                                     $debugDir = (getenv('MDIC_OUTPUT_DIR') ?: '.') . '/fill_check_debug';
                                     @mkdir($debugDir, 0755, true);
+                                    // Generate grid lazily for debug images
+                                    $grid = Templates::getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
                                     // Template images (IN/MAYBE/OUT grid)
                                     $debugTemplatePNG = "$debugDir/$fillCheckMsg.png";
                                     $debugTemplateSVG = "$debugDir/$fillCheckMsg.svg";
@@ -310,6 +314,9 @@ class Templates
 
                                 // Optional template validation: cross-check IN/OUT cells with isInside()
                                 if (getenv('MDIC_TEMPLATE_VALIDATION') === '1') {
+                                    if ($grid === null) {
+                                        $grid = Templates::getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
+                                    }
                                     self::validateTemplateGrid($grid, $templateGridXY, $movedPoly, $generationSetString);
                                 }
 
@@ -334,6 +341,9 @@ class Templates
                                 echo " {$task->taskKey} $templateCount plantillas | $calculatedTemplates / $totalCombinations ({$pct}%) ";
                                 flush();
                                 if ($printNextAndDie) {
+                                    if ($grid === null) {
+                                        $grid = Templates::getGrid($gridXRange[0], $gridYRange[0], $gridXRange[1], $gridYRange[1], $gridX, $gridY);
+                                    }
                                     $outputDir = getenv('MDIC_OUTPUT_DIR') ?: '.';
                                     $imageFilename = "$outputDir/examples/generated/$generationSetString.gif";
 
@@ -374,6 +384,47 @@ class Templates
      * @param polygon $poly
      * @return array
      */
+    /**
+     * Combined grid generation + template classification.
+     * Creates cell polygons only when they pass the bounding box check.
+     */
+    public static function getTemplateGridFast($sx, $sy, $ex, $ey, $gridX, $gridY, $poly)
+    {
+        $r = [];
+        $bbox = $poly->bRect();
+        $pxMin = $bbox->x_min; $pxMax = $bbox->x_max;
+        $pyMin = $bbox->y_min; $pyMax = $bbox->y_max;
+        $dx = $ex - $sx;
+        $dy = $ey - $sy;
+
+        for ($x = 0; $x < $dx; $x++) {
+            $sxCell = ($sx + $x) * $gridX;
+            $exCell = ($sx + $x + 1) * $gridX;
+            for ($y = 0; $y < $dy; $y++) {
+                $syCell = ($sy + $y) * $gridY;
+                $eyCell = ($sy + $y + 1) * $gridY;
+
+                // Bbox rejection without creating a Polygon
+                if ($sxCell > $pxMax || $exCell < $pxMin
+                    || $syCell > $pyMax || $eyCell < $pyMin) {
+                    $r[$x][$y] = OUT;
+                } else {
+                    // Only create cell Polygon when needed
+                    $cell = self::getSquarePolyFromXYXY($sxCell, $syCell, $exCell, $eyCell);
+                    if ($poly->completelyContains($cell)) {
+                        $r[$x][$y] = IN;
+                    } elseif ($cell->completelyContains($poly)
+                        || $poly->isPolyIntersect($cell)) {
+                        $r[$x][$y] = MAYBE;
+                    } else {
+                        $r[$x][$y] = OUT;
+                    }
+                }
+            }
+        }
+        return $r;
+    }
+
     public static function getTemplateGrid($grid, $poly)
     {
         $r = [];

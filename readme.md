@@ -344,10 +344,10 @@ Benchmark: 3 polygons (drop, box, circle), scale 128, grid 16x16, 720 angles (0.
 
 | Polygon | PHP | Rust | Speedup |
 |---------|-----|------|---------|
-| drop (1 arc + 2 lines) | 544s | 8s | **70x** |
-| box (4 lines) | 31,955s (8.9h) | 15s | **2,130x** |
-| circle (2 arcs) | 2,709s (45min) | 112s | **24x** |
-| **Total** | **35,208s (9.8h)** | **135s (2.2min)** | **261x** |
+| drop (1 arc + 2 lines) | 544s | 6s | **91x** |
+| box (4 lines) | 31,955s (8.9h) | 12s | **2,663x** |
+| circle (2 arcs) | 2,709s (45min) | 96s | **28x** |
+| **Total** | **35,208s (9.8h)** | **114s (1.9min)** | **309x** |
 
 Results verified: 100% hash match between PHP and Rust for box (2,816 templates tested across 11 angles x 256 positions). Drop and circle also match within floating-point precision.
 

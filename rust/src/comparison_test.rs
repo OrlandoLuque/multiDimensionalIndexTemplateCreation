@@ -1,5 +1,5 @@
 use crate::polygon::*;
-use crate::templates::*;
+use crate::templates::{self, *};
 use crate::matrix;
 use std::collections::HashMap;
 use std::time::Instant;
@@ -35,8 +35,10 @@ pub fn run_comparison() {
                                (moved.x_max / grid_x as f64).ceil() as i64];
                     let gyr = [(moved.y_min / grid_y as f64).floor() as i64,
                                (moved.y_max / grid_y as f64).ceil() as i64];
-                    let grid = get_grid(gxr[0], gyr[0], gxr[1], gyr[1], grid_x, grid_y);
-                    let tpl = get_template_grid(&grid, &moved);
+                    // Point 4: lightweight cells (no Polygon objects for grid)
+                    let tpl = templates::get_template_grid_fast(
+                        gxr[0], gyr[0], gxr[1], gyr[1], grid_x, grid_y, &moved,
+                    );
                     let transforms = matrix::all_transforms(&tpl);
                     let hashes: Vec<Vec<u8>> = transforms.iter().map(|m| matrix::bin_code(m)).collect();
                     let mut found = false;
