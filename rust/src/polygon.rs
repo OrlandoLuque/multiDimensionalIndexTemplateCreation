@@ -312,6 +312,37 @@ impl Polygon {
         true
     }
 
+    /// Check that no edges of self cross edges of other (assumes vertices already checked).
+    /// Returns true if no problematic crossings found.
+    pub fn no_edge_crossing(&self, other: &Polygon) -> bool {
+        let n_self = self.vertices.len();
+        let n_other = other.vertices.len();
+        for i in 0..n_self {
+            let si = self.next_idx(i);
+            for j in 0..n_other {
+                let oj = other.next_idx(j);
+                let ints = self.edge_intersection(i, si, other, j, oj);
+                if ints.len() == 1 {
+                    let int = &ints[0];
+                    let sv = &self.vertices[i];
+                    let sn = &self.vertices[si];
+                    let cv = &other.vertices[j];
+                    let cn = &other.vertices[oj];
+                    if sv.seg.d == 0 && cv.seg.d == 0
+                        && !(int.equals(sv) || int.equals(sn) || int.equals(cv) || int.equals(cn))
+                    {
+                        return false;
+                    }
+                } else if ints.len() == 2 {
+                    if self.vertices[i].seg.d != 0 || other.vertices[j].seg.d != 0 {
+                        return false;
+                    }
+                }
+            }
+        }
+        true
+    }
+
     /// Check if this polygon intersects another polygon
     pub fn is_poly_intersect(&self, other: &Polygon) -> bool {
         // Fast bounding box rejection
