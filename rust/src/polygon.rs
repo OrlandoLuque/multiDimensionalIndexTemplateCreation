@@ -271,6 +271,11 @@ impl Polygon {
 
     /// Check if this polygon completely contains another polygon
     pub fn completely_contains(&self, other: &Polygon) -> bool {
+        // Fast bounding box rejection (bounds include arc extents)
+        if other.x_min < self.x_min || other.x_max > self.x_max
+            || other.y_min < self.y_min || other.y_max > self.y_max {
+            return false;
+        }
         // All vertices of other must be inside this
         for v in &other.vertices {
             if !self.is_inside(v.x, v.y) {
