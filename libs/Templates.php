@@ -378,8 +378,10 @@ class Templates
     {
         $r = [];
         // Cache polygon bounding box for fast rejection
-        $pxMin = $poly->x_min; $pxMax = $poly->x_max;
-        $pyMin = $poly->y_min; $pyMax = $poly->y_max;
+        // Note: poly->move() does NOT update bounds, so recalculate from bRect
+        $bbox = $poly->bRect();
+        $pxMin = $bbox->x_min; $pxMax = $bbox->x_max;
+        $pyMin = $bbox->y_min; $pyMax = $bbox->y_max;
 
         foreach ($grid as $ix => $column) {
             /** @var polygon $cell */
