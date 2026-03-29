@@ -10,3 +10,4 @@ appendonly.aof
 dump.rdb
 .idea/
 .claude/
+rust/target/
