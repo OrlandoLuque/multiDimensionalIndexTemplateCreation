@@ -1,0 +1,17 @@
+[package]
+name = "mdic-rust"
+version = "0.1.0"
+edition = "2024"
+authors = ["Orlando Jose Luque Moraira"]
+description = "Polygons vs grids intersection calculator - Rust port"
+
+[dependencies]
+rayon = "1.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+redis = "0.29"
+dotenv = "0.15"
+
+[profile.release]
+opt-level = 3
+lto = true
