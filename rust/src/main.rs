@@ -4,18 +4,19 @@ mod polygon;
 mod matrix;
 mod templates;
 mod comparison_test;
+mod task;
 
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 use rayon::prelude::*;
 
-use polygon::{Polygon, create_drop, create_box, create_circle, scaled_copy, rotated_copy};
-use templates::{TemplateStore, get_template_grid, get_grid, angle_to_radians, get_angles};
+use polygon::{create_drop, create_box, create_circle, scaled_copy, rotated_copy};
+use templates::{TemplateStore, angle_to_radians, get_angles};
 
 /// Author: Orlando Jose Luque Moraira
 
 fn main() {
-    // Run comparison test if --compare flag
     if std::env::args().any(|a| a == "--compare") {
         comparison_test::run_comparison();
         return;
@@ -27,8 +28,8 @@ fn main() {
     println!(" Author: Orlando Jose Luque Moraira");
     println!("=============================================================================\n");
 
-    // Configuration (matching PHP defaults for comparison)
-    let polygons: Vec<(&str, Polygon)> = vec![
+    // Configuration
+    let polygons = vec![
         ("drop", create_drop(0.2, 0.8)),
         ("box", create_box(1.0)),
         ("circle", create_circle(1.0)),
@@ -37,51 +38,35 @@ fn main() {
     let grid_sizes: Vec<i64> = vec![16];
     let angle_step = 0.5;
     let angles = get_angles(angle_step);
+    let max_combinations_per_task: u64 = 500_000;
+
+    // Create balanced subtasks
+    let subtasks = task::create_subtasks(
+        &polygons, &scales, &grid_sizes, angles.len(), max_combinations_per_task,
+    );
 
     let store = Arc::new(TemplateStore::new());
+    let completed = Arc::new(AtomicUsize::new(0));
+    let total_tasks = subtasks.len();
 
     println!("Config: {} polygons, {} scales, {} grids, {} angles (step {}deg)",
         polygons.len(), scales.len(), grid_sizes.len(), angles.len(), angle_step);
-
-    // Build task list
-    struct Task {
-        poly_name: String,
-        poly: Polygon,
-        scale: f64,
-        grid_size: i64,
-    }
-
-    let mut tasks: Vec<Task> = Vec::new();
-    for (name, poly) in &polygons {
-        for &scale in &scales {
-            for &grid_size in &grid_sizes {
-                tasks.push(Task {
-                    poly_name: name.to_string(),
-                    poly: poly.clone(),
-                    scale,
-                    grid_size,
-                });
-            }
-        }
-    }
-
-    let total_tasks = tasks.len();
-    println!("Tasks: {}\n", total_tasks);
+    task::print_summary(&subtasks);
+    println!("Threads: {}\n", rayon::current_num_threads());
 
     let global_start = Instant::now();
 
-    // Process tasks in parallel with rayon
-    tasks.par_iter().enumerate().for_each(|(task_idx, task)| {
+    // Process all subtasks in parallel with rayon work-stealing
+    subtasks.par_iter().for_each(|subtask| {
         let task_start = Instant::now();
-        let scaled = scaled_copy(&task.poly, task.scale, task.scale);
-        let grid_x = task.grid_size;
-        let grid_y = task.grid_size;
+        let scaled = scaled_copy(&subtask.poly, subtask.scale, subtask.scale);
+        let grid_x = subtask.grid_size;
+        let grid_y = subtask.grid_size;
+        let mut task_new = 0u32;
 
-        let mut task_combinations = 0u64;
-        let mut task_templates = 0u32;
-
-        for angle in &angles {
-            let rotated = rotated_copy(&scaled, angle_to_radians(*angle));
+        for angle_idx in subtask.angle_start..subtask.angle_end {
+            let angle = angles[angle_idx];
+            let rotated = rotated_copy(&scaled, angle_to_radians(angle));
 
             for x in 0..grid_x {
                 for y in 0..grid_y {
@@ -102,19 +87,23 @@ fn main() {
                     );
 
                     let gen_string = format!("{}-s{}-x{},y{}-a{}-dx{},dy{}",
-                        task.poly_name, task.scale as i64, grid_x, grid_y, angle, x, y);
+                        subtask.poly_name, subtask.scale as i64,
+                        grid_x, grid_y, angle, x, y);
 
                     let (_id, _op, is_new) = store.store_dedup(&template_grid, &gen_string);
-                    if is_new { task_templates += 1; }
-                    task_combinations += 1;
+                    if is_new { task_new += 1; }
                 }
             }
         }
 
+        let done = completed.fetch_add(1, Ordering::Relaxed) + 1;
         let elapsed = task_start.elapsed();
-        println!("  Task {}/{}: {} s{} {}x{} | {} combinations, {} new templates | {:.2}s",
-            task_idx + 1, total_tasks, task.poly_name, task.scale as i64,
-            grid_x, grid_y, task_combinations, task_templates, elapsed.as_secs_f64());
+        println!("  [{}/{}] {} s{} {}x{} a[{}..{}] | {} new | {:.2}s",
+            done, total_tasks,
+            subtask.poly_name, subtask.scale as i64,
+            grid_x, grid_y,
+            subtask.angle_start, subtask.angle_end,
+            task_new, elapsed.as_secs_f64());
     });
 
     let total_elapsed = global_start.elapsed();
