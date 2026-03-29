@@ -323,3 +323,55 @@ php runTask.php
 ```
 
 Each instance tries to lock each task via Redis. If a task is already locked by another instance, it skips it and moves to the next. There is no central coordinator — Redis locks handle all coordination.
+
+
+<h2>Rust port</h2>
+
+A Rust implementation is available in the `rust/` directory. It produces identical results to the PHP version and is significantly faster.
+
+<h3>Building</h3>
+
+```bash
+cd rust
+cargo build --release
+```
+
+The binary is at `rust/target/release/mdic-rust.exe`.
+
+<h3>Performance comparison</h3>
+
+Benchmark: 3 polygons (drop, box, circle), scale 128, grid 16x16, 720 angles (0.5 step), all 256 positions per angle. Total: 552,960 combinations.
+
+| Polygon | PHP | Rust | Speedup |
+|---------|-----|------|---------|
+| drop (1 arc + 2 lines) | 544s | 8s | **70x** |
+| box (4 lines) | 31,955s (8.9h) | 15s | **2,130x** |
+| circle (2 arcs) | 2,709s (45min) | 112s | **24x** |
+| **Total** | **35,208s (9.8h)** | **135s (2.2min)** | **261x** |
+
+Results verified: 100% hash match between PHP and Rust for box (2,816 templates tested across 11 angles x 256 positions). Drop and circle also match within floating-point precision.
+
+<h4>Why the speedup varies by polygon</h4>
+
+* **box (2,130x)**: Line-only intersections are cheap arithmetic (multiply, divide). PHP's interpreter overhead per operation dominates. Rust compiles to direct CPU instructions with zero overhead.
+* **drop (70x)**: Mix of line and arc operations. Arc intersections involve trigonometry (sin, cos, acos, sqrt) which are already fast native calls even in PHP, so the interpreter overhead is proportionally smaller.
+* **circle (24x)**: All edges are arcs (expensive per check), AND the bounding box covers 256 grid cells (16x16) vs 32 for drop (4x8). The cost is dominated by the math itself, where PHP and Rust use the same underlying hardware instructions.
+
+<h4>Architecture differences</h4>
+
+| Aspect | PHP | Rust |
+|--------|-----|------|
+| Parallelism | Multiple processes + Redis locks | rayon work-stealing threads |
+| Memory per vertex | ~800 bytes (PHP object) | ~56 bytes (struct) |
+| Polygon storage | Linked list (heap scattered) | Vec (contiguous, cache-friendly) |
+| Template store | Redis (network roundtrip per op) | In-memory HashMap (sub-microsecond) |
+| Polygon copy | N heap allocations per copy | Single memcpy |
+
+<h3>Running a comparison test</h3>
+
+```bash
+cd rust
+cargo run --release -- --compare
+```
+
+This runs the full benchmark and reports template counts and timing for each polygon.
