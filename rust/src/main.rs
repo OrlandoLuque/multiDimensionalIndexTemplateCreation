@@ -5,6 +5,7 @@ mod matrix;
 mod templates;
 mod comparison_test;
 mod task;
+mod redis_store;
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -17,10 +18,18 @@ use templates::{TemplateStore, angle_to_radians, get_angles};
 /// Author: Orlando Jose Luque Moraira
 
 fn main() {
-    if std::env::args().any(|a| a == "--compare") {
+    let args: Vec<String> = std::env::args().collect();
+
+    if args.iter().any(|a| a == "--compare") {
         comparison_test::run_comparison();
         return;
     }
+
+    let use_redis = args.iter().any(|a| a == "--redis");
+    let redis_host = args.iter().position(|a| a == "--redis-host")
+        .and_then(|i| args.get(i + 1)).map(|s| s.as_str()).unwrap_or("127.0.0.1");
+    let redis_port: u16 = args.iter().position(|a| a == "--redis-port")
+        .and_then(|i| args.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(6379);
 
     println!("=============================================================================");
     println!(" multiDimensionalIndexTemplateCreation (Rust)");
@@ -38,77 +47,141 @@ fn main() {
     let grid_sizes: Vec<i64> = vec![16];
     let angle_step = 0.5;
     let angles = get_angles(angle_step);
-    let max_combinations_per_task: u64 = 500_000;
+    let max_per_task: u64 = 500_000;
 
-    // Create balanced subtasks
     let subtasks = task::create_subtasks(
-        &polygons, &scales, &grid_sizes, angles.len(), max_combinations_per_task,
+        &polygons, &scales, &grid_sizes, angles.len(), max_per_task,
     );
-
-    let store = Arc::new(TemplateStore::new());
-    let completed = Arc::new(AtomicUsize::new(0));
     let total_tasks = subtasks.len();
 
     println!("Config: {} polygons, {} scales, {} grids, {} angles (step {}deg)",
         polygons.len(), scales.len(), grid_sizes.len(), angles.len(), angle_step);
     task::print_summary(&subtasks);
-    println!("Threads: {}\n", rayon::current_num_threads());
+    println!("Threads: {} | Mode: {}\n",
+        rayon::current_num_threads(),
+        if use_redis { "Redis (multi-process)" } else { "In-memory (single process)" });
 
+    if use_redis {
+        run_with_redis(&subtasks, &angles, redis_host, redis_port, total_tasks);
+    } else {
+        run_in_memory(&subtasks, &angles, total_tasks);
+    }
+}
+
+fn run_in_memory(subtasks: &[task::SubTask], angles: &[f64], total_tasks: usize) {
+    let store = Arc::new(TemplateStore::new());
+    let completed = Arc::new(AtomicUsize::new(0));
     let global_start = Instant::now();
 
-    // Process all subtasks in parallel with rayon work-stealing
-    subtasks.par_iter().for_each(|subtask| {
-        let task_start = Instant::now();
-        let scaled = scaled_copy(&subtask.poly, subtask.scale, subtask.scale);
-        let grid_x = subtask.grid_size;
-        let grid_y = subtask.grid_size;
-        let mut task_new = 0u32;
+    subtasks.par_iter().for_each(|st| {
+        process_subtask(st, angles, Some(&store), None, &completed, total_tasks);
+    });
 
-        for angle_idx in subtask.angle_start..subtask.angle_end {
-            let angle = angles[angle_idx];
-            let rotated = rotated_copy(&scaled, angle_to_radians(angle));
+    println!("\n=== COMPLETE ===");
+    println!("Total time: {:.2}s", global_start.elapsed().as_secs_f64());
+    println!("Unique templates: {}", store.template_count());
+    println!("Total combinations: {}", store.generation_count());
+}
 
-            for x in 0..grid_x {
-                for y in 0..grid_y {
-                    let mut moved = rotated.clone();
-                    moved.move_by(x as f64, y as f64);
+fn run_with_redis(subtasks: &[task::SubTask], angles: &[f64],
+                  host: &str, port: u16, total_tasks: usize) {
+    let redis = match redis_store::RedisStore::connect(host, port) {
+        Ok(r) => Arc::new(r),
+        Err(e) => { eprintln!("ERROR: {}", e); return; }
+    };
+    println!("Connected to Redis at {}:{}", host, port);
 
-                    let gxr = [
-                        (moved.x_min / grid_x as f64).floor() as i64,
-                        (moved.x_max / grid_x as f64).ceil() as i64,
-                    ];
-                    let gyr = [
-                        (moved.y_min / grid_y as f64).floor() as i64,
-                        (moved.y_max / grid_y as f64).ceil() as i64,
-                    ];
+    let completed = Arc::new(AtomicUsize::new(0));
+    let global_start = Instant::now();
 
-                    let template_grid = templates::get_template_grid_fast(
-                        gxr[0], gyr[0], gxr[1], gyr[1], grid_x, grid_y, &moved,
+    // Each thread tries to lock tasks via Redis
+    subtasks.par_iter().for_each(|st| {
+        let task_key = format!("T{}-lock", st.id + 1);
+
+        if !redis.try_lock_task(&task_key) {
+            return; // Another process has this task
+        }
+
+        process_subtask(st, angles, None, Some(&redis), &completed, total_tasks);
+        redis.complete_task(&task_key);
+    });
+
+    let count = redis.get_template_count("templateCount");
+    println!("\n=== COMPLETE ===");
+    println!("Total time: {:.2}s", global_start.elapsed().as_secs_f64());
+    println!("Templates in Redis: {}", count);
+}
+
+fn process_subtask(
+    st: &task::SubTask,
+    angles: &[f64],
+    mem_store: Option<&Arc<TemplateStore>>,
+    redis: Option<&Arc<redis_store::RedisStore>>,
+    completed: &Arc<AtomicUsize>,
+    total_tasks: usize,
+) {
+    let task_start = Instant::now();
+    let scaled = scaled_copy(&st.poly, st.scale, st.scale);
+    let gx = st.grid_size;
+    let gy = st.grid_size;
+    let mut new_count = 0u32;
+    let mut iteration = 0u64;
+
+    for angle_idx in st.angle_start..st.angle_end {
+        let angle = angles[angle_idx];
+        let rotated = rotated_copy(&scaled, angle_to_radians(angle));
+
+        for x in 0..gx {
+            for y in 0..gy {
+                let mut moved = rotated.clone();
+                moved.move_by(x as f64, y as f64);
+
+                let gxr = [
+                    (moved.x_min / gx as f64).floor() as i64,
+                    (moved.x_max / gx as f64).ceil() as i64,
+                ];
+                let gyr = [
+                    (moved.y_min / gy as f64).floor() as i64,
+                    (moved.y_max / gy as f64).ceil() as i64,
+                ];
+
+                let tpl = templates::get_template_grid_fast(
+                    gxr[0], gyr[0], gxr[1], gyr[1], gx, gy, &moved,
+                );
+
+                let gen_string = format!("{}-s{}-x{},y{}-a{}-dx{},dy{}",
+                    st.poly_name, st.scale as i64, gx, gy, angle, x, y);
+
+                if let Some(store) = mem_store {
+                    let (_, _, is_new) = store.store_dedup(&tpl, &gen_string);
+                    if is_new { new_count += 1; }
+                }
+
+                if let Some(redis) = redis {
+                    let transforms = matrix::all_transforms(&tpl);
+                    let hashes: Vec<Vec<u8>> = transforms.iter()
+                        .map(|m| matrix::bin_code(m)).collect();
+                    let (_, is_new) = redis.store_template(
+                        &hashes, &gen_string,
+                        "templateCount", "templateList", "generatedSet",
                     );
+                    if is_new { new_count += 1; }
 
-                    let gen_string = format!("{}-s{}-x{},y{}-a{}-dx{},dy{}",
-                        subtask.poly_name, subtask.scale as i64,
-                        grid_x, grid_y, angle, x, y);
-
-                    let (_id, _op, is_new) = store.store_dedup(&template_grid, &gen_string);
-                    if is_new { task_new += 1; }
+                    // Keep lock alive periodically
+                    iteration += 1;
+                    if iteration % 1000 == 0 {
+                        redis.keep_lock(&format!("T{}-lock", st.id + 1));
+                    }
                 }
             }
         }
+    }
 
-        let done = completed.fetch_add(1, Ordering::Relaxed) + 1;
-        let elapsed = task_start.elapsed();
-        println!("  [{}/{}] {} s{} {}x{} a[{}..{}] | {} new | {:.2}s",
-            done, total_tasks,
-            subtask.poly_name, subtask.scale as i64,
-            grid_x, grid_y,
-            subtask.angle_start, subtask.angle_end,
-            task_new, elapsed.as_secs_f64());
-    });
-
-    let total_elapsed = global_start.elapsed();
-    println!("\n=== COMPLETE ===");
-    println!("Total time: {:.2}s", total_elapsed.as_secs_f64());
-    println!("Unique templates: {}", store.template_count());
-    println!("Total combinations: {}", store.generation_count());
+    let done = completed.fetch_add(1, Ordering::Relaxed) + 1;
+    let elapsed = task_start.elapsed();
+    println!("  [{}/{}] {} s{} {}x{} a[{}..{}] | {} new | {:.2}s",
+        done, total_tasks,
+        st.poly_name, st.scale as i64,
+        gx, gy, st.angle_start, st.angle_end,
+        new_count, elapsed.as_secs_f64());
 }
