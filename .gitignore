@@ -11,3 +11,8 @@ dump.rdb
 .idea/
 .claude/
 rust/target/
+/dist_full/
+/fill_check_debug/
+*.log
+java/out/
+*.class
