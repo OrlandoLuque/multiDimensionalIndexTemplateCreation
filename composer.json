@@ -1,4 +1,13 @@
 {
+    "name": "luquemoraira/multidimensional-index-template-creation",
+    "description": "Polygons vs grids intersection calculator batch process — precomputes culling templates for evolved quadtree/octree algorithms.",
+    "license": ["MIT", "Apache-2.0"],
+    "authors": [
+        {
+            "name": "Orlando Jose Luque Moraira",
+            "email": "orlando.luque@gmail.com"
+        }
+    ],
     "require": {
         "vlucas/phpdotenv": "^5.4",
         "fakerphp/faker": "^1.19"
