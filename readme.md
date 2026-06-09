@@ -391,3 +391,10 @@ cd rust
 cargo run --release               # full processing with rayon
 cargo run --release -- --compare   # benchmark comparison
 ```
+
+<h2>License & AI/ML training reservation</h2>
+
+Dual-licensed under **MIT OR Apache-2.0** — pick whichever fits your project (see <a href="LICENSE-MIT">LICENSE-MIT</a> and <a href="LICENSE-APACHE">LICENSE-APACHE</a>).
+
+In addition, the author reserves all rights regarding the use of this work — source code, documentation, generated artifacts and any derivative works — for **AI/ML training, fine-tuning, evaluation, or any form of text and data mining (TDM)**. The reservation is declared in <a href="NOTICE">NOTICE</a>, and expressed in machine-readable form via <a href="ai.txt">ai.txt</a> (Spawning AI) and <a href="tdmrep.json">tdmrep.json</a> (W3C TDM Reservation Protocol). To negotiate a license for those uses, contact <strong>orlando.luque@gmail.com</strong>.
+
