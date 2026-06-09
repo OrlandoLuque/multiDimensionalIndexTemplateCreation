@@ -25,6 +25,11 @@ fn main() {
         return;
     }
 
+    if args.iter().any(|a| a == "--heavy") {
+        comparison_test::run_heavy();
+        return;
+    }
+
     let use_redis = args.iter().any(|a| a == "--redis");
     let redis_host = args.iter().position(|a| a == "--redis-host")
         .and_then(|i| args.get(i + 1)).map(|s| s.as_str()).unwrap_or("127.0.0.1");

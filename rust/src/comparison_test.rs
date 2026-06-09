@@ -9,13 +9,20 @@ use std::time::Instant;
 use rayon::prelude::*;
 
 pub fn run_comparison() {
+    run_bench("=== Parallel subtask test (grids 16+32) ===", vec![16, 32]);
+}
+
+pub fn run_heavy() {
+    run_bench("=== HEAVY benchmark (grids 16+32+64+128) ===", vec![16, 32, 64, 128]);
+}
+
+fn run_bench(title: &str, grid_sizes: Vec<i64>) {
     let polys = vec![
         ("drop", create_drop(0.2, 0.8)),
         ("box", create_box(1.0)),
         ("circle", create_circle(1.0)),
     ];
     let scales: Vec<f64> = vec![128.0];
-    let grid_sizes: Vec<i64> = vec![16, 32];
     let angles = get_angles(0.5);
     let max_per_task: u64 = 500_000;
 
@@ -24,7 +31,7 @@ pub fn run_comparison() {
     let completed = Arc::new(AtomicUsize::new(0));
     let total = subtasks.len();
 
-    println!("=== Parallel subtask test (grids 16+32) ===");
+    println!("{}", title);
     task::print_summary(&subtasks);
     println!("Threads: {}\n", rayon::current_num_threads());
 
@@ -56,7 +63,7 @@ pub fn run_comparison() {
         }
 
         let done = completed.fetch_add(1, Ordering::Relaxed) + 1;
-        if done % 2 == 0 || done == total {
+        if done % 5 == 0 || done == total {
             println!("  [{}/{}] {} s{} {}x{} a[{}..{}] | {} new | {:.2}s",
                 done, total, st.poly_name, st.scale as i64,
                 gx, gy, st.angle_start, st.angle_end,
